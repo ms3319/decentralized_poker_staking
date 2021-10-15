@@ -1,0 +1,32 @@
+stages:
+  - build
+  - test
+  - deploy
+
+language: node_js
+
+node_js:
+  - "stable"
+
+build:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+      
+test:
+  stage: test
+  script: 
+
+deploy:
+  stage: deploy
+  script: 
+
+
+
+
+
+
+
+
+
