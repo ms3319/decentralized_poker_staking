@@ -53,7 +53,7 @@
   "sourceMap": "25:258:1:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:258:1;;;;;;;",
   "deployedSourceMap": "25:258:1:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:258:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;193:88;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;193:88:1;;;;;;;;;;;;;;;;;49:22;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;49:22:1;;;;;;;;;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;98:61;;;:::i;:::-;;193:88;234:16;269:5;262:12;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;193:88;:::o;49:22::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;98:61::-;130:5;141:10;130:22;;39:1:-1;33:3;27:10;23:18;57:10;52:3;45:23;79:10;72:17;;0:93;130:22:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;98:61::o",
   "source": "pragma solidity ^0.5.6;\n\ncontract UserList {\n    address[] public users;\n\n    // Add to users\n    function add() public {\n        users.push(msg.sender);\n    }\n\n    // Retrieving the users\n    function getUsers() public view returns (address[] memory) {\n        return users;\n    }\n}",
-  "sourcePath": "/Users/julesdehon/Documents/Uni/year-3/decentralized_poker_staking/contracts/UserList.sol",
+  "sourcePath": "/Users/alexandru.mor/Developer/Imperial/Y3GroupProject/decentralized_poker_staking/contracts/UserList.sol",
   "ast": {
     "absolutePath": "project:/contracts/UserList.sol",
     "exportedSymbols": {
@@ -690,12 +690,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xc253313404e733b7A296d36588B0230BD9d5F181",
-      "transactionHash": "0xcba27f5d02ff79570fceb316a5621f853318474cf69dfe25c396aaccbc204c0c"
+      "address": "0xe66890f56268547F396aB127631931B729f3d2C1",
+      "transactionHash": "0x3e38d63ac24a7e1525fec4052e2f8d93b6e7329694016172a92d2e0e587d599b"
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-10-18T13:44:23.764Z",
+  "updatedAt": "2021-10-18T15:49:05.143Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

@@ -53,7 +53,7 @@
   "sourceMap": "66:352:0:-;;;113:10;90:33;;;;;;;;;;;;;;;;;;;;66:352;8:9:-1;5:2;;;30:1;27;20:12;5:2;66:352:0;;;;;;;",
   "deployedSourceMap": "66:352:0:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;66:352:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;127:36;;;:::i;:::-;;;;;;;;;;;;;;;;;;;90:33;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;313:103;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;313:103:0;;;;;;;;;;;;;;;;;:::i;:::-;;127:36;;;;:::o;90:33::-;;;;;;;;;;;;;:::o;313:103::-;225:5;;;;;;;;;;;211:19;;:10;:19;;;196:101;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;402:9;375:24;:36;;;;313:103;:::o",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity >=0.4.22 <0.9.0;\n\ncontract Migrations {\n  address public owner = msg.sender;\n  uint public last_completed_migration;\n\n  modifier restricted() {\n    require(\n      msg.sender == owner,\n      \"This function is restricted to the contract's owner\"\n    );\n    _;\n  }\n\n  function setCompleted(uint completed) public restricted {\n    last_completed_migration = completed;\n  }\n}\n",
-  "sourcePath": "/Users/julesdehon/Documents/Uni/year-3/decentralized_poker_staking/contracts/Migrations.sol",
+  "sourcePath": "/Users/alexandru.mor/Developer/Imperial/Y3GroupProject/decentralized_poker_staking/contracts/Migrations.sol",
   "ast": {
     "absolutePath": "project:/contracts/Migrations.sol",
     "exportedSymbols": {
@@ -915,12 +915,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xc902D7ccC222413bd0f43C82317D64eAb175620d",
-      "transactionHash": "0x718867748511f9dde7d987086f81342f5548722c89bdfc390b685ea2ce3a21bc"
+      "address": "0x367251427E5d97fe295C903d0113F9B235165Af7",
+      "transactionHash": "0x9edd348c6c5d4a9df6a680970e3f6d959d7fad3c120d995f1cb56211ab4ebbfb"
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-10-18T13:44:23.765Z",
+  "updatedAt": "2021-10-18T15:49:05.144Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
