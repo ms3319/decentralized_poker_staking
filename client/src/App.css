@@ -1,8 +1,5 @@
 .App {
   text-align: center;
-}
-
-.AdvertTile {
-  width: "10rem";
-  background-color: "coral";
+  background-color: #008b8b;
+  padding-bottom: 2rem;
 }
