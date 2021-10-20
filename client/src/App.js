@@ -4,12 +4,13 @@ import UserListContract from "./contracts/UserList.json";
 import { Card, Col, Button, Row } from "react-bootstrap";
 import CustomBar from "./CustomBar";
 import CentredModal from "./CentredModal";
+import NewStakingRequestForm from "./NewStakingRequestForm";
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends Component {
-  state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false };
+  state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false};
 
   componentDidMount = async () => {
     try {
@@ -58,6 +59,14 @@ class App extends Component {
     this.setState({ modalShow: true });
   }
 
+  openStakeRequestForm = async () => {
+    this.setState({stakeRequestFormShow: true});
+  }
+
+  closeStakeRequestForm = async () => {
+    this.setState({stakeRequestFormShow: false});
+  }
+
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -65,6 +74,12 @@ class App extends Component {
     return (
       <div className="App">
         <CustomBar />
+
+        <button onClick={this.openStakeRequestForm}>
+          Create Staking Request
+        </button>
+        <NewStakingRequestForm show={this.state.stakeRequestFormShow} onHide={this.closeStakeRequestForm} />
+
         <p>
           Click the button to add yourself to the list
         </p>
