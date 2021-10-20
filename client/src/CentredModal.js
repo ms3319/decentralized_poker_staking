@@ -21,8 +21,14 @@ const CentredModal = (props) => {
             <p>
             Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
             dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
-            consectetur ac, vestibulum at eros.
+            consectetur ac, vestibulum at eros. 123
             </p>
+            <Button style={{backgroundColor:"#008b02", borderColor:"black", color:"black", marginRight:"10px"}}>
+              Invest 
+            </Button>
+            <Button style={{backgroundColor:"#fccb00", borderColor:"black", color:"black", marginLeft:"10px", marginRight:"10px"}}>
+              Wishlist 
+            </Button>
         </Modal.Body>
         <Modal.Footer>
             <Button onClick={props.onHide}>Close</Button>
@@ -32,3 +38,4 @@ const CentredModal = (props) => {
 };
 
 export default CentredModal;
+
