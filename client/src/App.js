@@ -1,14 +1,15 @@
 import React, { Component } from "react";
 import getWeb3 from "./getWeb3";
 import UserListContract from "./contracts/UserList.json";
-import { Card } from "react-bootstrap";
+import { Card, Col, Button, Row } from "react-bootstrap";
 import CustomBar from "./CustomBar";
+import CentredModal from "./CentredModal";
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends Component {
-  state = { userList: null, web3: null, accounts: null, contract: null };
+  state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false };
 
   componentDidMount = async () => {
     try {
@@ -49,6 +50,14 @@ class App extends Component {
     this.setState({ userList: newList });
   }
 
+  handleClose = async () => {
+    this.setState({ modalShow: false });
+  }
+
+  handleShow = async () => {
+    this.setState({ modalShow: true });
+  }
+
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -67,9 +76,19 @@ class App extends Component {
         </button>
         <p>The list is dislayed here:</p>
         {this.state.userList.length === 0 ? "empty" : this.state.userList.map((user) => 
-          <Card style={{backgroundColor:"#5f9ea0", width:"55rem", marginLeft:"auto", marginRight:"auto", marginBottom:"1rem", borderRadius:"10px"}}>
+          <Card style={{backgroundColor:"#5f9ea0", width:"55rem", marginLeft:"auto", marginRight:"auto", marginBottom:"1rem", borderRadius:"10px", boxShadow: "5px 5px 2px grey"}}>
             <Card.Body> 
+              <Row>
+              <Col>
               {user}
+              </Col>
+              <Col xs={3}>
+              <Button onClick={this.handleShow} style={{backgroundColor:"#008b8b", borderColor:"grey", color:"black"}}>
+              View More
+              </Button>
+              <CentredModal show={this.state.modalShow} onHide={this.handleClose} />
+              </Col>
+              </Row>
             </Card.Body>
           </Card>)}
       </div>
