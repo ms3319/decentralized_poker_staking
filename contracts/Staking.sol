@@ -1,4 +1,4 @@
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.9;
 
 contract Staking {
     uint public requestCount = 0;
@@ -74,5 +74,10 @@ contract Staking {
 
         emit StakeFilled(id, horse, backer, stake.amount);
     }
+
+    // Cancelling a reqested stake
+
+
+    // Returning profits to backer after completing games
 
 }
