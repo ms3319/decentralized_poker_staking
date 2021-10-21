@@ -21,7 +21,6 @@ contract Staking {
         uint profitShare;
         uint profit;
         StakeStatus status;
-        bool matchFinished;
         bool horseWon;
     }
 
@@ -36,7 +35,7 @@ contract Staking {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         } 
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, profitShare, 0, StakeStatus.Requested,false,false);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, profitShare, 0, StakeStatus.Requested,false);
         requestCount++;
 
         emit StakeRequested(msg.sender, amount);
@@ -46,8 +45,6 @@ contract Staking {
     event StakeFilled(uint stakeId, address horse, address backer, uint amount);
     /// Stake has already been filled/cancelled
     error StakeNotFillable(uint id);
-    /// Stake does not exist
-    error InvalidStake(uint id);
     /// You cannot stake yourself
     error StakingSelf(uint id, address horse, address backer);
    
@@ -77,13 +74,22 @@ contract Staking {
 
     event StakeCanceled(uint id);
 
-    function cancelStake(uint id) external payable {
+    function cancelStakeAsHorse(uint id) external payable {
         Stake memory stake = stakes[id];
+        require(msg.sender == stake.horse,"You can only cancel your own stakes!");
+        require(stake.status == StakeStatus.Requested,"You can only cancel your stake if it has not been filled!");
         require(validId(id), "This is not a valid ID for a stake!");
-        require(!stake.matchFinished, "You cannot cancel your stake, the match has already finished!");
         stake.backer.transfer(stake.amount);
-        //stake.horse.balances -= stake.amount;
+        stakes[id].status = StakeStatus.Cancelled;
         emit StakeCanceled(id);
+    }
+    
+    // Still need to figure out this part
+    
+    function cancelStakeAsBacker(uint id) external payable {
+        Stake memory stake = stakes[id];
+        require(msg.sender == stake.backer);
+        require(validId(id), "This is not a valid ID for a stake!");
     }
 
     // Returning profits to backer after completing games
@@ -93,9 +99,9 @@ contract Staking {
     function returnProfits(uint id) external payable {
         Stake memory stake = stakes[id];
         require(validId(id), "This is not a valid ID for a stake!");
-        require(stake.matchFinished,"The match has to finish before the backer gets the profits!");
         require(stake.horseWon, "The horse does need to return any profits");
         stake.backer.transfer(stake.profit);
+        stakes[id].status = StakeStatus.Completed;
         emit ProfitsReturned(id);
     }
 
