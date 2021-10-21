@@ -98,7 +98,7 @@ class App extends Component {
               {user}
               </Col>
               <Col xs={3}>
-              <Button onClick={this.handleShow} style={{backgroundColor:"#008b8b", borderColor:"grey", color:"black"}}>
+              <Button onClick={this.handleShow} style={{backgroundColor:"#ff9800", borderColor:"grey", color:"black"}}>
               View More
               </Button>
               <CentredModal show={this.state.modalShow} onHide={this.handleClose} />
