@@ -1,8 +1,11 @@
 import React, { Component } from "react";
 import getWeb3 from "./getWeb3";
 import UserListContract from "./contracts/UserList.json";
+import { Card } from "react-bootstrap";
+import CustomBar from "./CustomBar";
 
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends Component {
   state = { userList: null, web3: null, accounts: null, contract: null };
@@ -39,7 +42,7 @@ class App extends Component {
   addToUserList = async () => {
     const { accounts, contract } = this.state;
 
-    await contract.methods.add().send({ from: accounts[0] });
+    await contract.methods.add().send({ from: accounts[0] }); //TODO: What does this do?
 
     const newList = await contract.methods.getUsers().call();
 
@@ -52,6 +55,7 @@ class App extends Component {
     }
     return (
       <div className="App">
+        <CustomBar />
         <p>
           Click the button to add yourself to the list
         </p>
@@ -62,7 +66,12 @@ class App extends Component {
           Add myself to list
         </button>
         <p>The list is dislayed here:</p>
-        {this.state.userList.length === 0 ? "empty" : this.state.userList.map((user) => <li key={user}>{user}</li>)}
+        {this.state.userList.length === 0 ? "empty" : this.state.userList.map((user) => 
+          <Card style={{backgroundColor:"#5f9ea0", width:"55rem", marginLeft:"auto", marginRight:"auto", marginBottom:"1rem", borderRadius:"10px"}}>
+            <Card.Body> 
+              {user}
+            </Card.Body>
+          </Card>)}
       </div>
     );
   }
