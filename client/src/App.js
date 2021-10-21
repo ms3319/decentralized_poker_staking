@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import getWeb3 from "./getWeb3";
-import UserListContract from "./contracts/UserList.json";
+import StakingContract from "./contracts/Staking.json";
 import { Card, Col, Button, Row } from "react-bootstrap";
 import CustomBar from "./CustomBar";
 import CentredModal from "./CentredModal";
@@ -22,16 +22,20 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = UserListContract.networks[networkId];
+      const deployedNetwork = StakingContract.networks[networkId];
       const instance = new web3.eth.Contract(
-        UserListContract.abi,
+        StakingContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
-      const userList = await instance.methods.getUsers().call();
+      const requestCount = await instance.requestCount.call();
+      var requests = []
+      for (var i = 0; i < requestCount; i++) {
+        requests.push(await instance.methods.getStake(i).call());
+      }
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ userList, web3, accounts, contract: instance });
+      this.setState({ requests, web3, accounts, contract: instance });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(

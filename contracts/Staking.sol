@@ -24,6 +24,14 @@ contract Staking {
         bool horseWon;
     }
 
+    // Get an individual stake
+
+    function getStake(uint id) external view returns (Stake memory) {
+        require(validId(id), "This is not a valid stake id!");
+
+        return stakes[id];
+    }
+
     // Creating a new stake request
 
     event StakeRequested(address horse, uint amount);
