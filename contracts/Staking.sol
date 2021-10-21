@@ -67,6 +67,7 @@ contract Staking {
         stake.backer = backer;
         horse.transfer(stake.amount);
 
+        stakes[id] = stake;
         emit StakeFilled(id, horse, backer, stake.amount);
     }
 
@@ -75,37 +76,51 @@ contract Staking {
     event StakeCanceled(uint id);
 
     function cancelStakeAsHorse(uint id) external payable {
-        Stake memory stake = stakes[id];
-        require(msg.sender == stake.horse,"You can only cancel your own stakes!");
-        require(stake.status == StakeStatus.Requested,"You can only cancel your stake if it has not been filled!");
         require(validId(id), "This is not a valid ID for a stake!");
+        Stake memory stake = stakes[id];
+
+        require(msg.sender == stake.horse, "You can only cancel your own stakes!");
+        require(stake.status == StakeStatus.Requested, "You can only cancel your stake if it has not been filled!");
+
         stake.backer.transfer(stake.amount);
-        stakes[id].status = StakeStatus.Cancelled;
+        stake.status = StakeStatus.Cancelled;
+
+        stakes[id] = stake;
         emit StakeCanceled(id);
     }
     
-    // Still need to figure out this part
+    // TODO: How might we allow this?
     
-    function cancelStakeAsBacker(uint id) external payable {
-        Stake memory stake = stakes[id];
-        require(msg.sender == stake.backer);
-        require(validId(id), "This is not a valid ID for a stake!");
-    }
+    // function cancelStakeAsBacker(uint id) external payable {
+    //     Stake memory stake = stakes[id];
+    //     require(msg.sender == stake.backer);
+    //     require(validId(id), "This is not a valid ID for a stake!");
+    // }
 
     // Returning profits to backer after completing games
 
-    event ProfitsReturned(uint id);
+    event ProfitsReturned(uint id, uint backerReturns);
 
-    function returnProfits(uint id) external payable {
-        Stake memory stake = stakes[id];
+    // TODO: handle the case where no profit was made
+    function returnProfits(uint id, uint profit) external payable {
         require(validId(id), "This is not a valid ID for a stake!");
-        require(stake.horseWon, "The horse does need to return any profits");
-        stake.backer.transfer(stake.profit);
-        stakes[id].status = StakeStatus.Completed;
-        emit ProfitsReturned(id);
+        Stake memory stake = stakes[id];
+
+        require(msg.sender == stake.horse, "Only the horse can return profits");
+        require(stake.status == StakeStatus.Filled, "Can only return profits on a stake that has been filled and played.");
+
+        // TODO: Check this calculation. Do we do it here or calculate it in the frontend?
+        stake.profit = profit;
+        uint backerReturns = stake.amount + (profit * (stake.profitShare / 100));
+
+        stake.backer.transfer(backerReturns);
+        stake.status = StakeStatus.Completed;
+
+        stakes[id] = stake;
+        emit ProfitsReturned(id, backerReturns);
     }
 
-    function validId(uint id) internal returns (bool) {
+    function validId(uint id) internal view returns (bool) {
         if(id < 0 || id >= requestCount) {
             return false;
         }
