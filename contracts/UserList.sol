@@ -1,4 +1,4 @@
-pragma solidity ^0.5.6;
+pragma solidity ^0.8.9;
 
 contract UserList {
     address[] public users;
