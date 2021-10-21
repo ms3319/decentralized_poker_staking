@@ -43,7 +43,8 @@ contract Staking {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         } 
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, profitShare, 0, StakeStatus.Requested,false);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, profitShare, 0, StakeStatus.Requested, false);
+        assert(stakes[requestCount].horse == msg.sender);
         requestCount++;
 
         emit StakeRequested(msg.sender, amount);
@@ -55,9 +56,14 @@ contract Staking {
     error StakeNotFillable(uint id);
     /// You cannot stake yourself
     error StakingSelf(uint id, address horse, address backer);
+    /// Not a valid id for a stake request
+    error InvalidStakeId(uint id);
    
     function stakeHorse(uint id) external payable {
-        require(validId(id), "This is not a valid ID for a stake!");
+        // require(validId(id), "This is not a valid ID for a stake!");
+        if (id >= requestCount) {
+            revert InvalidStakeId(id);
+        }
     
         Stake memory stake = stakes[id];
         if (stake.status != StakeStatus.Requested) {
@@ -129,10 +135,7 @@ contract Staking {
     }
 
     function validId(uint id) internal view returns (bool) {
-        if(id < 0 || id >= requestCount) {
-            return false;
-        }
-        return true;
+        return id < requestCount;
     }
 
 }

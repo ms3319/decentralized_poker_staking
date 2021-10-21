@@ -27,11 +27,14 @@ class App extends Component {
         StakingContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
-      const requestCount = await instance.requestCount.call();
+      const requestCount = await instance.methods.requestCount().call();
+      console.log(requestCount);
       var requests = []
       for (var i = 0; i < requestCount; i++) {
         requests.push(await instance.methods.getStake(i).call());
       }
+
+      console.log(requests);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -82,7 +85,8 @@ class App extends Component {
         <button onClick={this.openStakeRequestForm}>
           Create Staking Request
         </button>
-        <NewStakingRequestForm show={this.state.stakeRequestFormShow} onHide={this.closeStakeRequestForm} />
+        <NewStakingRequestForm show={this.state.stakeRequestFormShow} onHide={this.closeStakeRequestForm} 
+            accounts={this.state.accounts} contract={this.state.contract}/>
 
         <p>
           Click the button to add yourself to the list
@@ -94,18 +98,24 @@ class App extends Component {
           Add myself to list
         </button>
         <p>The list is dislayed here:</p>
-        {this.state.userList.length === 0 ? "empty" : this.state.userList.map((user) => 
+        {this.state.requests.length === 0 ? "empty" : this.state.requests.map((request) => 
           <Card style={{backgroundColor:"#5f9ea0", width:"55rem", marginLeft:"auto", marginRight:"auto", marginBottom:"1rem", borderRadius:"10px", boxShadow: "5px 5px 2px grey"}}>
             <Card.Body> 
               <Row>
               <Col>
-              {user}
+              {request.horse}
+              </Col>
+              <Col>
+              {request.amount}
+              </Col>
+              <Col>
+              {request.profitShare}
               </Col>
               <Col xs={3}>
               <Button onClick={this.handleShow} style={{backgroundColor:"#ff9800", borderColor:"grey", color:"black"}}>
               View More
               </Button>
-              <CentredModal show={this.state.modalShow} onHide={this.handleClose} />
+              <CentredModal contract={this.state.contract} accounts={this.state.accounts} request={request} show={this.state.modalShow} onHide={this.handleClose} />
               </Col>
               </Row>
             </Card.Body>
