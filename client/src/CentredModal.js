@@ -19,10 +19,10 @@ const CentredModal = (props) => {
       <Modal.Body>
         <h4>Invest in a Horse</h4>
         <p>
-            You are going to invest in {props.request.horse} for {props.request.amount} gwei with a potential profit share of {props.request.profitShare}.
+            You are going to invest in {props.request.horse} for {props.request.amount} wei with a potential profit share of {props.request.profitShare}.
         </p>
         <Button
-          onClick={() => props.contract.methods.stakeHorse(0).send({from: props.accounts[0]})} 
+          onClick={() => props.contract.methods.stakeHorse(props.request.id).send({from: props.accounts[0], value: parseInt(props.request.amount)})} 
           style={{
             backgroundColor: "#008b02",
             borderColor: "black",

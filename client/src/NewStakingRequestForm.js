@@ -10,7 +10,6 @@ class NewStakingRequestForm extends Component {
     const { accounts, contract } = this.props;
 
     // TODO: sanity check the values
-
     await contract.methods.createRequest(this.state.amount, this.state.profitShare).send({ from: accounts[0] });
 
     // const newList = await contract.methods.getUsers().call();
@@ -41,7 +40,7 @@ class NewStakingRequestForm extends Component {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Amount I'm looking for (in gwei)</Form.Label>
+              <Form.Label>Amount I'm looking for (in wei)</Form.Label>
               <Form.Control value={this.state.amount} onChange={(event) => this.handleAmountChange(event)} inputMode="numeric" placeholder="e.g. 100" />
             </Form.Group>
 
