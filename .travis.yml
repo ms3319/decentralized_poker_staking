@@ -6,9 +6,10 @@ stages:
 language: node_js
 
 node_js:
-  - "stable"
+  - 12
 
 before_install:
+  - npm install -g npm@7.14.0
   - npm install -g @fleekhq/fleek-cli
   - npm install -g truffle
 
