@@ -1,0 +1,16 @@
+{
+  "site": {
+    "id": "f6822317-2460-4df5-b222-780d8b644644",
+    "team": "b0c06343-01d6-42d8-a19f-a2a65ab12d5d",
+    "platform": "ipfs",
+    "source": "github",
+    "name": "decentralised-poker-staking"
+  },
+  "build": {
+    "baseDir": "",
+    "publicDir": "client/build",
+    "command": "npm install && truffle compile && truffle migrate --network ropsten && cd client && npm run build",
+    "rootDir": "",
+    "image": "julesdehon/truffle:node-12-npm-7"
+  }
+}
