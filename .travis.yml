@@ -8,6 +8,10 @@ language: node_js
 node_js:
   - 12
 
+cache:
+  directories:
+    - $(npm config get prefix)/lib/node_modules
+
 before_install:
   - npm install -g npm@7.14.0
   - npm install -g @fleekhq/fleek-cli
@@ -27,6 +31,7 @@ jobs:
         - truffle test
     - name: "Test Front-end"
       script:
+        - truffle compile
         - cd client
         - npm install
         - npm test
