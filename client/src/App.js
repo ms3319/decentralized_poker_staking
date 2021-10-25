@@ -98,7 +98,7 @@ class App extends Component {
           Add myself to list
         </button>
         <p>The list is dislayed here:</p>
-        {this.state.requests.length === 0 ? "empty" : this.state.requests.filter(request => request.status == "0").map((request) => 
+        {this.state.requests.length === 0 ? "empty" : this.state.requests.filter(request => request.status === "0").map((request) => 
           <Card key={request.id} style={{backgroundColor:"#5f9ea0", width:"55rem", marginLeft:"auto", marginRight:"auto", marginBottom:"1rem", borderRadius:"10px", boxShadow: "5px 5px 2px grey"}}>
             <Card.Body> 
               <Row>
