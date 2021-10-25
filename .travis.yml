@@ -1,26 +1,42 @@
 stages:
-  - build
   - test
-  - deploy
+  - name: deploy
+    if: branch = production
 
 language: node_js
 
 node_js:
-  - "stable"
+  - 12
 
-build:
-  stage: build
-  script:
-    - npm install
-    - npm run build
-      
-test:
-  stage: test
-  script: 
+cache:
+  directores:
+    - node_modules
 
-deploy:
-  stage: deploy
-  script: 
+install:
+  - npm install -g npm@7.14.0
+  - npm install -g @fleekhq/fleek-cli
+  - npm install -g truffle
+  - npm install
+
+jobs:
+  include:
+    - stage: test
+      name: "Test Smart Contracts"
+      script:
+        - truffle test
+    - name: "Test Front-end"
+      script:
+        - truffle compile
+        - cd client
+        - npm test
+    - stage: deploy
+      script:
+        - truffle compile
+        - truffle migrate --network ropsten
+        - cd client
+        - npm run build
+        - cd ..
+        - fleek site:deploy
 
 
 

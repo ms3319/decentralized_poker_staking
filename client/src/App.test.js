@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders add myself to list button', () => {
+test('renders loading web3', () => {
   render(<App />);
-  const buttonElement = screen.getByText(/Add myself to list/i);
+  const buttonElement = screen.getByText(/Loading Web3/i);
   expect(buttonElement).toBeInTheDocument();
 });
