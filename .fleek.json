@@ -7,10 +7,7 @@
     "name": "weathered-mode-9957"
   },
   "build": {
-    "baseDir": "",
     "publicDir": "client/build",
-    "command": "npm install && truffle compile && truffle migrate --network ropsten && cd client && npm run build",  
-    "rootDir": "",
     "image": "julesdehon/truffle:node-12-npm-7"
   }
 }
