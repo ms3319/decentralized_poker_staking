@@ -17,6 +17,7 @@ jobs:
   include:
     - stage: build
       script:
+        - truffle compile
         - cd client
         - npm install
         - npm run build
