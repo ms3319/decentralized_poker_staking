@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.5.1"
+  },
+  "scripts": {
+    "postinstall": "cd client && npm install"
+  }
+}
