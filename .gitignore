@@ -2,7 +2,7 @@
 node_modules/
 
 # production
-build
+/client/build
 
 # truffle compiled smart contracts
-/client/contracts
+/client/src/contracts
