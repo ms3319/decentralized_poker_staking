@@ -1,5 +1,4 @@
 stages:
-  - build
   - test
   - deploy
 
@@ -8,19 +7,18 @@ language: node_js
 node_js:
   - 12
 
-before_install:
+cache:
+  directores:
+    - node_modules
+
+install:
   - npm install -g npm@7.14.0
   - npm install -g @fleekhq/fleek-cli
   - npm install -g truffle
+  - npm install
 
 jobs:
   include:
-    - stage: build
-      script:
-        - truffle compile
-        - cd client
-        - npm install
-        - npm run build
     - stage: test
       name: "Test Smart Contracts"
       script:
@@ -29,10 +27,14 @@ jobs:
       script:
         - truffle compile
         - cd client
-        - npm install
         - npm test
     - stage: deploy
       script:
+        - truffle compile
+        - truffle migrate --network ropsten
+        - cd client
+        - npm run build
+        - cd ..
         - fleek site:deploy
 
 
