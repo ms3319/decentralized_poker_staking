@@ -1,6 +1,7 @@
 stages:
   - test
-  - deploy
+  - name: deploy
+    if: branch = production
 
 language: node_js
 
