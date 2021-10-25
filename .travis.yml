@@ -8,19 +8,29 @@ language: node_js
 node_js:
   - "stable"
 
-build:
-  stage: build
-  script:
-    - npm install
-    - npm run build
-      
-test:
-  stage: test
-  script: 
+before_install:
+  - npm install -g @fleekhq/fleek-cli
+  - npm install -g truffle
 
-deploy:
-  stage: deploy
-  script: 
+jobs:
+  include:
+    - stage: build
+      script:
+        - cd client
+        - npm install
+        - npm run build
+    - stage: test
+      name: "Test Smart Contracts"
+      script:
+        - truffle test
+    - name: "Test Front-end"
+      script:
+        - cd client
+        - npm install
+        - npm test
+    - stage: deploy
+      script:
+        - fleek site:deploy
 
 
 
