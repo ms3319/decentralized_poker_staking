@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.5.1"
+    "@truffle/hdwallet-provider": "^1.5.1",
+    "react-router-dom": "^5.3.0"
   },
   "scripts": {
     "postinstall": "cd client && npm install"
