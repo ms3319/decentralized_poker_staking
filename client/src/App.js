@@ -5,7 +5,7 @@ import { Card, Col, Button, Row } from "react-bootstrap";
 import CustomBar from "./CustomBar";
 import CentredModal from "./CentredModal";
 import NewStakingRequestForm from "./NewStakingRequestForm";
-
+import Player from "./Player.js"
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -81,7 +81,7 @@ class App extends Component {
     return (
       <div className="App">
         <CustomBar />
-
+        <Player/>
         <button onClick={this.openStakeRequestForm}>
           Create Staking Request
         </button>
