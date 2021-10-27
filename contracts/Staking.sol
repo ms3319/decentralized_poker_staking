@@ -31,8 +31,13 @@ contract Staking {
         owner = payable(msg.sender);
     }
 
+    /// Only the owner can kill this contract
+    error OnlyOwnerCanKill();
+
     function kill() external {
-        require(msg.sender == owner, "Only the owner can kill this contract");
+        if (msg.sender != owner) {
+            revert OnlyOwnerCanKill();
+        }
         selfdestruct(owner);
     }
 
@@ -47,12 +52,6 @@ contract Staking {
         }
 
         return stakes[id];
-    }
-
-    function getLatestStake() external view returns (Stake memory) {
-        require(requestCount >= 1, "No stakes have been created"); 
-
-        return stakes[requestCount - 1];
     }
 
     // Creating a new stake request
@@ -162,6 +161,8 @@ contract Staking {
     error ReturningProfitsSenderIsNotHorse(uint id, address sender, address horse);
     /// Profits can only be returned if a stake has been filled
     error StakeProfitNotReturnable(uint id, StakeStatus status);
+    /// Message value not equal to the profit returns of the backer
+    error MessageValueNotEqualToBackerReturns(uint value, uint backerReturns);
     
     // TODO: handle the case where no profit was made
     function returnProfits(uint id, uint profit) external payable {
@@ -182,6 +183,9 @@ contract Staking {
         stake.profit = profit;
         uint backerReturns = stake.amount + ((profit * stake.profitShare) / 100);
 
+        if (msg.value != backerReturns) {
+            revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
+        }
         stake.backer.transfer(backerReturns);
         if (stake.escrow > 0) {
             stake.horse.transfer(stake.escrow);

@@ -28,7 +28,7 @@ contract("Staking", (accounts) => {
         it("Create a new stake with valid arguments", async () => {
             await staking.createRequest(1000, 45, 0, {from: horseAccount1});
 
-            let stake = await staking.getLatestStake();
+            let stake = await staking.getStake(0);
             assert.equal(stake.amount, 1000, "Stake amount doesn't match");
             assert.equal(stake.profitShare, 45, "Stake profit share doesn't match");
             assert.equal(stake.escrow, 0, "Stake escrow doesn't match");
@@ -38,7 +38,7 @@ contract("Staking", (accounts) => {
         it("Create a new escrow stake with valid arguments", async () => {
             await staking.createRequest(1000, 45, 1000, {from: horseAccount1, value: 1000});
 
-            let stake = await staking.getLatestStake();
+            let stake = await staking.getStake(0);
             assert.equal(stake.amount, 1000, "Stake amount doesn't match");
             assert.equal(stake.profitShare, 45, "Stake profit share doesn't match");
             assert.equal(stake.escrow, 1000, "Stake escrow doesn't match");
@@ -61,7 +61,7 @@ contract("Staking", (accounts) => {
 
         it("Horse can cancel requested stake", async () => {
             await staking.cancelStakeAsHorse(0, {from: horseAccount1});
-            let stake = await staking.getLatestStake();
+            let stake = await staking.getStake(0);
 
             assert.equal(stake.status, StakeStatus.Cancelled, "Stake status was not updated");
         });
