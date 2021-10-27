@@ -4,7 +4,7 @@
     "team": "b0c06343-01d6-42d8-a19f-a2a65ab12d5d",
     "platform": "ipfs",
     "source": "ipfs",
-    "name": "weathered-mode-9957"
+    "name": "decentralised-poker-staking"
   },
   "build": {
     "publicDir": "client/build",
