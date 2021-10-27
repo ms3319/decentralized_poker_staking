@@ -183,9 +183,10 @@ contract Staking {
         stake.profit = profit;
         uint backerReturns = stake.amount + ((profit * stake.profitShare) / 100);
 
-        if (msg.value != backerReturns) {
-            revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
-        }
+        // TODO: See above before we can do this
+        // if (msg.value != backerReturns) {
+        //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
+        // }
         stake.backer.transfer(backerReturns);
         if (stake.escrow > 0) {
             stake.horse.transfer(stake.escrow);
