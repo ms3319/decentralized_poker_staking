@@ -4,13 +4,17 @@ import { Modal, Button, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class NewStakingRequestForm extends Component {
-  state = { amount: 0, profitShare: 0 };
+  state = { amount: 0, profitShare: 0, escrow: 0 };
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
 
     // TODO: sanity check the values
-    await contract.methods.createRequest(this.state.amount, this.state.profitShare).send({ from: accounts[0] });
+    if (this.state.escrow > 0) {
+      await contract.methods.createRequest(this.state.amount, this.state.profitShare, this.state.escrow).send({ from: accounts[0], value: this.state.escrow });
+    } else {
+      await contract.methods.createRequest(this.state.amount, this.state.profitShare, this.state.escrow).send({ from: accounts[0] });
+    }
 
     // const newList = await contract.methods.getUsers().call();
     // this.setState({ userList: newList });
@@ -22,6 +26,10 @@ class NewStakingRequestForm extends Component {
 
   handleProfitShareChange(event) {
     this.setState({profitShare: event.target.value});
+  }
+
+  handleEscrowChange(event) {
+    this.setState({escrow: event.target.value});
   }
 
   render() {
@@ -52,6 +60,14 @@ class NewStakingRequestForm extends Component {
                 percentage is 50%, then I'll have to contribute £50 myself to
                 make up £100. After the game, I'll return £50 + 50% of my
                 winnings back to the investor.
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Escrow Amount</Form.Label>
+              <Form.Control value={this.state.escrow} onChange={(event) => this.handleEscrowChange(event)} inputMode="numeric" placeholder="e.g. 50" />
+              <Form.Text className="text-muted">
+                If you would like to provide some collateral to increase the trust involved in this transaction please specify the amount here.
               </Form.Text>
             </Form.Group>
 
