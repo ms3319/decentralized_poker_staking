@@ -6,6 +6,7 @@ import CustomBar from "./CustomBar";
 import CentredModal from "./CentredModal";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import Player from "./Player.js"
+import PlayerCard from "./PlayerCard.js"
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -82,6 +83,7 @@ class App extends Component {
       <div className="App">
         <CustomBar />
         <Player/>
+        <PlayerCard/>
         <button onClick={this.openStakeRequestForm}>
           Create Staking Request
         </button>
