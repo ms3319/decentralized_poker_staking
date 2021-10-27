@@ -10,7 +10,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends Component {
-  state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false};
+  state = { web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false};
 
   componentDidMount = async () => {
     try {
@@ -48,16 +48,6 @@ class App extends Component {
     }
   };
 
-  addToUserList = async () => {
-    const { accounts, contract } = this.state;
-
-    await contract.methods.add().send({ from: accounts[0] }); //TODO: What does this do?
-
-    const newList = await contract.methods.getUsers().call();
-
-    this.setState({ userList: newList });
-  }
-
   handleClose = async () => {
     this.setState({ modalShow: false });
   }
@@ -88,16 +78,6 @@ class App extends Component {
         <NewStakingRequestForm show={this.state.stakeRequestFormShow} onHide={this.closeStakeRequestForm} 
             accounts={this.state.accounts} contract={this.state.contract}/>
 
-        <p>
-          Click the button to add yourself to the list
-        </p>
-        <button
-          className="App-link"
-          onClick={this.addToUserList}
-        >
-          Add myself to list
-        </button>
-        <p>The list is dislayed here:</p>
         {this.state.requests.length === 0 ? "empty" : this.state.requests.filter(request => request.status === "0").map((request) => 
           <Card key={request.id} style={{backgroundColor:"#5f9ea0", width:"55rem", marginLeft:"auto", marginRight:"auto", marginBottom:"1rem", borderRadius:"10px", boxShadow: "5px 5px 2px grey"}}>
             <Card.Body> 
