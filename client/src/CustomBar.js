@@ -1,5 +1,6 @@
 import React from "react";
 import { Navbar, Container, Nav, Col } from "react-bootstrap";
+import {Link} from "react-router-dom";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -10,8 +11,8 @@ const CustomBar = () => {
                 <Col xs={9} style={{textAlign:"left"}}>
                 <Navbar.Brand style = {{color:"white"}}>Group 24</Navbar.Brand>
                 </Col>
-                <Nav.Link href="" style={{color:"#ff9800"}}>My Games</Nav.Link>
-                <Nav.Link href="" style={{color:"#ff9800"}}>My Stable</Nav.Link>
+                <Link to = "/myGames" style={{color:"#ff9800"}}>My Games</Link>
+                <Link to = "/myStable" style={{color:"#ff9800"}}>My Stable</Link>
             </Container>
         </ Navbar>
     );
