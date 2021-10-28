@@ -5,8 +5,8 @@ export default class Stable extends Component {
     render(){
         return(
            <div className = "Stable"> 
-                <PlayerCard/>
-                s
+                <PlayerCard style = {{backgroundColor: "3AF643"}}/>
+                ss
            </div>             
         );
     }
