@@ -6,6 +6,7 @@ export default class Stable extends Component {
         return(
            <div className = "Stable"> 
                 <PlayerCard/>
+                s
            </div>             
         );
     }

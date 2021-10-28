@@ -9,6 +9,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Stable from "./Stable.js";
 import {BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Competitions from "./Competitions";
 
 class App extends Component {
   state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false};
@@ -127,6 +128,9 @@ class App extends Component {
           <Route exact path = "/myStable">
             <Stable/>
             </Route>
+            <Route exact path = "/myGames">
+               <Competitions/>
+              </Route>
           </Switch>
       </div>
       </Router>
