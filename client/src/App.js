@@ -5,9 +5,9 @@ import { Card, Col, Button, Row } from "react-bootstrap";
 import CustomBar from "./CustomBar";
 import CentredModal from "./CentredModal";
 import NewStakingRequestForm from "./NewStakingRequestForm";
-import Player from "./Player.js"
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Stable from "./Stable.js";
 import {BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 class App extends Component {
@@ -125,7 +125,7 @@ class App extends Component {
           </Card>)}
           </Route>
           <Route exact path = "/myStable">
-            aaaaaaaaaaaaaaaaaaaaaaaa
+            <Stable/>
             </Route>
           </Switch>
       </div>
