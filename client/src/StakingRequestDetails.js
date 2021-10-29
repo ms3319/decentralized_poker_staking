@@ -3,10 +3,10 @@ import { Modal, Button } from "react-bootstrap";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const CentredModal = (props) => {
+const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) => {
   return (
     <Modal
-      {...props}
+      show={show}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
@@ -16,13 +16,18 @@ const CentredModal = (props) => {
           Modal heading
         </Modal.Title>
       </Modal.Header>
+      {request &&
       <Modal.Body>
         <h4>Invest in a Horse</h4>
         <p>
-            You are going to invest in {props.request.horse} for {props.request.amount} wei with a potential profit share of {props.request.profitShare}.
+          You are going to invest in {request.horse} for {request.amount} wei with a potential profit share
+          of {request.profitShare}.
         </p>
         <Button
-          onClick={() => props.contract.methods.stakeHorse(props.request.id).send({from: props.accounts[0], value: parseInt(props.request.amount)})} 
+          onClick={() => contract.methods.stakeHorse(request.id).send({
+            from: accounts[0],
+            value: parseInt(request.amount)
+          })}
           style={{
             backgroundColor: "#008b02",
             borderColor: "black",
@@ -44,11 +49,12 @@ const CentredModal = (props) => {
           Wishlist
         </Button>
       </Modal.Body>
+      }
       <Modal.Footer>
-        <Button onClick={props.onHide}>Close</Button>
+        <Button onClick={onHide}>Close</Button>
       </Modal.Footer>
     </Modal>
   );
 };
 
-export default CentredModal;
+export default StakingRequestDetails;

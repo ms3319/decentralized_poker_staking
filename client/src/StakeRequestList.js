@@ -1,8 +1,7 @@
 import {Button, Card, Col, Row} from "react-bootstrap";
-import CentredModal from "./CentredModal";
 import React from "react";
 
-export default function StakeRequestList({ requests, handleShowRequestDetails, contract, accounts, showRequestDetails, handleCloseRequestDetails }) {
+export default function StakeRequestList({ requests, handleShowRequestDetails }) {
   if (!requests || requests.length === 0) {
     return "empty"
   } else {
@@ -20,10 +19,9 @@ export default function StakeRequestList({ requests, handleShowRequestDetails, c
               {request.profitShare}
             </Col>
             <Col xs={3}>
-              <Button onClick={handleShowRequestDetails} style={{backgroundColor:"#ff9800", borderColor:"grey", color:"black"}}>
+              <Button onClick={() => handleShowRequestDetails(request)} style={{backgroundColor:"#ff9800", borderColor:"grey", color:"black"}}>
                 View More
               </Button>
-              <CentredModal contract={contract} accounts={accounts} request={request} show={showRequestDetails} onHide={handleCloseRequestDetails} />
             </Col>
           </Row>
         </Card.Body>

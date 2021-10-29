@@ -8,7 +8,10 @@ class NewStakingRequestForm extends Component {
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
-
+    console.log(accounts)
+    console.log(contract)
+    console.log(this.state.amount)
+    console.log(this.state.profitShare)
     // TODO: sanity check the values
     await contract.methods.createRequest(this.state.amount, this.state.profitShare).send({ from: accounts[0] });
 

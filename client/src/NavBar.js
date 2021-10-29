@@ -3,7 +3,7 @@ import { Navbar, Container, Nav, Col } from "react-bootstrap";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const CustomBar = () => {
+const NavBar = () => {
     return (
         <Navbar expand="lg" style={{backgroundColor:"#080808", borderRadius:"0px 0px 10px 10px", marginBottom:"2rem", boxShadow: "0px 5px grey", height:"5rem"}}>
             <Container>
@@ -17,4 +17,4 @@ const CustomBar = () => {
     );
 };
 
-export default CustomBar;
+export default NavBar;

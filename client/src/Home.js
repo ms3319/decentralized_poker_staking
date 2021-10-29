@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import StakingContract from "./contracts/Staking.json";
-import { Card, Col, Button, Row } from "react-bootstrap";
-import CustomBar from "./CustomBar";
-import CentredModal from "./CentredModal";
+import { Button } from "react-bootstrap";
+import NavBar from "./NavBar";
+import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import { useWeb3React } from "@web3-react/core"
 import { injected } from "./components/Connectors"
@@ -16,36 +16,38 @@ export default function Home() {
   const [requests, setRequests] = useState(null)
   const [accounts, setAccounts] = useState(null)
   const [contract, setContract] = useState(null)
-  const [modalShow, setModalShow] = useState(false)
-  const [stakeRequestFormShow, setStakeRequestFormShow] = useState(false)
+  const [focusedRequest, setFocusedRequest] = useState(null)
+  const [showRequestDetails, setShowRequestDetails] = useState(false)
+  const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
 
-  const { active, account, library, connector, activate, deactivate, error } = useWeb3React()
+  const { active, library, activate } = useWeb3React()
 
   // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-  const triedEager = useEagerConnect()
+  useEagerConnect()
 
-  const handleClose = () => {
-    setModalShow(false);
+  const closeRequestDetails = () => {
+    setShowRequestDetails(false);
   }
 
-  const handleShow = () => {
-    setModalShow(true)
+  const openRequestDetails = (request) => {
+    setFocusedRequest(request)
+    setShowRequestDetails(true)
   }
 
   const openStakeRequestForm = () => {
-    setStakeRequestFormShow(true)
+    setShowStakeRequestForm(true)
   }
 
   const closeStakeRequestForm = () => {
-    setStakeRequestFormShow(false)
+    setShowStakeRequestForm(false)
   }
 
+  // When the active variable changes, load the contract and requests from web3 provider
   useEffect(() => {
     async function getContractData() {
       if (!active) {
         return
       }
-
       setAccounts(await library.eth.getAccounts())
 
       // Get the contract instance.
@@ -60,12 +62,11 @@ export default function Home() {
       for (let i = 0; i < requestCount; i++) {
         requests.push(await contract.methods.getStake(i).call());
       }
-      console.log("Connected successfully!")
       setContract(contract)
       setRequests(requests);
     }
     getContractData()
-  }, [active])
+  }, [active, library])
 
   const connectWallet = async () => {
     try {
@@ -81,7 +82,7 @@ export default function Home() {
 
   return (
     <div className="App">
-      <CustomBar />
+      <NavBar />
 
       <h1>Decentralised Poker Staking</h1>
 
@@ -92,20 +93,13 @@ export default function Home() {
           <button onClick={openStakeRequestForm}>
             Create Staking Request
           </button>
-          <NewStakingRequestForm show={stakeRequestFormShow} onHide={closeStakeRequestForm}
+          <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={accounts} contract={contract}/>
 
-          // TODO: currently the wrong modal (actually, all modals) shows up... need to fix this ASAP
-          <StakeRequestList requests={requests} handleShowRequestDetails={handleShow} contract={contract} accounts={accounts} showRequestDetails={modalShow} handleCloseRequestDetails={handleClose} />
+          <StakingRequestDetails contract={contract} accounts={accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
+          <StakeRequestList requests={requests} handleShowRequestDetails={openRequestDetails} />
         </>
       }
     </div>
   );
-
-  // return (
-  //   <div>
-  //     <button onClick={connect2}>Connect</button>
-  //     {active ? <span>Connected with {account}</span> : <span>Not Connected</span>}
-  //   </div>
-  // )
 }

@@ -3,8 +3,6 @@ import Web3 from "web3";
 import Home from "./Home";
 
 function getLibrary(provider) {
-  console.log("Called getLibrary function with provider")
-  console.log(provider)
   return new Web3(provider)
 }
 
