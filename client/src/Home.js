@@ -1,16 +1,19 @@
 import React, {useEffect, useState} from "react";
 import StakingContract from "./contracts/Staking.json";
-import { Button } from "react-bootstrap";
+import {Button, Col, Container, Row} from "react-bootstrap";
 import NavBar from "./NavBar";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
+import HomepageHeader from "./HomepageHeader";
 import { useWeb3React } from "@web3-react/core"
 import { injected } from "./components/Connectors"
 import { useEagerConnect } from "./hooks";
+import metamaskIcon from './images/metamask-icon.png'
 
-import './App.css';
+import './Home.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
+import ConnectionButton from "./ConnectionButton";
 
 export default function Home() {
   const [requests, setRequests] = useState(null)
@@ -81,12 +84,33 @@ export default function Home() {
   };
 
   return (
-    <div className="App">
+    <div className="Home">
       <NavBar />
+      <HomepageHeader />
 
-      <h1>Decentralised Poker Staking</h1>
-
-      {!active && <Button onClick={connectWallet}>Connect</Button>}
+      {!active &&
+        <div className="connection">
+          <h2>Connect your wallet to view the marketplace</h2>
+          <Container style={{marginTop: "40px", width: "50%"}}>
+            <Row style={{padding: "15px"}}>
+              <Col>
+                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+              </Col>
+              <Col>
+                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+              </Col>
+            </Row>
+            <Row style={{padding: "15px"}}>
+              <Col>
+                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+              </Col>
+              <Col>
+                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+              </Col>
+            </Row>
+          </Container>
+        </div>
+      }
 
       {active &&
         <>

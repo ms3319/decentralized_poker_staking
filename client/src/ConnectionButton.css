@@ -1,0 +1,19 @@
+.connection-button {
+    height: 60px;
+    padding: 0 20px;
+    color: #282828;
+    background: white;
+    border: none;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 0 10px 0 rgba(0,0,0,0.25);
+    box-shadow: 0 0 10px 0 rgba(0,0,0,0.25);
+    display: inline-block;
+    font-weight: 700;
+    font-size: 1.2em;
+    width: 100%;
+}
+
+.connection-button img {
+    height: 25px;
+    padding: 0 20px 0 0;
+}
