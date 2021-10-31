@@ -1,15 +1,13 @@
-import React from 'react';
-import PlayerCard from './PlayerCard';
-import { Component } from 'react';
+import React, { Component } from 'react';
+import TournamentCard from "./TournamentCard"
 
 export default class Competitions extends Component {
-    render() {
+    render(){
         return(
-            <div>
-                
-            <PlayerCard/>
-            </div>
-
+           <div className = "Competitions"> 
+                <TournamentCard style = {{backgroundColor: "3AF643"}}/>
+                ss
+           </div>             
         );
     }
 }

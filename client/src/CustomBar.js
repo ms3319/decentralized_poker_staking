@@ -14,7 +14,7 @@ const CustomBar = () => {
                 <Link to = "/myGames" style={{color:"#ff9800"}}>My Games</Link>
                 <Link to = "/myStable" style={{color:"#ff9800"}}>My Stable</Link>
             </Container>
-        </ Navbar>
+        </Navbar>
     );
 };
 
