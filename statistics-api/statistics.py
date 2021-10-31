@@ -28,15 +28,29 @@ class Player:
         data = db.child("players").child(player_id).get().val()
         resp.text = json.dumps(data)
 
+# /games
+# Get a list of all games occured/to come
+class Games:
+    def on_get(self, req, resp):
+        data = db.child("games").get().val()
+        resp.text = json.dumps(data)
+
+# /games/{id}
+# Get an individual game occurred/to come
+class Game:
+    def on_get(self, req, resp, game_id):
+        data = db.child("games").child(game_id).get().val()
+        resp.text = json.dumps(data)
+
 # /tournaments
-# Get a list of all tournaments
+# Get a list of all tournaments occurred/to come
 class Tournaments:
     def on_get(self, req, resp):
         data = db.child("tournaments").get().val()
         resp.text = json.dumps(data)
 
 # /tournament/{id}
-# Get an individual tournament with given id
+# Get an individual tournament occurred/to come with given id
 class Tournament:
     def on_get(self, req, resp, tournament_id):
         data = db.child("tournaments").child(tournament_id).get().val()
@@ -62,6 +76,11 @@ players_endpoint = Players()
 player_endpoint = Player()
 api.add_route('/players', players_endpoint)
 api.add_route('/players/{player_id}', player_endpoint)
+
+games_endpoint = Games()
+game_endpoint = Game()
+api.add_route('/games', games_endpoint)
+api.add_route('/game/{id}', game_endpoint)
 
 tournaments_endpoint = Tournaments()
 tournament_endpoint = Tournament()
