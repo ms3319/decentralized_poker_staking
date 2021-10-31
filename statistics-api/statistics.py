@@ -28,8 +28,28 @@ class Player:
         data = db.child("players").child(player_id).get().val()
         resp.text = json.dumps(data)
 
+# /tournaments
+# Get a list of all tournaments
+class Tournaments:
+    def on_get(self, req, resp):
+        data = db.child("tournaments").get().val()
+        resp.text = json.dumps(data)
+
+# /tournament/{id}
+# Get an individual tournament with given id
+class Tournament:
+    def on_get(self, req, resp, tournament_id):
+        data = db.child("tournaments").child(tournament_id).get().val()
+        resp.text = json.dumps(data)
+
+
 api = falcon.App()
 players_endpoint = Players()
 player_endpoint = Player()
 api.add_route('/players', players_endpoint)
 api.add_route('/players/{player_id}', player_endpoint)
+
+tournaments_endpoint = Tournaments()
+tournament_endpoint = Tournament()
+api.add_route('/tournaments', tournaments_endpoint)
+api.add_route('/tournaments/{tournament_id}', tournament_endpoint)
