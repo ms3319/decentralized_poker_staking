@@ -42,6 +42,20 @@ class Tournament:
         data = db.child("tournaments").child(tournament_id).get().val()
         resp.text = json.dumps(data)
 
+# /tournament/{id}/party
+# Get the list of players involved in a certain tournament
+class TournamentParty:
+    def on_get(self, req, resp, tournament_id):
+        data = db.child("tournaments").child(tournament_id).child("party").get().val()
+        resp.text = json.dumps(data)
+
+# /tournament/{id}/players_involved/{id}
+# Get the list of players involved, and extract the player we are interested in.
+# Maybe the data can then contain information regarding the player id in the game; such as profit, buy-in...
+class PartyPlayerStatus:
+    def on_get(self, req, resp, tournament_id, player_id):
+        data = db.child("tournaments").child(tournament_id).child("party").child(player_id).get().val()
+        resp.text = json.dumps(data)
 
 api = falcon.App()
 players_endpoint = Players()
@@ -51,5 +65,9 @@ api.add_route('/players/{player_id}', player_endpoint)
 
 tournaments_endpoint = Tournaments()
 tournament_endpoint = Tournament()
+tournament_party_endpoint = TournamentParty()
+party_player_status_endpoint = PartyPlayerStatus()
 api.add_route('/tournaments', tournaments_endpoint)
 api.add_route('/tournaments/{tournament_id}', tournament_endpoint)
+api.add_route('/tournaments/{tournament_id}/party', tournament_party_endpoint)
+api.add_route('/tournaments/{tournament_id}/party/{player_id}', party_player_status_endpoint)
