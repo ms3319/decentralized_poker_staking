@@ -15,25 +15,41 @@ firebase = pyrebase.initialize_app(pyrebase_config)
 db = firebase.database()
 
 # /players
-# Get a list of all players
+# GET: Get a list of all players
+# POST: Create a new player and returns their id
 class Players:
     def on_get(self, req, resp):
         data = db.child("players").get().val()
         resp.text = json.dumps(data)
 
+    def on_post(self, req, resp):
+        name = req.get_param("name", required=True)
+        data = {"name": name, "gamesPlayed": 0, "tournamentsWon": 0, "totalWinnings": 0.0, "tournamentsPlayed": 0} 
+        resp_data = db.child("players").push(data)
+        resp.text = json.dumps(resp_data)
+
 # /players/{id}
-# Get an individual player
+# GET: Get an individual player
+# PUT: Update a player
 class Player:
     def on_get(self, req, resp, player_id):
         data = db.child("players").child(player_id).get().val()
         resp.text = json.dumps(data)
 
 # /games
-# Get a list of all games occured/to come
+# GET: retrieve a list of all games occured/to come
+# POST: insert a new game in the list of games and return the id
 class Games:
     def on_get(self, req, resp):
         data = db.child("games").get().val()
         resp.text = json.dumps(data)
+
+    def on_post(self, req, resp):
+        buyIn = float(req.get_param("buyIn", required=True))
+        players = json.loads(req.get_param("players"))
+        data = {"buyIn": buyIn, "players": players, "completed": False} 
+        resp_data = db.child("games").push(data)
+        resp.text = json.dumps(resp_data)
 
 # /games/{id}
 # Get an individual game occurred/to come
@@ -44,24 +60,45 @@ class Game:
 
 # /tournaments
 # TODO: Shall we just return the ids here using shallow?
-# Get a list of all tournaments occurred/to come
+# GET: Get a list of all tournaments occurred/to come
+# POST: Create a new tournament and return its id
 class Tournaments:
     def on_get(self, req, resp):
         data = db.child("tournaments").get().val()
         resp.text = json.dumps(data)
 
+    def on_post(self, req, resp):
+        buyIn = float(req.get_param("buyIn", required=True))
+        players = json.loads(req.get_param("players"))
+        data = {"buyIn": buyIn, "players": players, "completed": False} 
+        resp_data = db.child("tournaments").push(data)
+        resp.text = json.dumps(resp_data)
+
 # /tournament/{id}
 # GET: Get an individual tournament occurred/to come with given id
-# POST: Create a new tournament, returns id
+# PUT: Update tournament's details, return full tournament object
 class Tournament:
     def on_get(self, req, resp, tournament_id):
         data = db.child("tournaments").child(tournament_id).get().val()
         resp.text = json.dumps(data)
     
-    def on_post(self, req, resp, buyIn, players=[]):
-        data = {"buyIn": buyIn, "players": players} 
-        resp_data = db.child("tournaments").push(data)
+    def on_put(self, req, resp, tournament_id):
+        takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
+
+        # Update each players total winnings and tournaments played
+        for (key, val) in takeHomeMoney.items():
+            playerTournamentsPlayed = db.child("players").child(key).child("tournamentsPlayed").get().val()
+
+            playerTotalWinnings = db.child("players").child(key).child("totalWinnings").get().val()
+            newTotalWinnings = playerTotalWinnings + val
+
+            db.child("players").child(key).update({"tournamentsPlayed": playerTournamentsPlayed + 1, "totalWinnings": newTotalWinnings})
+
+        completed = bool(req.get_param("completed"))
+        data = {"takeHomeMoney": takeHomeMoney, "completed": completed}
+        resp_data = db.child("tournaments").child(tournament_id).update(data)
         print(resp_data)
+        resp.text = json.dumps(resp_data)
 
 # /tournament/{id}/players
 # Get the list of players involved in a certain tournament
@@ -90,6 +127,8 @@ class TournamentStatus:
         db.child("tournaments").child(tournament_id).child("status").update(status);
 
 api = falcon.App()
+api.req_options.auto_parse_form_urlencoded = True
+
 players_endpoint = Players()
 player_endpoint = Player()
 api.add_route('/players', players_endpoint)
