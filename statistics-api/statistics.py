@@ -43,6 +43,7 @@ class Game:
         resp.text = json.dumps(data)
 
 # /tournaments
+# TODO: Shall we just return the ids here using shallow?
 # Get a list of all tournaments occurred/to come
 class Tournaments:
     def on_get(self, req, resp):
@@ -50,26 +51,43 @@ class Tournaments:
         resp.text = json.dumps(data)
 
 # /tournament/{id}
-# Get an individual tournament occurred/to come with given id
+# GET: Get an individual tournament occurred/to come with given id
+# POST: Create a new tournament, returns id
 class Tournament:
     def on_get(self, req, resp, tournament_id):
         data = db.child("tournaments").child(tournament_id).get().val()
         resp.text = json.dumps(data)
+    
+    def on_post(self, req, resp, buyIn, players=[]):
+        data = {"buyIn": buyIn, "players": players} 
+        resp_data = db.child("tournaments").push(data)
+        print(resp_data)
 
-# /tournament/{id}/party
+# /tournament/{id}/players
 # Get the list of players involved in a certain tournament
-class TournamentParty:
+class TournamentPlayers:
     def on_get(self, req, resp, tournament_id):
-        data = db.child("tournaments").child(tournament_id).child("party").get().val()
+        data = db.child("tournaments").child(tournament_id).child("players").get().val()
         resp.text = json.dumps(data)
 
-# /tournament/{id}/players_involved/{id}
-# Get the list of players involved, and extract the player we are interested in.
-# Maybe the data can then contain information regarding the player id in the game; such as profit, buy-in...
-class PartyPlayerStatus:
+# /tournament/{id}/tournament_take_home/{id}
+# See the amount of money taken home by each of the players in the game
+# profit = buyIn - takeHomeMoney
+class TournamentTakeHome:
     def on_get(self, req, resp, tournament_id, player_id):
-        data = db.child("tournaments").child(tournament_id).child("party").child(player_id).get().val()
+        data = db.child("tournaments").child(tournament_id).child("takeHomeMoney").child(player_id).get().val()
         resp.text = json.dumps(data)
+
+# /tournament/{id}/tournament_status
+# GET : retrieve the status of tournament to check if it is completed or not
+# PUT : update the status of the tournament
+class TournamentStatus:
+    def on_get(self, req, resp, tournament_id):
+        data = db.child("tournaments").child(tournament_id).child("status").get().val()
+        resp.text = json.dumps(data)
+    
+    def on_put(self, req, resp, tournament_id, status):
+        db.child("tournaments").child(tournament_id).child("status").update(status);
 
 api = falcon.App()
 players_endpoint = Players()
@@ -84,9 +102,11 @@ api.add_route('/game/{id}', game_endpoint)
 
 tournaments_endpoint = Tournaments()
 tournament_endpoint = Tournament()
-tournament_party_endpoint = TournamentParty()
-party_player_status_endpoint = PartyPlayerStatus()
+tournament_party_endpoint = TournamentPlayers()
+tournament_take_home_endpoint = TournamentTakeHome()
+tournament_status_endpoint = TournamentStatus()
 api.add_route('/tournaments', tournaments_endpoint)
 api.add_route('/tournaments/{tournament_id}', tournament_endpoint)
-api.add_route('/tournaments/{tournament_id}/party', tournament_party_endpoint)
-api.add_route('/tournaments/{tournament_id}/party/{player_id}', party_player_status_endpoint)
+api.add_route('/tournaments/{tournament_id}/players', tournament_party_endpoint)
+api.add_route('/tournaments/{tournament_id}/tournament_take_home/{player_id}', tournament_take_home_endpoint)
+api.add_route('/tournaments/{tournament_id}/tournament_status', tournament_status_endpoint)
