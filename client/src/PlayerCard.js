@@ -1,37 +1,22 @@
 import Card from "react-bootstrap/Card";
-import {Row, Col, ListGroup, Container}  from "react-bootstrap";
+import {Row, Col,Container}  from "react-bootstrap";
 import { Component } from "react";
 
 export default class PlayerCard extends Component {
-
+      constructor(props){
+        super(props);
+      }
         render()  {
     return (
   
-      <Container style={{position: 'absolute', left: '160px',}} fluid = {true}>
+      <Container style={{position: 'absolute', left: '170px', backgroundImage:"../public/thumb-1920-449578.jpg"}} fluid = {true}>
         {
-        [
-            ['Primary','Daniel Negreanu'],
-            ['Secondary','Cary Katz'],
-            ['Success','Mike Matusow'],
-            ['Danger','Anthony Zinno'],
-            ['Warning','David Williams'],
-            ['Info','Josh Arieh'],
-            ['Light','Dylan Gang'],
-            ['Dark','Jonathan Little'],
-            ['Primary','Daniel Negreanu'],
-            ['Secondary','Cary Katz'],
-            ['Success','Mike Matusow'],
-            ['Danger','Anthony Zinno'],
-            ['Warning','David Williams'],
-            ['Info','Josh Arieh'],
-            ['Light','Dylan Gang'],
-            ['Dark','Jonathan Little']
-          ].map((variant, idx) => (
+       this.props.horses.map((variant, idx) => (
             <Card
               bg={variant[0].toLowerCase()}
               key={idx}
               text={variant[0] ==='Dark' ? 'light' :'dark'}
-              style={{ width: '22rem' , height: '14rem', float: 'left', margin:'15px'}}
+              style={{ width: '22rem' , height: '14rem', float: 'left', margin:'15px', border: 'solid black 1px'}}
               className="mb-2"
               
             >
@@ -40,7 +25,7 @@ export default class PlayerCard extends Component {
               <Card.Body>
              <Row>
                  <Col>
-                 <div style={{fontSize: '20px'}}>
+                 <div style={{fontSize: '20px', fontWeight:'bold'}}>
                      {variant[1]}
                      </div>
                  </Col>
@@ -55,10 +40,10 @@ export default class PlayerCard extends Component {
               </Card.Body>
             </Card>
           )
-         
-    )}
+       )}
+    
         </Container>
     );
-          }
+          
         }
-   
+      }

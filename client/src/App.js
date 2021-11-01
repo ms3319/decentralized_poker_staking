@@ -10,9 +10,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Stable from "./Stable.js";
 import {BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Competitions from "./Competitions";
-
+{/*
+  
+*/}
 class App extends Component {
-  state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false};
+  state = { userList: null, web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false, backgroundImage: 'none'};
 
   componentDidMount = async () => {
     try {
@@ -82,8 +84,10 @@ class App extends Component {
     }
     return (
       <Router>
-      <div className="App">
-        <CustomBar />
+      <div className="App" style={{backgroundImage:this.state.backgroundImage, backgroundSize: 'cover'}}>
+        <CustomBar onMyStable={() => {
+          this.setState({backgroundImage: 'url(../thumb-1920-449578.jpg)'})
+          }}/>
         <Switch>
           <Route exact path = '/' >
         <button onClick={this.openStakeRequestForm}>
