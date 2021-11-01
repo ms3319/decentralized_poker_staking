@@ -1,5 +1,5 @@
 import Card from "react-bootstrap/Card";
-import {Row, Col, ListGroup}  from "react-bootstrap";
+import {Row, Col, ListGroup, Container}  from "react-bootstrap";
 import { Component } from "react";
 
 export default class PlayerCard extends Component {
@@ -7,12 +7,21 @@ export default class PlayerCard extends Component {
         render()  {
     return (
   
-      
+      <Container style={{position: 'absolute', left: '160px',}} fluid = {true}>
+        {
         [
             ['Primary','Daniel Negreanu'],
             ['Secondary','Cary Katz'],
             ['Success','Mike Matusow'],
-            ['Danger]','Anthony Zinno'],
+            ['Danger','Anthony Zinno'],
+            ['Warning','David Williams'],
+            ['Info','Josh Arieh'],
+            ['Light','Dylan Gang'],
+            ['Dark','Jonathan Little'],
+            ['Primary','Daniel Negreanu'],
+            ['Secondary','Cary Katz'],
+            ['Success','Mike Matusow'],
+            ['Danger','Anthony Zinno'],
             ['Warning','David Williams'],
             ['Info','Josh Arieh'],
             ['Light','Dylan Gang'],
@@ -22,9 +31,11 @@ export default class PlayerCard extends Component {
               bg={variant[0].toLowerCase()}
               key={idx}
               text={variant[0] ==='Dark' ? 'light' :'dark'}
-              style={{ width: '22rem' , height: '14rem'}}
+              style={{ width: '22rem' , height: '14rem', float: 'left', margin:'15px'}}
               className="mb-2"
+              
             >
+
               
               <Card.Body>
              <Row>
@@ -45,9 +56,9 @@ export default class PlayerCard extends Component {
             </Card>
           )
          
-    )
-   
+    )}
+        </Container>
     );
-  }
-}
-  
+          }
+        }
+   
