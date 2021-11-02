@@ -5,11 +5,14 @@ import { Card, Col, Button, Row } from "react-bootstrap";
 import CustomBar from "./CustomBar";
 import CentredModal from "./CentredModal";
 import NewStakingRequestForm from "./NewStakingRequestForm";
-
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Stable from "./Stable.js";
+import {BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Competitions from "./Competitions";
 
 class App extends Component {
+
   state = { web3: null, accounts: null, contract: null, modalShow: false, stakeList: null, stakeRequestFormShow: false};
 
   componentDidMount = async () => {
@@ -69,9 +72,11 @@ class App extends Component {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
+      <Router>
       <div className="App">
         <CustomBar />
-
+        <Switch>
+          <Route exact path = '/' >
         <button onClick={this.openStakeRequestForm}>
           Create Staking Request
         </button>
@@ -100,7 +105,16 @@ class App extends Component {
               </Row>
             </Card.Body>
           </Card>)}
+          </Route>
+          <Route exact path = "/myStable">
+            <Stable/>
+            </Route>
+            <Route exact path = "/myGames">
+               <Competitions/>
+              </Route>
+          </Switch>
       </div>
+      </Router>
     );
   }
 }

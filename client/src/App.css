@@ -1,5 +1,10 @@
 .App {
   text-align: center;
-  background-color: #008b8b;
   padding-bottom: 2rem;
+  height: 1200px;
+}
+
+
+.rowsPlayerCard {
+  background-color: #008b8b;;
 }
