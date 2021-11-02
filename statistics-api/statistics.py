@@ -24,7 +24,7 @@ class Players:
 
     def on_post(self, req, resp):
         name = req.get_param("name", required=True)
-        data = {"name": name, "gamesPlayed": 0, "tournamentsWon": 0, "totalWinnings": 0.0, "tournamentsPlayed": 0} 
+        data = {"name": name, "gamesPlayed": 0, "gamesWon": 0, "tournamentsWon": 0, "totalWinnings": 0.0, "tournamentsPlayed": 0} 
         resp_data = db.child("players").push(data)
         resp.text = json.dumps(resp_data)
 
@@ -57,6 +57,24 @@ class Game:
     def on_get(self, req, resp, game_id):
         data = db.child("games").child(game_id).get().val()
         resp.text = json.dumps(data)
+
+    def on_put(self, req, resp, game_id):
+        takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
+
+        # Update each players total winnings and tournaments played
+        for (key, val) in takeHomeMoney.items():
+            playerTournamentsPlayed = db.child("players").child(key).child("gamesPlayed").get().val()
+
+            playerTotalWinnings = db.child("players").child(key).child("totalWinnings").get().val()
+            newTotalWinnings = playerTotalWinnings + val
+
+            db.child("players").child(key).update({"gamesPlayed": playerTournamentsPlayed + 1, "totalWinnings": newTotalWinnings})
+
+        completed = bool(req.get_param("completed"))
+        data = {"takeHomeMoney": takeHomeMoney, "completed": completed}
+        resp_data = db.child("games").child(game_id).update(data)
+        print(resp_data)
+        resp.text = json.dumps(resp_data)
 
 # /tournaments
 # TODO: Shall we just return the ids here using shallow?
@@ -137,7 +155,7 @@ api.add_route('/players/{player_id}', player_endpoint)
 games_endpoint = Games()
 game_endpoint = Game()
 api.add_route('/games', games_endpoint)
-api.add_route('/game/{id}', game_endpoint)
+api.add_route('/games/{game_id}', game_endpoint)
 
 tournaments_endpoint = Tournaments()
 tournament_endpoint = Tournament()
