@@ -16,7 +16,7 @@ const NavBar = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" style={{border: "none"}} />
         <Navbar.Collapse className={"justify-content-end"}>
           <Nav>
-            <Link href="" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>About</Link>
+            <Link to="/my-games" href="" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>About</Link>
             {active && <Link to="/my-games" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Games</Link>}
             {active && <Link to="/my-stable" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Stable</Link>}
           </Nav>
