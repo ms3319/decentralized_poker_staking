@@ -36,7 +36,7 @@ export default function StakeRequestTile({ request, onClick }) {
         <span className={styles.label}>Profit Share (%)</span>
         <span className={styles.value}>{request.profitShare}</span>
       </div>
-      <img className={styles.details} src={rightArrow} />
+      <img alt="Right arrow" className={styles.details} src={rightArrow} />
     </div>
   )
 }

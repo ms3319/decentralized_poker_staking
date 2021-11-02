@@ -95,18 +95,7 @@ export default function Home() {
           <Container style={{marginTop: "40px", width: "50%"}}>
             <Row style={{padding: "15px"}}>
               <Col>
-                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
-              </Col>
-              <Col>
-                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
-              </Col>
-            </Row>
-            <Row style={{padding: "15px"}}>
-              <Col>
-                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
-              </Col>
-              <Col>
-                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
+                <Button icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
               </Col>
             </Row>
           </Container>
