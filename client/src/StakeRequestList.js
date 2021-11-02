@@ -6,6 +6,6 @@ export default function StakeRequestList({ requests, handleShowRequestDetails })
     return null
   } else {
     return requests.filter(request => request.status === "0").map((request) =>
-      <StakeRequestTile request={request} onClick={() => handleShowRequestDetails(request)} />)
+      <StakeRequestTile key={request.id} request={request} onClick={() => handleShowRequestDetails(request)} />)
   }
 }

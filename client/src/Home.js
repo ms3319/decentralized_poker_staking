@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import StakingContract from "./contracts/Staking.json";
 import {Col, Container, Row} from "react-bootstrap";
-import NavBar from "./NavBar";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import HomepageHeader from "./HomepageHeader";

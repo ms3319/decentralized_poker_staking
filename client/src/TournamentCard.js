@@ -1,5 +1,5 @@
 import Card from "react-bootstrap/Card";
-import {Row, Col, ListGroup}  from "react-bootstrap";
+import {Row, Col}  from "react-bootstrap";
 import { Component } from "react";
 
 export default class TournamentCard extends Component {
