@@ -1,5 +1,5 @@
 import { Web3ReactProvider } from "@web3-react/core";
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Web3 from "web3";
 import Home from "./Home";
 import Stable from "./Stable";

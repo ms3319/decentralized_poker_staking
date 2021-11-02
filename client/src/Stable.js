@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import PlayerCard from "./PlayerCard.js";
-import { Carousel} from 'react-bootstrap';
-import { Container } from 'react-bootstrap';
 import './Stable.css';
-const playersPerPage = 16;
 const playersAndVariants =  [
     ['Primary','Daniel Negreanu'],
     ['Secondary','Cary Katz'],
@@ -30,17 +27,6 @@ const playersAndVariants =  [
     ['Light','Dylan Gang'],
     ['Dark','Jonathan Little']
   ];
-
-const variants = [
-    'Primary',
-    'Secondary',
-    'Success',
-    'Danger',
-    'Warning',
-    'Info',
-    'Light',
-    'Dark'
-];
 
 export default class Stable extends Component {
     constructor(props) {
