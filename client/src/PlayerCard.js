@@ -13,7 +13,7 @@ export default class PlayerCard extends Component {
        <Row>
            <Col>
            <div style={{fontSize: '20px', fontWeight:'bold'}}>
-               {this.props.player[0]}
+               {this.props.horse[0]}
                </div>
            </Col>
            <Col md="auto"> <img src="../charlie-chaplin-icon.png" class="rounded float-left" alt=".."></img> </Col>
