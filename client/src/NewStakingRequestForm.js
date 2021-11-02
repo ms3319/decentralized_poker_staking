@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Form } from "react-bootstrap";
+import Button from "./Button"
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -8,7 +9,6 @@ class NewStakingRequestForm extends Component {
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
-
     // TODO: sanity check the values
     if (this.state.escrow > 0) {
       await contract.methods.createRequest(this.state.amount, this.state.profitShare, this.state.escrow).send({ from: accounts[0], value: this.state.escrow });

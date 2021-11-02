@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders loading web3', () => {
+test('renders main large header', () => {
   render(<App />);
-  const buttonElement = screen.getByText(/Loading Web3/i);
+  const buttonElement = screen.getByText(/SafeStake/i);
   expect(buttonElement).toBeInTheDocument();
 });
