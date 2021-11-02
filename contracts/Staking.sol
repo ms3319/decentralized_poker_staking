@@ -6,6 +6,8 @@ contract Staking {
     mapping(uint => Stake) public stakes;
     address payable public owner;
 
+    mapping(address => Player) public players;
+
     enum StakeStatus {
         Requested,
         Filled,
@@ -27,8 +29,25 @@ contract Staking {
         bool horseWon;
     }
 
+    struct Player {
+        address payable playerAddress;
+        string name;
+        string sharkscopeLink;
+        Stake[] stakes; // stakes where the player is the horse.
+    }
+
     constructor() {
         owner = payable(msg.sender);
+    }
+
+    function createPlayer(string memory name, string memory sharkscopeLink) external payable {
+        players[msg.sender].playerAddress = payable(msg.sender);
+        players[msg.sender].name = name;
+        players[msg.sender].sharkscopeLink = sharkscopeLink;
+    }
+
+    function getPlayer(address add) external view returns (Player memory) {
+        return players[add];
     }
 
     /// Only the owner can kill this contract
@@ -70,6 +89,7 @@ contract Staking {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
         stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false);
+        players[msg.sender].stakes.push(stakes[requestCount]);
         requestCount++;
 
         emit StakeRequested(msg.sender, amount, escrow);
