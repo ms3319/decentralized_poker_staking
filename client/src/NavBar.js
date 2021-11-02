@@ -9,7 +9,7 @@ const NavBar = () => {
   const { active } = useWeb3React()
 
   return (
-    <Navbar fill expand="md" style={{backgroundColor:"#282828"}} variant={"dark"}>
+    <Navbar expand="md" style={{backgroundColor:"#282828"}} variant={"dark"}>
       <Container>
         <Navbar.Brand href={"/"} style={{color:"white"}}>{active ? "Marketplace" : "Home"}</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

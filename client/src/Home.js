@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import StakingContract from "./contracts/Staking.json";
-import {Button, Col, Container, Row} from "react-bootstrap";
+import {Col, Container, Row} from "react-bootstrap";
 import NavBar from "./NavBar";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
@@ -9,11 +9,12 @@ import { useWeb3React } from "@web3-react/core"
 import { injected } from "./components/Connectors"
 import { useEagerConnect } from "./hooks";
 import metamaskIcon from './images/metamask-icon.png'
+import addIcon from './images/add.svg'
 
-import './Home.css';
+import styles from './Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
-import ConnectionButton from "./ConnectionButton";
+import Button from "./Button";
 
 export default function Home() {
   const [requests, setRequests] = useState(null)
@@ -84,28 +85,28 @@ export default function Home() {
   };
 
   return (
-    <div className="Home">
+    <div className={styles.home}>
       <NavBar />
       <HomepageHeader />
 
       {!active &&
-        <div className="connection">
+        <div className={styles.mainContentContainer}>
           <h2>Connect your wallet to view the marketplace</h2>
           <Container style={{marginTop: "40px", width: "50%"}}>
             <Row style={{padding: "15px"}}>
               <Col>
-                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
               </Col>
               <Col>
-                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
               </Col>
             </Row>
             <Row style={{padding: "15px"}}>
               <Col>
-                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
               </Col>
               <Col>
-                <ConnectionButton icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</ConnectionButton>
+                <Button style={{width: "100%"}} icon={metamaskIcon} onClick={connectWallet}>Connect Metamask</Button>
               </Col>
             </Row>
           </Container>
@@ -113,16 +114,17 @@ export default function Home() {
       }
 
       {active &&
-        <>
-          <button onClick={openStakeRequestForm}>
+        <div className={styles.mainContentContainer}>
+          <h2>Marketplace</h2>
+          <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
             Create Staking Request
-          </button>
+          </Button>
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={accounts} contract={contract}/>
 
           <StakingRequestDetails contract={contract} accounts={accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
           <StakeRequestList requests={requests} handleShowRequestDetails={openRequestDetails} />
-        </>
+        </div>
       }
     </div>
   );

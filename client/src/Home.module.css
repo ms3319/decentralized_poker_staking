@@ -1,14 +1,14 @@
-.Home {
+.home {
   text-align: center;
   padding-bottom: 2rem;
 }
 
-.connection {
+.mainContentContainer {
   padding: 50px;
   text-align: center;
 }
 
-.connection h2 {
+.mainContentContainer h2 {
   font-size: 2.5em;
   width: 50%;
   margin: 0 auto;

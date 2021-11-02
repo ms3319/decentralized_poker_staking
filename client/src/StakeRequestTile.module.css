@@ -1,0 +1,66 @@
+.stakeRequestTile {
+    background: var(--safestake-off-black);
+    color: white;
+    font-weight: 700;
+    -webkit-box-shadow: 7px 7px 0 0 var(--safestake-gold);
+    box-shadow: 7px 7px 0 0 var(--safestake-gold);
+    cursor: pointer;
+    padding: 0 60px 0 0;
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto 20px auto;
+}
+
+.stakeRequestTile:hover {
+    -webkit-box-shadow: 7px 7px 0 0 var(--safestake-gold-darker);
+    box-shadow: 7px 7px 0 0 var(--safestake-gold-darker);
+}
+
+.stakeRequestTile > div {
+    display: inline-block;
+    text-align: center;
+    position: relative;
+    width: 20%;
+    margin: 30px 0;
+}
+
+.stakeRequestTile .user {
+    width: 40%;
+}
+
+.value {
+    font-size: 1.5em;
+    width: 100%;
+}
+
+.stakeRequestTile span.label {
+    color: var(--safestake-gold);
+    font-size: 0.8em;
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+}
+
+.stakeRequestTile .details {
+    width: 10px;
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translate(50%, -50%);
+    font-size: 1.2em;
+}
+
+.stakeRequestTile:hover .details {
+    transform: translate(80%, -50%);
+}
+
+@media only screen and (max-width: 850px) {
+    .stakeRequestTile > div {
+        width: 50%;
+    }
+    .stakeRequestTile .user {
+        width: 50%;
+    }
+}

@@ -1,5 +1,6 @@
 import React from "react";
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
+import Button from "./Button"
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -7,6 +8,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
   return (
     <Modal
       show={show}
+      onHide={onHide}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
@@ -29,9 +31,6 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
             value: parseInt(request.amount)
           })}
           style={{
-            backgroundColor: "#008b02",
-            borderColor: "black",
-            color: "black",
             marginRight: "10px",
           }}
         >
@@ -39,9 +38,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
         </Button>
         <Button
           style={{
-            backgroundColor: "#fccb00",
-            borderColor: "black",
-            color: "black",
+            backgroundColor: "var(--safestake-off-black-lighter)",
             marginLeft: "10px",
             marginRight: "10px",
           }}

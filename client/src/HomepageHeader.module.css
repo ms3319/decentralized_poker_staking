@@ -1,10 +1,10 @@
-.main-header {
-    background: #282828;
+.mainHeader {
+    background: var(--safestake-off-black);
     height: 500px;
     position: relative;
 }
 
-.main-header h1 {
+.mainHeader h1 {
     color: white;
     font-weight: 700;
     font-size: 6em;
@@ -15,7 +15,7 @@
     transform: translate(-50%, -50%);
 }
 
-.main-header svg {
+.mainHeader svg {
     fill: white;
     position: absolute;
     bottom: 0;
@@ -24,29 +24,29 @@
     height: 50px;
 }
 
-.main-header .side-img {
+.mainHeader .sideImg {
     height: 80%;
     position: absolute;
     top: 45%;
     transform: translateY(-50%);
 }
 
-.main-header .chips {
+.mainHeader .chips {
     left: 0;
 }
 
-.main-header .cards {
+.mainHeader .cards {
     right: 0;
 }
 
 @media only screen and (max-width: 950px) {
-    .main-header .side-img {
+    .mainHeader .sideImg {
         height: 50%;
     }
 }
 
 @media only screen and (max-width: 720px) {
-    .main-header .side-img {
+    .mainHeader .sideImg {
         display: none;
     }
 }
