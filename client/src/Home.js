@@ -4,6 +4,7 @@ import {Col, Container, Row} from "react-bootstrap";
 import NavBar from "./NavBar";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
+import NewPlayerForm from "./NewPlayerForm";
 import HomepageHeader from "./HomepageHeader";
 import { useWeb3React } from "@web3-react/core"
 import { injected } from "./components/Connectors"
@@ -23,6 +24,7 @@ export default function Home() {
   const [focusedRequest, setFocusedRequest] = useState(null)
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
+  const [showNewPlayerForm, setShowNewPlayerForm] = useState(false)
 
   const { active, library, activate } = useWeb3React()
 
@@ -44,6 +46,14 @@ export default function Home() {
 
   const closeStakeRequestForm = () => {
     setShowStakeRequestForm(false)
+  }
+
+  const openNewPlayerForm = () => {
+    setShowNewPlayerForm(true)
+  }
+
+  const closeNewPlayerForm = () => {
+    setShowNewPlayerForm(false)
   }
 
   // When the active variable changes, load the contract and requests from web3 provider
@@ -104,12 +114,16 @@ export default function Home() {
       {active &&
         <div className={styles.mainContentContainer}>
           <h2>Marketplace</h2>
+          <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
+            Create New Player
+          </Button>
           <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
             Create Staking Request
           </Button>
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={accounts} contract={contract}/>
-
+          <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
+                                 accounts={accounts} contract={contract}/>
           <StakingRequestDetails contract={contract} accounts={accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
           <StakeRequestList requests={requests} handleShowRequestDetails={openRequestDetails} />
         </div>
