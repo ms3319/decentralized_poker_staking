@@ -168,11 +168,12 @@ export default function Player() {
   const { playerAddress } = useParams()
   const history = useHistory()
 
+  // Unknown Player
   if (!playerMap.has(playerAddress)) {
     history.push("/")
     return null
   }
-  console.log(playerAddress)
+
   return (
     <div className={styles.playerPage}>
       <PlayerInfo playerAddress={playerAddress} />

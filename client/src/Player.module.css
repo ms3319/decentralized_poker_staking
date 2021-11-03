@@ -2,7 +2,7 @@
     padding: 100px;
 }
 
-/* Player info tile */
+/* Player Info Tile Styles */
 
 .playerInfoTile {
     max-width: 1200px;
@@ -25,12 +25,6 @@
 .details .playerName {
     font-size: 3em;
     font-weight: 700;
-}
-
-.label {
-    font-weight: 700;
-    line-height: 10px;
-    color: var(--safestake-gold-darker);
 }
 
 .details .value {
@@ -59,17 +53,6 @@
     margin: 50px auto;
 }
 
-.sectionTitle {
-    font-size: 4em;
-    color: var(--safestake-gold-darker);
-    font-weight: 700;
-    margin-bottom: 20px;
-}
-
-.stats {
-
-}
-
 .stats > div {
     display: inline-block;
     width: 50%;
@@ -82,9 +65,30 @@
     line-height: 90px;
 }
 
+/* End Statistics Styles */
+
+/* Past Stakes Styles */
+
 .pastStakesTile {
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* End Past Stakes Styles */
+
+/* General Purpose Styles */
+
+.label {
+    font-weight: 700;
+    line-height: 10px;
+    color: var(--safestake-gold-darker);
+}
+
+.sectionTitle {
+    font-size: 4em;
+    color: var(--safestake-gold-darker);
+    font-weight: 700;
+    margin-bottom: 20px;
 }
 
 @media only screen and (max-width: 950px) {
