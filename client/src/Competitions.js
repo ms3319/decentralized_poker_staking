@@ -34,7 +34,7 @@ export default function Competitions() {
     
     return(
        <div className = "Competitions" style = {{overflowY: 'scroll'}}>
-           <Container style={{position: 'absolute', left: '170px', backgroundColor: "red"}} fluid = {true}>
+           <Container style={{position: 'absolute', left: '170px', backgroundColor: "white"}} fluid = {true}>
            {
                     tournamentsAndVariants.map((tournament,idx) => (
                         

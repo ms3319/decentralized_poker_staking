@@ -79,10 +79,10 @@ export default function Stable() {
         
         return(
            <div className = "Stable" style = {{overflowY: 'scroll'}}>
-               <Container style={{position: 'absolute', left: '170px', backgroundColor: "red"}} fluid = {true}>
+               <Container style={{position: 'absolute', left: '170px', backgroundColor: "white"}} fluid = {true}>
                {
                         playersAndVariants.map((player,idx) => (
-                            <button onClick={handleShow} style={{border:'none'}}>
+                            <button onClick={handleShow} style={{padding: 0, border:'none', background: 'none'}}>
                                    <PlayerCard horse={player}
                                    bg={player[0].toLowerCase()}
                                    key={idx}
