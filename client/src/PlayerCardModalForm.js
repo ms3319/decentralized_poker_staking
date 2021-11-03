@@ -15,6 +15,7 @@ export default class PlayerCardModalForm extends Component {
               <Modal
                 size="lg"
                 show={this.props.show}
+                onHide={this.props.handleClose}
                 aria-labelledby="example-modal-sizes-title-lg"
               >
                 <Modal.Header closeButton>
