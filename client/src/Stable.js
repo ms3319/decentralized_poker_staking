@@ -24,7 +24,7 @@ const playersAndVariants =  [
     ['Info','Josh Arieh'],
     ['Light','Dylan Gang'],
     ['Dark','Jonathan Little'],
-   ['Primary','Daniel Negreanu'],
+    ['Primary','Daniel Negreanu'],
     ['Secondary','Cary Katz'],
     ['Success','Mike Matusow'],
     ['Danger','Anthony Zinno'],

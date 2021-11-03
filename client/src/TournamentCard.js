@@ -1,51 +1,32 @@
 import Card from "react-bootstrap/Card";
-import {Row, Col, ListGroup}  from "react-bootstrap";
+import {Row, Col, Container}  from "react-bootstrap";
 import { Component } from "react";
 
 export default class TournamentCard extends Component {
-
+      constructor(props){
+        super(props);
+      }
         render()  {
     return (
-  
-        [
-            ['Primary','Masters of Poker'],
-            ['Secondary','UK Open Poker'],
-            ['Success','Texas Holdem Champions'],
-            ['Danger]','Omaha Champions League'],
-            ['Warning','High Low Chicago Conference League'],
-            ['Info','Badugi National League'],
-            ['Light','Bluff or Nuff Cup'],
-            ['Dark','Beginners International Knockouts']
-          ].map((variant, idx) => (
-            <Card
-              bg={variant[0].toLowerCase()}
-              key={idx}
-              text={variant[0] ==='Dark' ? 'light' :'dark'}
-              style={{ width: '22rem' , height: '14rem'}}
-              className="mb-2"
-            >
-              
-              <Card.Body>
+        <Card {...this.props} >
+        <Card.Body>
+       <Row>
+           <Col>
+           <div style={{fontSize: '20px', fontWeight:'bold'}}>
+               {this.props.tournament[0]}
+               </div>
+           </Col>
+           <Col md="auto"> </Col>
+           </Row>
+           <Row>
+               <Col> Location</Col>
+               </Row>
              <Row>
-                 <Col>
-                 <div style={{fontSize: '20px'}}>
-                     {variant[1]}
-                     </div>
-                 </Col>
-                 </Row>
-                 <Row>
-                     <Col> Location</Col>
-                     </Row>
-                   <Row>
-                       <Col>London, UK</Col>
-                       </Row>  
-              </Card.Body>
-            </Card>
-          )
-         
-    )
-   
+                 <Col>London, UK</Col>
+                 </Row>  
+        </Card.Body>
+      </Card>   
     );
-  }
-}
-  
+          
+        }
+      }
