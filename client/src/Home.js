@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import StakingContract from "./contracts/Staking.json";
 import {Col, Container, Row} from "react-bootstrap";
-import NavBar from "./NavBar";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import HomepageHeader from "./HomepageHeader";
@@ -16,10 +15,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
 import Button from "./Button";
 
-export default function Home() {
-  const [requests, setRequests] = useState(null)
-  const [accounts, setAccounts] = useState(null)
-  const [contract, setContract] = useState(null)
+export default function Home(props) {
+  
   const [focusedRequest, setFocusedRequest] = useState(null)
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
@@ -28,7 +25,7 @@ export default function Home() {
 
   // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
   useEagerConnect()
-
+  
   const closeRequestDetails = () => {
     setShowRequestDetails(false);
   }
@@ -52,7 +49,7 @@ export default function Home() {
       if (!active) {
         return
       }
-      setAccounts(await library.eth.getAccounts())
+      props.setAccounts(await library.eth.getAccounts())
 
       // Get the contract instance.
       const networkId = await library.eth.net.getId();
@@ -66,8 +63,8 @@ export default function Home() {
       for (let i = 0; i < requestCount; i++) {
         requests.push(await contract.methods.getStake(i).call());
       }
-      setContract(contract)
-      setRequests(requests);
+      props.setContract(contract)
+      props.setRequests(requests);
     }
     getContractData()
   }, [active, library])
@@ -108,10 +105,10 @@ export default function Home() {
             Create Staking Request
           </Button>
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
-                                 accounts={accounts} contract={contract}/>
+                                 accounts={props.accounts} contract={props.contract}/>
 
-          <StakingRequestDetails contract={contract} accounts={accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
-          <StakeRequestList requests={requests} handleShowRequestDetails={openRequestDetails} />
+          <StakingRequestDetails contract={props.contract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
+          <StakeRequestList requests={props.requests} handleShowRequestDetails={openRequestDetails} />
         </div>
       }
     </div>

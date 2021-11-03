@@ -69,7 +69,7 @@ const variants = [
     'Dark'
 ];
 
-export default function Stable() {
+export default function Stable(props) {
 
     
         // const [showPopUp, setShowPopUp] = useState(false);
@@ -77,11 +77,20 @@ export default function Stable() {
         const handleClose = () => setShow(false);
         const handleShow = () => setShow(true);
         
+        if(props.requests.length === 0) {
+            return(
+                <div>
+                    Stable is empty
+                    </div>
+            );
+        }
+        let investor = props.accounts[0];
+
         return(
            <div className = "Stable" style = {{overflowY: 'scroll'}}>
                <Container style={{position: 'absolute', left: '170px', backgroundColor: "red"}} fluid = {true}>
                {
-                        playersAndVariants.map((player,idx) => (
+                        props.requests.filter(request => request.backer === investor).map((player,idx) => (
                             <Button onClick={handleShow} style={{border:'none'}}>
                                    <PlayerCard horse={player}
                                    bg={player[0].toLowerCase()}
