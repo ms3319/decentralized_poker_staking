@@ -1,5 +1,6 @@
 import styles from './StakeRequestTile.module.css'
 import rightArrow from './images/arrow-right.svg'
+import React, {useState} from "react";
 
 const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
@@ -15,14 +16,18 @@ const ethereumUnits = (amountInWei) => {
   }
 }
 
-export default function StakeRequestTile({ request, onClick }) {
+export default function StakeRequestTile({ contract, request, onClick }) {
+  const [player, setPlayer] = useState(null)
+
   let escrow = ethereumUnits(request.escrow);
   let stake = ethereumUnits(request.amount);
+  contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)}) 
+
   return (
     <div className={styles.stakeRequestTile} onClick={onClick}>
       <div className={styles.user}>
         <span className={styles.label}>User</span>
-        <span className={styles.value}>{/*Should be getUserName(request.horse)*/"razzle_dazzle43"}</span>
+        <span className={styles.value}>{player == null ? "null player" : player.name}</span>
       </div>
       <div>
         <span className={styles.label}>Escrow ({escrow.units})</span>

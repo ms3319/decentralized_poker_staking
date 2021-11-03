@@ -75,9 +75,10 @@ contract("Staking", (accounts) => {
 
             assert.equal(player.stakes.length, 1, "Player has created a stake");
             assert.equal(stake.amount, 1000, "Stake amount doesn't match");
-            assert.equal(stake.profitShare, 45, "Stake profit share doesn't match");
-            assert.equal(stake.escrow, 0, "Stake escrow doesn't match");
-            assert.equal(stake.status, StakeStatus.Requested, "Stake escrow doesn't match");
+            assert.equal(stake.horse, horseAccount1, "The stake's horse doesn't match")
+
+            player = await staking.getPlayer(stake.horse);
+            assert.equal(player.name, "John Smith", "Player name doesn't match");
         });
     });
 

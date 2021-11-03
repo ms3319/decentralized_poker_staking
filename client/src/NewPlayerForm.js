@@ -9,10 +9,11 @@ class NewPlayerForm extends Component {
 
     createNewPlayer = async () => {
         const { accounts, contract } = this.props;
+        console.log("creating new player...")
 
         // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
 
-        await contract.methods.createNewPlayer(this.state.name, this.state.sharkscopeLink).send({ from: accounts[0] });
+        await contract.methods.createPlayer(this.state.name, this.state.sharkscopeLink).send({ from: accounts[0] });
       };
     
     handleNameChange(event) {
@@ -40,12 +41,12 @@ class NewPlayerForm extends Component {
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>Name</Form.Label>
-                            <Form.Control value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="string"/>
+                            <Form.Control value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
                             <Form.Label>Sharkscope Link</Form.Label>
-                            <Form.Control value={this.state.escrow} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="string"/>
+                            <Form.Control value={this.state.escrow} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Button

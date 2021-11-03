@@ -125,7 +125,7 @@ export default function Home() {
           <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={accounts} contract={contract}/>
           <StakingRequestDetails contract={contract} accounts={accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
-          <StakeRequestList requests={requests} handleShowRequestDetails={openRequestDetails} />
+          <StakeRequestList contract={contract} requests={requests} handleShowRequestDetails={openRequestDetails} />
         </div>
       }
     </div>

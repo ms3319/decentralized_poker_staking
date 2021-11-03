@@ -40,10 +40,14 @@ contract Staking {
         owner = payable(msg.sender);
     }
 
+    event PlayerCreated(address playerAddress, string name, string sharkscopeLink);
+
     function createPlayer(string memory name, string memory sharkscopeLink) external payable {
         players[msg.sender].playerAddress = payable(msg.sender);
         players[msg.sender].name = name;
         players[msg.sender].sharkscopeLink = sharkscopeLink;
+
+        emit PlayerCreated(msg.sender, name, sharkscopeLink);
     }
 
     function getPlayer(address add) external view returns (Player memory) {
