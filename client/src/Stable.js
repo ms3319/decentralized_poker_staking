@@ -24,7 +24,7 @@ const playersAndVariants =  [
     ['Info','Josh Arieh'],
     ['Light','Dylan Gang'],
     ['Dark','Jonathan Little'],
-    ['Primary','Daniel Negreanu'],
+   ['Primary','Daniel Negreanu'],
     ['Secondary','Cary Katz'],
     ['Success','Mike Matusow'],
     ['Danger','Anthony Zinno'],
@@ -69,7 +69,7 @@ const variants = [
     'Dark'
 ];
 
-export default function Stable() {
+export default function Stable(props) {
 
     
         // const [showPopUp, setShowPopUp] = useState(false);
@@ -77,13 +77,22 @@ export default function Stable() {
         const handleClose = () => setShow(false);
         const handleShow = () => setShow(true);
         
+        if(props.requests.length === 0) {
+            return(
+                <div>
+                    Stable is empty
+                    </div>
+            );
+        }
+        let investor = props.accounts[0];
+
         return(
            <div className = "Stable" style = {{overflowY: 'scroll'}}>
                <Container style={{position: 'absolute', left: '170px', backgroundColor: "white"}} fluid = {true}>
                {
-                        playersAndVariants.map((player,idx) => (
+                        props.requests.filter(request => request.backer === investor).map((player,idx) => (
                             <button onClick={handleShow} style={{padding: 0, border:'none', background: 'none'}}>
-                                   <PlayerCard horse={player}
+                                   <PlayerCard horse={player.horse}
                                    bg={player[0].toLowerCase()}
                                    key={idx}
                                    text={player[0] ==='Dark' ? 'light' :'dark'}
