@@ -92,10 +92,7 @@ export default function Stable(props) {
                {
                         props.requests.filter(request => request.backer === investor).map((player,idx) => (
                             <Button onClick={handleShow} style={{border:'none'}}>
-                                   <PlayerCard horse={player}
-                                   bg={player[0].toLowerCase()}
-                                   key={idx}
-                                   text={player[0] ==='Dark' ? 'light' :'dark'}
+                                   <PlayerCard horse={player.horse}
                                    style={{ width: '22rem' , height: '14rem', float: 'left', margin:'15px', border: 'solid black 1px'}}
                                    className="mb-2"/> 
                                 </Button>
