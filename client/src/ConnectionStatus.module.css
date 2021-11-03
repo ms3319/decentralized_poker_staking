@@ -1,0 +1,35 @@
+.connectionStatus {
+    position: relative;
+    color: #999999;
+    font-size: 0.7em;
+    cursor: pointer;
+}
+
+.statusIndicator {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 12px;
+    outline: 1px solid #999999;
+    outline-offset: 2px;
+}
+
+.statusIndicator.connected {
+    background: #3bed50;
+    outline: 1px solid #3bed50;
+}
+
+.popOverBody {
+    text-align: center;
+}
+
+.link {
+    text-decoration: none;
+    font-weight: 700;
+    color: var(--safestake-gold)
+}
+
+.link:hover {
+    color: var(--safestake-gold-darker)
+}

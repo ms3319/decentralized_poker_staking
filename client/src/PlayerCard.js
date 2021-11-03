@@ -3,9 +3,6 @@ import {Row, Col,Container}  from "react-bootstrap";
 import { Component } from "react";
 
 export default class PlayerCard extends Component {
-      constructor(props){
-        super(props);
-      }
         render()  {
     return (
         <Card {...this.props} >
