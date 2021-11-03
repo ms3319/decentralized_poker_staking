@@ -13,13 +13,13 @@ export default class TournamentCard extends Component {
        <Row>
            <Col>
            <div style={{fontSize: '20px', fontWeight:'bold'}}>
-               {this.props.tournament[0]}
+               {this.props.tournament[1]}
                </div>
            </Col>
            <Col md="auto"> </Col>
            </Row>
            <Row>
-               <Col> Location</Col>
+               <Col>Location</Col>
                </Row>
              <Row>
                  <Col>London, UK</Col>

@@ -4,8 +4,8 @@ import {Container} from 'react-bootstrap';
 
 const tournamentsPerPage = 16;
 const tournamentsAndVariants =  [
-    ['Masters of Poker', 'Primary'],
-    ['UK Open Poker', 'Secondary'],
+    ['Primary', 'Masters of Poker'],
+    ['Secondary', 'UK Open Poker'],
     ['Success','Texas Holdem Champions'],
     ['Danger]','Omaha Champions League'],
     ['Warning','High Low Chicago Conference League'],
@@ -26,7 +26,6 @@ const variants = [
 ];
 
 export default function Competitions() {
-
     
     // const [showPopUp, setShowPopUp] = useState(false);
     // const [show, setShow] = useState(false);
