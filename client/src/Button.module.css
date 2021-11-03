@@ -1,0 +1,26 @@
+.safestakeButton {
+    height: 60px;
+    padding: 0 20px;
+    color: white;
+    background: var(--safestake-off-black);
+    border: none;
+    -webkit-box-shadow: 7px 7px 0 0 var(--safestake-gold);
+    box-shadow: 7px 7px 0 0 var(--safestake-gold);
+    display: inline-block;
+    font-weight: 700;
+    font-size: 1.2em;
+}
+
+.safestakeButton:hover {
+    -webkit-box-shadow: 7px 7px 0 0 var(--safestake-gold-darker);
+    box-shadow: 7px 7px 0 0 var(--safestake-gold-darker);
+}
+
+.safestakeButton img.iconOnly {
+    padding: 0;
+}
+
+.safestakeButton img {
+    height: 25px;
+    padding: 0 20px 0 0;
+}

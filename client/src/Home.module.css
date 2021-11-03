@@ -1,0 +1,15 @@
+.home {
+  text-align: center;
+  padding-bottom: 2rem;
+}
+
+.mainContentContainer {
+  padding: 50px;
+  text-align: center;
+}
+
+.mainContentContainer h2 {
+  font-size: 2.5em;
+  width: 50%;
+  margin: 0 auto;
+}

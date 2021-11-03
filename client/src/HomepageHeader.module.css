@@ -1,0 +1,52 @@
+.mainHeader {
+    background: var(--safestake-off-black);
+    height: 500px;
+    position: relative;
+}
+
+.mainHeader h1 {
+    color: white;
+    font-weight: 700;
+    font-size: 6em;
+    font-style: italic;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.mainHeader svg {
+    fill: white;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+}
+
+.mainHeader .sideImg {
+    height: 80%;
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+}
+
+.mainHeader .chips {
+    left: 0;
+}
+
+.mainHeader .cards {
+    right: 0;
+}
+
+@media only screen and (max-width: 950px) {
+    .mainHeader .sideImg {
+        height: 50%;
+    }
+}
+
+@media only screen and (max-width: 720px) {
+    .mainHeader .sideImg {
+        display: none;
+    }
+}
