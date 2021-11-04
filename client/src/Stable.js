@@ -70,7 +70,7 @@ const variants = [
 ];
 
 export default function Stable(props) {
-
+        console.log(props)
     
         // const [showPopUp, setShowPopUp] = useState(false);
         const [show, setShow] = useState(false);

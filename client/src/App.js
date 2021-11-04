@@ -32,7 +32,7 @@ export default function App() {
           <Competitions />
         </Route>
         <Route exact path = "/players/:playerAddress">
-          <Player />
+          <Player contract={contract} dummy={123}/>
         </Route>
       </Router>
     </Web3ReactProvider>

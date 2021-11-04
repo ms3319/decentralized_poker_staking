@@ -2,6 +2,7 @@ import { useParams, useHistory } from "react-router-dom";
 import styles from "./Player.module.css"
 import * as PropTypes from "prop-types";
 import {Table} from "react-bootstrap";
+import React, { useState } from "react";
 
 // For example purposed - delete this later!
 
@@ -49,8 +50,7 @@ const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 }
 
-function PlayerInfo({ playerAddress }) {
-  const player = playerMap.get(playerAddress)
+function PlayerInfo({ player }) { 
 
   return (
     <div className={styles.playerInfoTile}>
@@ -62,10 +62,10 @@ function PlayerInfo({ playerAddress }) {
           <span>{player.name}</span>
         </div>
         <div>
-          <div className={styles.label}>Wallet Address </div><div className={styles.value}>{playerAddress}</div>
+          <div className={styles.label}>Wallet Address </div><div className={styles.value}>{player.playerAddress}</div>
         </div>
         <div>
-          <div className={styles.label}>Sharkscope Link</div><div className={styles.value}>{<a href={player.link}>{player.link}</a>}</div>
+          <div className={styles.label}>Sharkscope Link</div><div className={styles.value}>{<a href={player.sharkscopeLink}>{player.sharkscopeLink}</a>}</div>
         </div>
       </div>
     </div>
@@ -164,21 +164,29 @@ function PastStakes({ stakes }) {
   );
 }
 
-export default function Player() {
+export default function Player(props) {
   const { playerAddress } = useParams()
   const history = useHistory()
-
-  // Unknown Player
-  if (!playerMap.has(playerAddress)) {
+  const [player, setPlayer] = useState(null)
+  console.log(props)
+  props.contract.methods.getPlayer(playerAddress).call().then((player) => {setPlayer(player)})
+  if (player == null) {
     history.push("/")
     return null
   }
+  console.log(player)
+
+  // Unknown Player
+  // if (!playerMap.has(playerAddress)) {
+  //   history.push("/")
+  //   return null
+  // }
 
   return (
     <div className={styles.playerPage}>
-      <PlayerInfo playerAddress={playerAddress} />
-      <PlayerStats games={playerMap.get(playerAddress).stakes} />
-      <PastStakes stakes={playerMap.get(playerAddress).stakes} />
+      <PlayerInfo player={player}/>
+      <PlayerStats games={player.stakes} />
+      <PastStakes stakes={player.stakes} />
     </div>
   )
 }
