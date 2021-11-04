@@ -5,7 +5,6 @@ import { useEagerConnect } from "./hooks";
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Home from "./Home";
 import Stable from "./Stable";
-import MyGames from "./MyGames";
 import NavBar from "./NavBar";
 import Player from "./Player"
 require('./globals.css')

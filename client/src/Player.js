@@ -23,7 +23,7 @@ function PlayerInfo({ player }) {
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
-        <img className={styles.profilePic} alt="Profile picture" src={player.profilePicPath} />
+        <img className={styles.profilePic} alt="Profile" src={player.profilePicPath} />
       </div>
       <div className={styles.details}>
         <div className={styles.playerName}>
@@ -117,10 +117,6 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
   const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)
   const inProgress = stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.Filled)
   const pastStakes = stakes.filter((stake) => stake.status === StakeStatus.Completed || stake.status === StakeStatus.EscrowReturned)
-
-  console.log(awaitingRepayment)
-  console.log(inProgress)
-  console.log(pastStakes)
 
   return (
     <div className={styles.pastStakesTile}>
@@ -224,7 +220,7 @@ export default function Player({ contract, accounts }) {
     if (contract != null) {
       contract.methods.getPlayer(playerAddress).call().then((player) => {setPlayer(player)})
     }
-  }, [contract])
+  }, [contract, playerAddress])
 
   useEffect(() => {
     if (player != null) {
@@ -237,7 +233,7 @@ export default function Player({ contract, accounts }) {
       }
       updateStakes().catch()
     }
-  }, [player])
+  }, [player, contract])
 
   if (contract == null) return null
 

@@ -1,5 +1,5 @@
 import Card from "react-bootstrap/Card";
-import { Row, Col, Container } from "react-bootstrap";
+import { Row, Col } from "react-bootstrap";
 import { Component } from "react";
 
 export default class PlayerCard extends Component {
@@ -17,8 +17,8 @@ export default class PlayerCard extends Component {
             {" "}
             <img
               src="../charlie-chaplin-icon.png"
-              class="rounded float-left"
-              alt=".."
+              className="rounded float-left"
+              alt="Charlie Chaplin"
             ></img>{" "}
           </Col>
         </Row>

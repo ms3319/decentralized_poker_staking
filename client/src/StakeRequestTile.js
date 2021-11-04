@@ -26,7 +26,7 @@ export default function StakeRequestTile({ contract, request, onClick }) {
     if (contract != null) {
       contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
     }
-  }, [contract])
+  }, [contract, request])
 
   return (
     <div className={styles.stakeRequestTile} onClick={onClick}>

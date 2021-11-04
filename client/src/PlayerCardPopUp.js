@@ -1,6 +1,6 @@
 import React from "react";
 import { ListGroup, ListGroupItem } from "react-bootstrap";
-import { Button, Accordion, Card } from "react-bootstrap";
+import { Accordion } from "react-bootstrap";
 
 export default function PlayerCardPopUp() {
   return (

@@ -4,9 +4,6 @@ import { Modal } from "react-bootstrap";
 import Button from "./Button.js";
 
 export default class PlayerCardModalForm extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   claimEscrow = async () => {
     await this.props.contract.methods.requestEscrow(this.props.stake.id).send({from: this.props.accounts[0]});
