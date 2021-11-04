@@ -2,6 +2,7 @@ import { useParams, useHistory } from "react-router-dom";
 import styles from "./Player.module.css"
 import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
+import Button from "./Button";
 
 const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
@@ -89,9 +90,80 @@ function PlayerStats({ games }) {
   )
 }
 
-function PastStakes({ stakes }) {
+const StakeStatus = {
+  Requested: "0",
+  Filled: "1",
+  Expired: "2",
+  Cancelled: "3",
+  AwaitingReturnPayment: "4",
+  Completed: "5",
+  EscrowReturned: "6"
+};
+
+function PastStakes({ returnProfits, stakes, isViewersAccount }) {
+
+  const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)
+  const inProgress = stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.Filled)
+  const pastStakes = stakes.filter((stake) => stake.status === StakeStatus.Completed || stake.status === StakeStatus.EscrowReturned)
+
+  console.log(awaitingRepayment)
+  console.log(inProgress)
+  console.log(pastStakes)
+
   return (
     <div className={styles.pastStakesTile}>
+      { isViewersAccount && awaitingRepayment.length > 0 && (<>
+        <h2 className={styles.sectionTitle}>Awaiting Repayment</h2>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Investor Address</th>
+              <th>Amount Requested</th>
+              <th>Profit Share</th>
+              <th>Profit</th>
+              <th>Amount owed</th>
+              <th>Pay Back</th>
+            </tr>
+          </thead>
+          <tbody>
+            {awaitingRepayment.map((stake, index) => <tr key={stake.id}>
+              <td>{index + 1}</td>
+              <td>{stake.backer}</td>
+              <td>{stake.amount}</td>
+              <td>{stake.profitShare}</td>
+              <td>{stake.profit}</td>
+              <td>{stake.amount + stake.profit * (stake.profitShare / 100)}</td>
+              <td><Button onClick={() => returnProfits(stake.id, stake.amount + stake.profit * (stake.profitShare / 100))}>Pay Back</Button></td>
+            </tr>)}
+          </tbody>
+        </Table>
+        </>
+      )}
+      { isViewersAccount && inProgress.length > 0 && (<>
+          <h2 className={styles.sectionTitle}>Active Staking Requests</h2>
+          <Table striped bordered hover>
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Investor Address</th>
+              <th>Amount Requested</th>
+              <th>Profit Share</th>
+              <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            {inProgress.map((stake, index) => <tr key={stake.id}>
+              <td>{index + 1}</td>
+              <td>{stake.backer}</td>
+              <td>{stake.amount}</td>
+              <td>{stake.profitShare}</td>
+              <td>{stake.status}</td>
+            </tr>)}
+            </tbody>
+          </Table>
+        </>
+      )}
       <h2 className={styles.sectionTitle}>Past Stakes</h2>
       <Table striped bordered hover>
         <thead>
@@ -106,7 +178,16 @@ function PastStakes({ stakes }) {
           </tr>
         </thead>
         <tbody>
-          {stakes.map((stake, index) => <tr key={index}>
+          {isViewersAccount ? pastStakes.map((stake, index) => <tr key={index}>
+            <td>{index + 1}</td>
+            <td>{stake.backer}</td>
+            <td>{stake.amount}</td>
+            <td>{stake.profitShare}</td>
+            <td>{stake.profit}</td>
+            <td>{stake.horseWon ? "Yes" : "No"}</td>
+            <td>{stake.status}</td>
+          </tr>) :
+          stakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
             <td>{stake.amount}</td>
@@ -148,6 +229,10 @@ export default function Player({ contract, accounts }) {
 
   if (contract == null) return null
 
+  const returnProfits = async (id, profits) => {
+    await contract.methods.returnProfits(id).send({ from: accounts[0], value: profits + 10 });
+  }
+
   // Unknown Player
   if (player != null && player.playerAddress === "0x0000000000000000000000000000000000000000") {
     history.push("/")
@@ -158,7 +243,7 @@ export default function Player({ contract, accounts }) {
     <div className={styles.playerPage}>
       {player && <PlayerInfo player={player}/>}
       {stakes && <PlayerStats games={stakes} />}
-      {stakes && <PastStakes stakes={stakes} />}
+      {stakes && accounts && <PastStakes returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
     </div>
   )
 }

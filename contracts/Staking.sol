@@ -192,7 +192,7 @@ contract Staking {
     error MessageValueNotEqualToBackerReturns(uint value, uint backerReturns);
     
     // TODO: handle the case where no profit was made
-    function returnProfits(uint id, uint profit) external payable {
+    function returnProfits(uint id) external payable {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
@@ -207,8 +207,7 @@ contract Staking {
         }
 
         // TODO: Check this calculation. Do we do it here or calculate it in the frontend?
-        stake.profit = profit;
-        uint backerReturns = stake.amount + ((profit * stake.profitShare) / 100);
+        uint backerReturns = stake.amount + ((stake.profit * stake.profitShare) / 100);
 
         // TODO: See above before we can do this
         // if (msg.value != backerReturns) {
