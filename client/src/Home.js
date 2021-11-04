@@ -1,12 +1,9 @@
 import React, {useEffect, useState} from "react";
-import StakingContract from "./contracts/Staking.json";
 import {Col, Container, Row} from "react-bootstrap";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import HomepageHeader from "./HomepageHeader";
-import { useWeb3React } from "@web3-react/core"
 import { injected } from "./components/Connectors"
-import { useEagerConnect } from "./hooks";
 import metamaskIcon from './images/metamask-icon.png'
 import addIcon from './images/add.svg'
 
@@ -14,6 +11,7 @@ import styles from './Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
 import Button from "./Button";
+import { useWeb3React } from "@web3-react/core";
 
 export default function Home(props) {
   
@@ -21,11 +19,8 @@ export default function Home(props) {
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
 
-  const { active, library, activate } = useWeb3React()
+  const {active, activate} = useWeb3React();
 
-  // handle logic to eagerly connect to the injected ethereum provider, if it exists and has granted access already
-  useEagerConnect()
-  
   const closeRequestDetails = () => {
     setShowRequestDetails(false);
   }
@@ -43,32 +38,6 @@ export default function Home(props) {
     setShowStakeRequestForm(false)
   }
 
-  // When the active variable changes, load the contract and requests from web3 provider
-  useEffect(() => {
-    async function getContractData() {
-      if (!active) {
-        return
-      }
-      props.setAccounts(await library.eth.getAccounts())
-
-      // Get the contract instance.
-      const networkId = await library.eth.net.getId();
-      const deployedNetwork = StakingContract.networks[networkId];
-      const contract = new library.eth.Contract(
-        StakingContract.abi,
-        deployedNetwork && deployedNetwork.address,
-      );
-      const requestCount = await contract.methods.requestCount().call();
-      const requests = [];
-      for (let i = 0; i < requestCount; i++) {
-        requests.push(await contract.methods.getStake(i).call());
-      }
-      props.setContract(contract)
-      props.setRequests(requests);
-    }
-    getContractData()
-  }, [active, library])
-
   const connectWallet = async () => {
     try {
       await activate(injected)
@@ -80,6 +49,8 @@ export default function Home(props) {
       console.error(error);
     }
   };
+
+  console.log(props);
 
   return (
     <div className={styles.home}>
