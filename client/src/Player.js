@@ -164,23 +164,47 @@ function PastStakes({ stakes }) {
   );
 }
 
+async function getPlayer(playerAddress, contract) {
+  var player = await contract.methods.getPlayer(playerAddress).call();
+  // console.log(player)
+  // console.log(player.stakes)
+  return player
+}
+
 export default function Player(props) {
   const { playerAddress } = useParams()
-  const history = useHistory()
   const [player, setPlayer] = useState(null)
-  console.log(props)
+  const history = useHistory()
   props.contract.methods.getPlayer(playerAddress).call().then((player) => {setPlayer(player)})
-  if (player == null) {
-    history.push("/")
-    return null
-  }
+
+  // return props.contract.methods.getPlayer(playerAddress).call().then((player) => {
+  //   setPlayer(player)
+  //   console.log(player)
+  //   console.log(player.stakes)
+    
+  //   // Unknown Player
+  //   if (player == null) {
+  //     history.push("/")
+  //     return null
+  //   }
+    
+  //   return (
+  //     <div className={styles.playerPage}>
+  //       <PlayerInfo player={player}/>
+  //       <PlayerStats games={player.stakes} />
+  //       <PastStakes stakes={player.stakes} />
+  //     </div>
+  //   )
+
+  // });
+
   console.log(player)
 
   // Unknown Player
-  // if (!playerMap.has(playerAddress)) {
-  //   history.push("/")
-  //   return null
-  // }
+  if (!playerMap.has(playerAddress)) {
+    history.push("/")
+    return null
+  }
 
   return (
     <div className={styles.playerPage}>

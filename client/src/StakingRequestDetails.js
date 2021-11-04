@@ -47,6 +47,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
           Wishlist
         </Button>
         <Link to={`players/${request.horse}`}>
+        {/* <Link to="players/test"> */}
           <Button 
             style={{
               marginLeft: "10px",
