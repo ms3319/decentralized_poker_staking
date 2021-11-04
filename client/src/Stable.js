@@ -53,12 +53,12 @@ export default function Stable(props) {
           <button
             onClick={() => handleShow(stake)}
             style={{ padding: 0, border: "none", background: "none" }}
+            key={i}
           >
             {/* TODO: Give this a better name */}
             <PlayerCard
               stake={stake}
               bg={stake[0].toLowerCase()}
-              key={i}
               text={stake[0] === "Dark" ? "light" : "dark"}
               style={{
                 width: "22rem",

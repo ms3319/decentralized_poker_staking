@@ -6,6 +6,8 @@ contract Staking {
     mapping(uint => Stake) public stakes;
     address payable public owner;
 
+    mapping(address => Player) public players;
+
     enum StakeStatus {
         Requested,
         Filled,
@@ -28,8 +30,31 @@ contract Staking {
         bool horseWon;
     }
 
+    struct Player {
+        address payable playerAddress;
+        string name;
+        string sharkscopeLink;
+        string profilePicPath;
+        uint[] stakeIds; // stakes where the player is the horse.
+    }
+
     constructor() {
         owner = payable(msg.sender);
+    }
+
+    event PlayerCreated(address playerAddress, string name, string sharkscopeLink, string profilePicPath);
+
+    function createPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+        players[msg.sender].playerAddress = payable(msg.sender);
+        players[msg.sender].name = name;
+        players[msg.sender].sharkscopeLink = sharkscopeLink;
+        players[msg.sender].profilePicPath = profilePicPath;
+
+        emit PlayerCreated(msg.sender, name, sharkscopeLink, profilePicPath);
+    }
+
+    function getPlayer(address add) external view returns (Player memory) {
+        return players[add];
     }
 
     /// Only the owner can kill this contract
@@ -71,6 +96,7 @@ contract Staking {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
         stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false);
+        players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
         emit StakeRequested(msg.sender, amount, escrow);
@@ -166,7 +192,7 @@ contract Staking {
     error MessageValueNotEqualToBackerReturns(uint value, uint backerReturns);
     
     // TODO: handle the case where no profit was made
-    function returnProfits(uint id, uint profit) external payable {
+    function returnProfits(uint id) external payable {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
@@ -181,8 +207,7 @@ contract Staking {
         }
 
         // TODO: Check this calculation. Do we do it here or calculate it in the frontend?
-        stake.profit = profit;
-        uint backerReturns = stake.amount + ((profit * stake.profitShare) / 100);
+        uint backerReturns = stake.amount + ((stake.profit * stake.profitShare) / 100);
 
         // TODO: See above before we can do this
         // if (msg.value != backerReturns) {
@@ -201,12 +226,12 @@ contract Staking {
 
     // Setting the status of a stake to AwaitingReturnPayment
 
-    event GamePlayed(uint id);
+    event GamePlayed(uint id, uint profit);
 
     /// You can only complete a game after it has been filled
     error CanOnlyPlayedFilledStakes(uint id, StakeStatus status);
 
-    function gamePlayed(uint id) external {
+    function gamePlayed(uint id, uint profit) external {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
@@ -216,7 +241,9 @@ contract Staking {
         }
 
         stakes[id].status = StakeStatus.AwaitingReturnPayment;
-        emit GamePlayed(id);
+        stakes[id].profit = profit;
+        stakes[id].horseWon = true;
+        emit GamePlayed(id, profit);
     }
 
 

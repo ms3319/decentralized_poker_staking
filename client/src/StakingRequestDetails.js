@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button"
+import {Link} from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -45,6 +46,18 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
         >
           Wishlist
         </Button>
+        <Link to={`players/${request.horse}`}>
+        {/* <Link to="players/test"> */}
+          <Button 
+            style={{
+              marginLeft: "10px",
+              marginRight: "10px"
+            }}
+          >
+            
+            Player Profile
+          </Button>
+        </Link>
       </Modal.Body>
       }
       <Modal.Footer>
