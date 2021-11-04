@@ -15,9 +15,6 @@ class NewStakingRequestForm extends Component {
     } else {
       await contract.methods.createRequest(this.state.amount, this.state.profitShare, this.state.escrow).send({ from: accounts[0] });
     }
-
-    // const newList = await contract.methods.getUsers().call();
-    // this.setState({ userList: newList });
   };
 
   handleAmountChange(event) {

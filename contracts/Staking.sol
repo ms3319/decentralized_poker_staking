@@ -230,6 +230,7 @@ contract Staking {
     /// Cannot return back escrow for a stake which never had an escrow put up
     error CannotReturnNoEscrow(uint id, uint escrow);
 
+    // TODO: Rename to claimEscrow
     function requestEscrow(uint id) external {
         if(!validId(id)) {
             revert InvalidStakeId(id);
