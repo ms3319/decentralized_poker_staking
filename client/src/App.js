@@ -15,6 +15,7 @@ export default function App() {
   const [requests, setRequests] = useState(null)
   const [accounts, setAccounts] = useState(null)
   const [contract, setContract] = useState(null)
+  const [hasPlayerAccount, setHasPlayerAccount] = useState(false)
 
   const { active, library } = useWeb3React()
 
@@ -27,7 +28,7 @@ export default function App() {
       if (!active) {
         return
       }
-      setAccounts(await library.eth.getAccounts())
+      const accounts = await library.eth.getAccounts()
 
       // Get the contract instance.
       const networkId = await library.eth.net.getId();
@@ -41,8 +42,10 @@ export default function App() {
       for (let i = 0; i < requestCount; i++) {
         requests.push(await contract.methods.getStake(i).call());
       }
+      setHasPlayerAccount((await  contract.methods.getPlayer(accounts[0]).call()).playerAddress !== "0x0000000000000000000000000000000000000000")
       setContract(contract)
-      setRequests(requests);
+      setRequests(requests)
+      setAccounts(accounts)
     }
     getContractData().catch()
   }, [active, library])
@@ -50,18 +53,15 @@ export default function App() {
 
   return (
       <Router>
-        <NavBar />
+        <NavBar hasPlayerAccount={hasPlayerAccount} />
         <Route exact path={"/"}>
           <Home requests={requests} accounts={accounts} contract={contract} />
         </Route>
         <Route exact path = "/my-stable">
           <Stable requests={requests} accounts={accounts} contract={contract}/>
         </Route>
-        <Route exact path = "/my-games">
-          <MyGames contract={contract} accounts={accounts} />
-        </Route>
         <Route exact path = "/players/:playerAddress">
-          <Player contract={contract} />
+          <Player contract={contract} accounts={accounts} />
         </Route>
       </Router>
   )

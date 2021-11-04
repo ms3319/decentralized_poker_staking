@@ -121,7 +121,7 @@ function PastStakes({ stakes }) {
   );
 }
 
-export default function Player({ contract }) {
+export default function Player({ contract, accounts }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)

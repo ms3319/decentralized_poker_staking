@@ -6,9 +6,9 @@ import { useWeb3React } from "@web3-react/core"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ConnectionStatus from "./ConnectionStatus";
 
-const NavBar = () => {
+const NavBar = ({ hasPlayerAccount }) => {
 
-  const { active } = useWeb3React()
+  const { active, account } = useWeb3React()
 
   return (
     <Navbar expand="md" style={{backgroundColor:"#282828", fontSize: "1.25rem", padding: "20px 0"}} variant={"dark"}>
@@ -19,7 +19,7 @@ const NavBar = () => {
         <Navbar.Collapse className={"justify-content-end"}>
           <Nav>
             <Link to="" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>About</Link>
-            {active && <Link to="/my-games" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Games</Link>}
+            {active && hasPlayerAccount && <Link to={"/players/" + account} style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Profile</Link>}
             {active && <Link to="/my-stable" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Stable</Link>}
           </Nav>
         </Navbar.Collapse>
