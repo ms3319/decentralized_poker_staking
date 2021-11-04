@@ -28,12 +28,13 @@ contract("Staking", (accounts) => {
 
     describe("Creating Players", async () => {
         it("Create a new player", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", {from: horseAccount1});
+            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             
             let player = await staking.getPlayer(horseAccount1);
             assert.equal(player.name, "John Smith", "Player name doesn't match");
             assert.equal(player.sharkscopeLink, "www.sharkscope.com", "Player sharkscope link doesn't match");
-            assert.equal(player.stakes.length, 0, "Player hasn't created any stakes");
+            assert.equal(player.profilePicPath, "www.images.com/pic", "Player profile pic path doesn't match");
+            assert.equal(player.stakeIds.length, 0, "Player hasn't created any stakes");
         });
     });
 
@@ -67,20 +68,36 @@ contract("Staking", (accounts) => {
         });
 
         it("Stake created by a player is associated with them", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", {from: horseAccount1});
+            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             let player = await staking.getPlayer(horseAccount1);
-            assert.equal(player.stakes.length, 0, "Player hasn't created any stakes");
+            assert.equal(player.stakeIds.length, 0, "Player hasn't created any stakes");
 
             await staking.createRequest(1000, 45, 0, {from: horseAccount1});
             player = await staking.getPlayer(horseAccount1);
-            let stake = player.stakes[0];
+            let stake = await staking.getStake(player.stakeIds[0]);
 
-            assert.equal(player.stakes.length, 1, "Player has created a stake");
+            assert.equal(player.stakeIds.length, 1, "Player has created a stake");
             assert.equal(stake.amount, 1000, "Stake amount doesn't match");
             assert.equal(stake.horse, horseAccount1, "The stake's horse doesn't match")
 
             player = await staking.getPlayer(stake.horse);
             assert.equal(player.name, "John Smith", "Player name doesn't match");
+        });
+
+        it("Player stakes can be modified via the global stake map", async () => {
+            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
+            await staking.createRequest(2000, 45, 0, {from: horseAccount1});
+
+            await staking.stakeHorse(1, {from: backerAccount1, value: 2000});
+
+            let player = await staking.getPlayer(horseAccount1);
+            assert.equal(player.stakeIds.length, 2, "Both stakes did not get associated with the player")
+
+            let stake0 = await staking.getStake(player.stakeIds[0]);
+            let stake1 = await staking.getStake(player.stakeIds[1]);
+            assert.equal(stake0.status, StakeStatus.Requested, "Stake status was changed from Requested");
+            assert.equal(stake1.status, StakeStatus.Filled, "Stake status not updated to Filled");
         });
     });
 

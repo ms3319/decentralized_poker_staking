@@ -1,50 +1,7 @@
 import { useParams, useHistory } from "react-router-dom";
 import styles from "./Player.module.css"
-import * as PropTypes from "prop-types";
 import {Table} from "react-bootstrap";
-import React, { useState } from "react";
-
-// For example purposed - delete this later!
-
-function getRndInteger(min, max) {
-  return Math.floor(Math.random() * (max - min) ) + min;
-}
-
-const stakeStatus = [
-  "Requested",
-  "Filled",
-  "Expired",
-  "Cancelled",
-  "AwaitingReturnPayment",
-  "Completed"
-]
-
-let stakes = []
-for (let i = 0; i < 15; i++) {
-  const won = getRndInteger(0,5) === 0; // 50% chance of winning
-  stakes.push({
-    backer: "0xa98d6af87a6fh9",
-    amount: getRndInteger(500, 10000),
-    escrow: getRndInteger(0, 20000),
-    profitShare: getRndInteger(20, 80),
-    profit: won ? getRndInteger(10000, 50000) : 0, // 50% chance of making no profit
-    horseWon: won, // 33% of winning
-    status: stakeStatus[getRndInteger(0, stakeStatus.length)]
-  })
-}
-
-const player = {
-  profilePic: "https://i.redd.it/v0caqchbtn741.jpg",
-  name: "John Smith",
-  link: "https://www.sharkscope.com/",
-  stakes: stakes
-}
-
-const playerMap = new Map([
-  ["test", player]
-])
-
-// End example code
+import React, {useEffect, useState} from "react";
 
 const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
@@ -55,7 +12,7 @@ function PlayerInfo({ player }) {
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
-        <img className={styles.profilePic} alt="Profile picture" src={player.profilePic} />
+        <img className={styles.profilePic} alt="Profile picture" src={player.profilePicPath} />
       </div>
       <div className={styles.details}>
         <div className={styles.playerName}>
@@ -75,7 +32,7 @@ function PlayerInfo({ player }) {
 function PlayerStats({ games }) {
   const totalStakes = games.length
   const totalWins = games.filter(game => game.horseWon).length
-  const stakesRequested = games.reduce((prev, curr) => prev + curr.amount, 0)
+  const stakesRequested = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const profitReturned = games.reduce((prev, curr) => prev + (curr.profit * (curr.profitShare / 100)), 0)
   const profitPercent = (profitReturned / stakesRequested) * 100
 
@@ -164,53 +121,44 @@ function PastStakes({ stakes }) {
   );
 }
 
-async function getPlayer(playerAddress, contract) {
-  var player = await contract.methods.getPlayer(playerAddress).call();
-  // console.log(player)
-  // console.log(player.stakes)
-  return player
-}
-
-export default function Player(props) {
+export default function Player({ contract }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
+  const [stakes, setStakes] = useState(null)
   const history = useHistory()
-  props.contract.methods.getPlayer(playerAddress).call().then((player) => {setPlayer(player)})
 
-  // return props.contract.methods.getPlayer(playerAddress).call().then((player) => {
-  //   setPlayer(player)
-  //   console.log(player)
-  //   console.log(player.stakes)
-    
-  //   // Unknown Player
-  //   if (player == null) {
-  //     history.push("/")
-  //     return null
-  //   }
-    
-  //   return (
-  //     <div className={styles.playerPage}>
-  //       <PlayerInfo player={player}/>
-  //       <PlayerStats games={player.stakes} />
-  //       <PastStakes stakes={player.stakes} />
-  //     </div>
-  //   )
+  useEffect(() => {
+    if (contract != null) {
+      contract.methods.getPlayer(playerAddress).call().then((player) => {setPlayer(player)})
+    }
+  }, [contract])
 
-  // });
+  useEffect(() => {
+    if (player != null) {
+      const updateStakes = async () => {
+        let stakes = []
+        for (const stakeId in player.stakeIds) {
+          stakes.push(await contract.methods.getStake(stakeId).call())
+        }
+        setStakes(stakes)
+      }
+      updateStakes().catch()
+    }
+  }, [player])
 
-  console.log(player)
+  if (contract == null) return null
 
   // Unknown Player
-  if (!playerMap.has(playerAddress)) {
+  if (player != null && player.playerAddress === "0x0000000000000000000000000000000000000000") {
     history.push("/")
     return null
   }
 
   return (
     <div className={styles.playerPage}>
-      <PlayerInfo player={player}/>
-      <PlayerStats games={player.stakes} />
-      <PastStakes stakes={player.stakes} />
+      {player && <PlayerInfo player={player}/>}
+      {stakes && <PlayerStats games={stakes} />}
+      {stakes && <PastStakes stakes={stakes} />}
     </div>
   )
 }

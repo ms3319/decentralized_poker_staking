@@ -5,7 +5,7 @@ import { useEagerConnect } from "./hooks";
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Home from "./Home";
 import Stable from "./Stable";
-import Competitions from "./Competitions";
+import MyGames from "./MyGames";
 import NavBar from "./NavBar";
 import Player from "./Player"
 require('./globals.css')
@@ -44,7 +44,7 @@ export default function App() {
       setContract(contract)
       setRequests(requests);
     }
-    getContractData()
+    getContractData().catch()
   }, [active, library])
 
 
@@ -58,10 +58,10 @@ export default function App() {
           <Stable requests={requests} accounts={accounts} contract={contract}/>
         </Route>
         <Route exact path = "/my-games">
-          <Competitions />
+          <MyGames contract={contract} accounts={accounts} />
         </Route>
         <Route exact path = "/players/:playerAddress">
-          <Player contract={contract} dummy={123}/>
+          <Player contract={contract} />
         </Route>
       </Router>
   )

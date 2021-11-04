@@ -72,9 +72,9 @@ class NewStakingRequestForm extends Component {
             </Form.Group>
 
             <Button
+              onClick={this.createStakingRequest}
               variant="primary"
               type="submit"
-              onClick={this.createStakingRequest}
             >
               Submit
             </Button>

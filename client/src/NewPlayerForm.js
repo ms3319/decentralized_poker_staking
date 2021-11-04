@@ -5,7 +5,7 @@ import Button from "./Button"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class NewPlayerForm extends Component {
-    state = {name: "", sharkscopeLink: ""};
+    state = {name: "", sharkscopeLink: "", profilePicPath: ""};
 
     createNewPlayer = async () => {
         const { accounts, contract } = this.props;
@@ -13,8 +13,8 @@ class NewPlayerForm extends Component {
 
         // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
 
-        await contract.methods.createPlayer(this.state.name, this.state.sharkscopeLink).send({ from: accounts[0] });
-      };
+        await contract.methods.createPlayer(this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+    };
     
     handleNameChange(event) {
         this.setState({name: event.target.value});
@@ -22,6 +22,10 @@ class NewPlayerForm extends Component {
 
     handleSharkscopeLinkChange(event) {
         this.setState({sharkscopeLink: event.target.value});
+    }
+
+    handleProfilePicPathChange(event) {
+        this.setState({profilePicPath: event.target.value});
     }
 
     render() {
@@ -46,14 +50,19 @@ class NewPlayerForm extends Component {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Sharkscope Link</Form.Label>
-                            <Form.Control value={this.state.escrow} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
+                            <Form.Control value={this.state.sharkscopeLink} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Profile Picture Path</Form.Label>
+                            <Form.Control value={this.state.profilePicPath} onChange={(event) => this.handleProfilePicPathChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Button
+                            onClick={this.createNewPlayer}
                             variant="primary"
                             type="submit"
-                            onClick={this.createNewPlayer}
-                            >
+                        >
                         Submit
                         </Button>
                     </Form>

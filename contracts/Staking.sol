@@ -34,21 +34,23 @@ contract Staking {
         address payable playerAddress;
         string name;
         string sharkscopeLink;
-        Stake[] stakes; // stakes where the player is the horse.
+        string profilePicPath;
+        uint[] stakeIds; // stakes where the player is the horse.
     }
 
     constructor() {
         owner = payable(msg.sender);
     }
 
-    event PlayerCreated(address playerAddress, string name, string sharkscopeLink);
+    event PlayerCreated(address playerAddress, string name, string sharkscopeLink, string profilePicPath);
 
-    function createPlayer(string memory name, string memory sharkscopeLink) external payable {
+    function createPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
         players[msg.sender].playerAddress = payable(msg.sender);
         players[msg.sender].name = name;
         players[msg.sender].sharkscopeLink = sharkscopeLink;
+        players[msg.sender].profilePicPath = profilePicPath;
 
-        emit PlayerCreated(msg.sender, name, sharkscopeLink);
+        emit PlayerCreated(msg.sender, name, sharkscopeLink, profilePicPath);
     }
 
     function getPlayer(address add) external view returns (Player memory) {
@@ -94,7 +96,7 @@ contract Staking {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
         stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false);
-        players[msg.sender].stakes.push(stakes[requestCount]);
+        players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
         emit StakeRequested(msg.sender, amount, escrow);
