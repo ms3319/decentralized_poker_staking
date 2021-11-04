@@ -1,0 +1,4 @@
+falcon
+gunicorn
+pyrebase
+python-dotenv
