@@ -11,10 +11,11 @@ contract Staking {
     enum StakeStatus {
         Requested,
         Filled,
-        Expired,
+        Expired, // TODO: When will we use this
         Cancelled,
         AwaitingReturnPayment,
-        Completed
+        Completed,
+        EscrowReturned
     }
 
     struct Stake {
@@ -199,7 +200,7 @@ contract Staking {
             revert ReturningProfitsSenderIsNotHorse(id, msg.sender, stake.horse);
         }
         
-        if (stake.status != StakeStatus.Filled) {
+        if (stake.status != StakeStatus.AwaitingReturnPayment) {
             revert StakeProfitNotReturnable(id, stake.status);
         }
 
@@ -219,6 +220,57 @@ contract Staking {
 
         stakes[id] = stake;
         emit ProfitsReturned(id, backerReturns);
+    }
+
+
+    // Setting the status of a stake to AwaitingReturnPayment
+
+    event GamePlayed(uint id);
+
+    /// You can only complete a game after it has been filled
+    error CanOnlyPlayedFilledStakes(uint id, StakeStatus status);
+
+    function gamePlayed(uint id) external {
+        if(!validId(id)) {
+            revert InvalidStakeId(id);
+        }
+
+        if (stakes[id].status != StakeStatus.Filled) {
+            revert CanOnlyPlayedFilledStakes(id, stakes[id].status);
+        }
+
+        stakes[id].status = StakeStatus.AwaitingReturnPayment;
+        emit GamePlayed(id);
+    }
+
+
+    // Requesting back your escrow while awaiting return payment
+    event EscrowReturned(uint id, uint escrow, address backer);
+
+    /// You can only request your escrow back when the status of the stake is awaiting return payment
+    error CanOnlyReturnEscrowWhenAwaitingReturnPayment(uint id, StakeStatus status);
+    /// Only the stake backer can request the contract's escrow
+    error OnlyBackerCanRequestEscrow(uint id, address backer, address sender);
+    /// Cannot return back escrow for a stake which never had an escrow put up
+    error CannotReturnNoEscrow(uint id, uint escrow);
+
+    function requestEscrow(uint id) external {
+        if(!validId(id)) {
+            revert InvalidStakeId(id);
+        }
+        if (stakes[id].status != StakeStatus.AwaitingReturnPayment) {
+            revert CanOnlyReturnEscrowWhenAwaitingReturnPayment(id, stakes[id].status);
+        }
+        if (msg.sender != stakes[id].backer) {
+            revert OnlyBackerCanRequestEscrow(id, stakes[id].backer, msg.sender);
+        }
+        if (stakes[id].escrow == 0) {
+            revert CannotReturnNoEscrow(id, stakes[id].escrow);
+        }
+
+        stakes[id].backer.transfer(stakes[id].escrow);
+        stakes[id].status = StakeStatus.EscrowReturned;
+        emit EscrowReturned(id, stakes[id].escrow, stakes[id].backer);
     }
 
     function validId(uint id) internal view returns (bool) {

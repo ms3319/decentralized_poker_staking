@@ -6,6 +6,6 @@ export default function StakeRequestList({ contract, requests, handleShowRequest
     return null
   } else {
     return requests.filter(request => request.status === "0").map((request) =>
-      <StakeRequestTile contract={contract} request={request} onClick={() => handleShowRequestDetails(request)} />)
+      <StakeRequestTile contract={contract} key={request.id} request={request} onClick={() => handleShowRequestDetails(request)} />)
   }
 }
