@@ -7,6 +7,7 @@ import Home from "./Home";
 import Stable from "./Stable";
 import Competitions from "./Competitions";
 import NavBar from "./NavBar";
+import Player from "./Player"
 require('./globals.css')
 
 
@@ -58,6 +59,9 @@ export default function App() {
         </Route>
         <Route exact path = "/my-games">
           <Competitions />
+        </Route>
+        <Route exact path = "/players/:playerAddress">
+          <Player contract={contract} dummy={123}/>
         </Route>
       </Router>
   )

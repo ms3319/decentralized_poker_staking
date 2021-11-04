@@ -1,0 +1,107 @@
+.playerPage {
+    padding: 100px;
+}
+
+/* Player Info Tile Styles */
+
+.playerInfoTile {
+    max-width: 1200px;
+    margin: 0 auto 100px auto;
+    position: relative;
+}
+
+.details {
+    display: inline-block;
+    width: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.details > div {
+    margin-bottom: 10px;
+}
+
+.details .playerName {
+    font-size: 3em;
+    font-weight: 700;
+}
+
+.details .value {
+    font-size: 1.3em;
+}
+
+.imageContainer {
+    display: inline-block;
+    width: 50%;
+}
+
+.profilePic {
+    display: block;
+    margin: 0 auto;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+}
+
+/* End Player Info Styles */
+
+/* Statistics Styles */
+
+.statsTile {
+    max-width: 1200px;
+    margin: 50px auto;
+}
+
+.stats > div {
+    display: inline-block;
+    width: 50%;
+    margin-bottom: 20px;
+}
+
+.stats .value {
+    font-size: 5em;
+    font-weight: 700;
+    line-height: 90px;
+}
+
+/* End Statistics Styles */
+
+/* Past Stakes Styles */
+
+.pastStakesTile {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* End Past Stakes Styles */
+
+/* General Purpose Styles */
+
+.label {
+    font-weight: 700;
+    line-height: 10px;
+    color: var(--safestake-gold-darker);
+}
+
+.sectionTitle {
+    font-size: 4em;
+    color: var(--safestake-gold-darker);
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+@media only screen and (max-width: 950px) {
+    .playerInfoTile > div {
+        width: 100%;
+    }
+    .details {
+        position: relative;
+        top: 0;
+        transform: none;
+        text-align: center;
+    }
+    .stats > div {
+        width: 100%;
+    }
+}

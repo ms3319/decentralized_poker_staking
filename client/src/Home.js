@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {Col, Container, Row} from "react-bootstrap";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
+import NewPlayerForm from "./NewPlayerForm";
 import HomepageHeader from "./HomepageHeader";
 import { injected } from "./components/Connectors"
 import metamaskIcon from './images/metamask-icon.png'
@@ -18,6 +19,7 @@ export default function Home(props) {
   const [focusedRequest, setFocusedRequest] = useState(null)
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
+  const [showNewPlayerForm, setShowNewPlayerForm] = useState(false)
 
   const {active, activate} = useWeb3React();
 
@@ -36,6 +38,14 @@ export default function Home(props) {
 
   const closeStakeRequestForm = () => {
     setShowStakeRequestForm(false)
+  }
+
+  const openNewPlayerForm = () => {
+    setShowNewPlayerForm(true)
+  }
+
+  const closeNewPlayerForm = () => {
+    setShowNewPlayerForm(false)
   }
 
   const connectWallet = async () => {
@@ -72,14 +82,18 @@ export default function Home(props) {
       {active &&
         <div className={styles.mainContentContainer}>
           <h2>Marketplace</h2>
+          <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
+            Create New Player
+          </Button>
           <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
             Create Staking Request
           </Button>
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={props.accounts} contract={props.contract}/>
-
+          <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
+                                 accounts={props.accounts} contract={props.contract}/>
           <StakingRequestDetails contract={props.contract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
-          <StakeRequestList requests={props.requests} handleShowRequestDetails={openRequestDetails} />
+          <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
         </div>
       }
     </div>
