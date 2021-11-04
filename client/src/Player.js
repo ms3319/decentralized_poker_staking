@@ -8,6 +8,16 @@ const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 }
 
+const ethereumUnits = (amountInWei) => {
+  if (amountInWei < 1e7) {
+    return { units: "wei", amount: amountInWei};
+  } else if (1e7 <= amountInWei && amountInWei < 1e16) {
+    return { units: "Gwei", amount: +(amountInWei / 1e9).toFixed(2)};
+  } else {
+    return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
+  }
+}
+
 function PlayerInfo({ player }) { 
 
   return (
@@ -33,9 +43,11 @@ function PlayerInfo({ player }) {
 function PlayerStats({ games }) {
   const totalStakes = games.length
   const totalWins = games.filter(game => game.horseWon).length
-  const stakesRequested = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
-  const profitReturned = games.reduce((prev, curr) => prev + (curr.profit * (curr.profitShare / 100)), 0)
-  const profitPercent = (profitReturned / stakesRequested) * 100
+  const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const stakesRequested = ethereumUnits(stakesRequestedRaw)
+  const profitReturnedRaw = games.reduce((prev, curr) => prev + (curr.profit * (curr.profitShare / 100)), 0)
+  const profitReturned = ethereumUnits(profitReturnedRaw)
+  const profitPercent = +((profitReturnedRaw / stakesRequestedRaw) * 100).toFixed(2);
 
   return (
     <div className={styles.statsTile}>
@@ -64,7 +76,7 @@ function PlayerStats({ games }) {
             Total Stakes Requested
           </div>
           <div className={styles.value}>
-            {numberWithCommas(+stakesRequested.toFixed(2))}
+            {numberWithCommas(stakesRequested.amount) + " " + stakesRequested.units}
           </div>
         </div>
 
@@ -73,7 +85,7 @@ function PlayerStats({ games }) {
             Total Profit
           </div>
           <div className={styles.value}>
-            {numberWithCommas(+profitReturned.toFixed(2))}
+            {numberWithCommas(profitReturned.amount) + " " + profitReturned.units}
           </div>
         </div>
 
@@ -82,7 +94,7 @@ function PlayerStats({ games }) {
             Profit %
           </div>
           <div className={styles.value}>
-            {+profitPercent.toFixed(2)}%
+            {numberWithCommas(profitPercent)}%
           </div>
         </div>
       </div>
@@ -133,8 +145,8 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
               <td>{stake.amount}</td>
               <td>{stake.profitShare}</td>
               <td>{stake.profit}</td>
-              <td>{stake.amount + stake.profit * (stake.profitShare / 100)}</td>
-              <td><Button onClick={() => returnProfits(stake.id, stake.amount + stake.profit * (stake.profitShare / 100))}>Pay Back</Button></td>
+              <td>{parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100)}</td>
+              <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100))}>Pay Back</Button></td>
             </tr>)}
           </tbody>
         </Table>

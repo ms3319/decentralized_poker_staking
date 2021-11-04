@@ -226,12 +226,12 @@ contract Staking {
 
     // Setting the status of a stake to AwaitingReturnPayment
 
-    event GamePlayed(uint id);
+    event GamePlayed(uint id, uint profit);
 
     /// You can only complete a game after it has been filled
     error CanOnlyPlayedFilledStakes(uint id, StakeStatus status);
 
-    function gamePlayed(uint id) external {
+    function gamePlayed(uint id, uint profit) external {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
@@ -241,7 +241,9 @@ contract Staking {
         }
 
         stakes[id].status = StakeStatus.AwaitingReturnPayment;
-        emit GamePlayed(id);
+        stakes[id].profit = profit;
+        stakes[id].horseWon = true;
+        emit GamePlayed(id, profit);
     }
 
 
