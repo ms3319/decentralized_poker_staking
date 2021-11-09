@@ -18,6 +18,11 @@ contract Staking {
         EscrowReturned
     }
 
+    enum GameType {
+        SingleGame,
+        Tournament
+    }
+
     struct Stake {
         uint id;
         address payable horse;
@@ -28,6 +33,8 @@ contract Staking {
         uint profit;
         StakeStatus status;
         bool horseWon;
+        GameType gameType;
+        string apiId;
     }
 
     struct Player {
@@ -88,14 +95,14 @@ contract Staking {
     /// Escrow does not match msg.value
     error EscrowValueNotMatching(uint escrow, uint value);
 
-    function createRequest(uint amount, uint profitShare, uint escrow) external payable {
+    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId) external payable {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
         if (escrow > 0 && escrow != msg.value) {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, gameType, apiId);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
@@ -103,7 +110,7 @@ contract Staking {
     }
 
     // Staking a request
-    event StakeFilled(uint stakeId, address horse, address backer, uint amount);
+    event StakeFilled(Stake stake);
     
     /// Stake has already been filled/cancelled
     error StakeNotFillable(uint id);
@@ -139,11 +146,11 @@ contract Staking {
         horse.transfer(stake.amount);
 
         stakes[id] = stake;
-        emit StakeFilled(id, horse, backer, stake.amount);
+        emit StakeFilled(stake);
     }
 
     // Cancelling a reqested stake
-    event StakeCanceled(uint id);
+    event StakeCancelled(uint id);
     
     /// Only the horse can cancel a requested stake
     error CancellingSenderIsNotHorse(uint id, address canceller, address horse);
@@ -170,7 +177,7 @@ contract Staking {
         stake.status = StakeStatus.Cancelled;
 
         stakes[id] = stake;
-        emit StakeCanceled(id);
+        emit StakeCancelled(id);
     }
     
     // TODO: How might we allow this?
