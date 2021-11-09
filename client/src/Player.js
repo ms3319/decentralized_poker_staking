@@ -3,6 +3,7 @@ import styles from "./Player.module.css"
 import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
+import { CoinGeckoClient } from "./utils";
 
 const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
@@ -16,6 +17,10 @@ const ethereumUnits = (amountInWei) => {
   } else {
     return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
   }
+}
+
+const weiToUsd = (amountInWei, ethPriceUsd) => {
+  return (ethPriceUsd * (amountInWei / 1e18));
 }
 
 function PlayerInfo({ player }) { 
@@ -40,14 +45,17 @@ function PlayerInfo({ player }) {
   )
 }
 
-function PlayerStats({ games }) {
+function PlayerStats({ ethPriceUsd, games }) {
   const totalStakes = games.length
   const totalWins = games.filter(game => game.horseWon).length
   const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequested = ethereumUnits(stakesRequestedRaw)
+  const stakesRequestedUsd = weiToUsd(stakesRequestedRaw, ethPriceUsd)
   const profitReturnedRaw = games.reduce((prev, curr) => prev + (curr.profit * (curr.profitShare / 100)), 0)
   const profitReturned = ethereumUnits(profitReturnedRaw)
+  const profitReturnedUsd = weiToUsd(profitReturnedRaw, ethPriceUsd)
   const profitPercent = +((profitReturnedRaw / stakesRequestedRaw) * 100).toFixed(2);
+
 
   return (
     <div className={styles.statsTile}>
@@ -76,7 +84,7 @@ function PlayerStats({ games }) {
             Total Stakes Requested
           </div>
           <div className={styles.value}>
-            {numberWithCommas(stakesRequested.amount) + " " + stakesRequested.units}
+            {numberWithCommas(stakesRequested.amount) + " " + stakesRequested.units + " ($" + stakesRequestedUsd + ")"}
           </div>
         </div>
 
@@ -85,7 +93,7 @@ function PlayerStats({ games }) {
             Total Profit
           </div>
           <div className={styles.value}>
-            {numberWithCommas(profitReturned.amount) + " " + profitReturned.units}
+            {numberWithCommas(profitReturned.amount) + " " + profitReturned.units + " ($" + profitReturnedUsd + ")"}
           </div>
         </div>
 
@@ -112,7 +120,7 @@ const StakeStatus = {
   EscrowReturned: "6"
 };
 
-function PastStakes({ returnProfits, stakes, isViewersAccount }) {
+function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
 
   const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)
   const inProgress = stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.Filled)
@@ -138,7 +146,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
             {awaitingRepayment.map((stake, index) => <tr key={stake.id}>
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
-              <td>{stake.amount}</td>
+              <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
               <td>{stake.profitShare}</td>
               <td>{stake.profit}</td>
               <td>{parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100)}</td>
@@ -164,7 +172,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
             {inProgress.map((stake, index) => <tr key={stake.id}>
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
-              <td>{stake.amount}</td>
+              <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
               <td>{stake.profitShare}</td>
               <td>{stake.status}</td>
             </tr>)}
@@ -189,7 +197,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
           {isViewersAccount ? pastStakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
-            <td>{stake.amount}</td>
+            <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
             <td>{stake.profitShare}</td>
             <td>{stake.profit}</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
@@ -198,7 +206,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
           stakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
-            <td>{stake.amount}</td>
+            <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
             <td>{stake.profitShare}</td>
             <td>{stake.profit}</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
@@ -214,6 +222,7 @@ export default function Player({ contract, accounts }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)
+  const [ethPriceUsd, setEthPriceUsd] = useState(0);
   const history = useHistory()
 
   useEffect(() => {
@@ -233,6 +242,7 @@ export default function Player({ contract, accounts }) {
       }
       updateStakes().catch()
     }
+    CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => setEthPriceUsd(resp.data.ethereum.usd));
   }, [player, contract])
 
   if (contract == null) return null
@@ -250,8 +260,8 @@ export default function Player({ contract, accounts }) {
   return (
     <div className={styles.playerPage}>
       {player && <PlayerInfo player={player}/>}
-      {stakes && <PlayerStats games={stakes} />}
-      {stakes && accounts && <PastStakes returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
+      {stakes && <PlayerStats ethPriceUsd={ethPriceUsd} games={stakes} />}
+      {stakes && accounts && <PastStakes ethPriceUsd={ethPriceUsd} returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
     </div>
   )
 }
