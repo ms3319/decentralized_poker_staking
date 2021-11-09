@@ -54,7 +54,7 @@ export default function App() {
       <Router>
         <NavBar hasPlayerAccount={hasPlayerAccount} />
         <Route exact path={"/"}>
-          <Home requests={requests} accounts={accounts} contract={contract} />
+          <Home hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} />
         </Route>
         <Route exact path = "/my-stable">
           <Stable requests={requests} accounts={accounts} contract={contract}/>

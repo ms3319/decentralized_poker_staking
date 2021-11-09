@@ -80,9 +80,11 @@ export default function Home(props) {
       {active &&
         <div className={styles.mainContentContainer}>
           <h2>Marketplace</h2>
-          <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
-            Create New Player
-          </Button>
+          {!props.hasPlayerAccount &&
+            <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
+              Create New Player
+            </Button>
+          }
           <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
             Create Staking Request
           </Button>
