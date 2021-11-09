@@ -16,17 +16,23 @@ const ethereumUnits = (amountInWei) => {
   }
 }
 
-export default function StakeRequestTile({ contract, request, onClick }) {
-  const [player, setPlayer] = useState(null)
 
-  let escrow = ethereumUnits(request.escrow);
-  let stake = ethereumUnits(request.amount);
+export default function StakeRequestTile({ contract, request, onClick, ethPriceUsd}) {
+  const [player, setPlayer] = useState(null);
+  const [escrow, setEscrow] = useState(NaN);
+  const [stake, setStake] = useState(NaN);
 
   useEffect(() => {
     if (contract != null) {
       contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
     }
-  }, [contract, request])
+    if (!escrow) {
+      setEscrow(ethPriceUsd * (request.escrow / 1e18));
+    }
+    if (!stake) {
+      setStake(ethPriceUsd * (request.amount / 1e18));
+    }
+  }, [contract, request, ethPriceUsd])
 
   return (
     <div className={styles.stakeRequestTile} onClick={onClick}>
@@ -35,12 +41,12 @@ export default function StakeRequestTile({ contract, request, onClick }) {
         <span className={styles.value}>{player == null ? "null player" : player.name}</span>
       </div>
       <div>
-        <span className={styles.label}>Escrow ({escrow.units})</span>
-        <span className={styles.value}>{numberWithCommas(escrow.amount)}</span>
+        <span className={styles.label}>Escrow (USD)</span>
+        <span className={styles.value}>{numberWithCommas(escrow)}</span>
       </div>
       <div>
-        <span className={styles.label}>Stake ({stake.units})</span>
-        <span className={styles.value}>{numberWithCommas(stake.amount)}</span>
+        <span className={styles.label}>Stake (USD)</span>
+        <span className={styles.value}>{numberWithCommas(stake)}</span>
       </div>
       <div>
         <span className={styles.label}>Profit Share (%)</span>
