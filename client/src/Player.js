@@ -146,10 +146,10 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
             {awaitingRepayment.map((stake, index) => <tr key={stake.id}>
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
-              <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
+              <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
               <td>{stake.profitShare}</td>
-              <td>{stake.profit}</td>
-              <td>{parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100)}</td>
+              <td>${weiToUsd(stake.profit, ethPriceUsd)}</td>
+              <td>${weiToUsd(parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100), ethPriceUsd)}</td>
               <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100))}>Pay Back</Button></td>
             </tr>)}
           </tbody>
@@ -172,7 +172,7 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
             {inProgress.map((stake, index) => <tr key={stake.id}>
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
-              <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
+              <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
               <td>{stake.profitShare}</td>
               <td>{stake.status}</td>
             </tr>)}
@@ -197,18 +197,18 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
           {isViewersAccount ? pastStakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
-            <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
+            <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
             <td>{stake.profitShare}</td>
-            <td>{stake.profit}</td>
+            <td>${weiToUsd(stake.profit, ethPriceUsd)}</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
             <td>{stake.status}</td>
           </tr>) :
           stakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
-            <td>${ethPriceUsd * (stake.amount / 1e18)}</td>
+            <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
             <td>{stake.profitShare}</td>
-            <td>{stake.profit}</td>
+            <td>${weiToUsd(stake.profit, ethPriceUsd)}</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
             <td>{stake.status}</td>
           </tr>)}
