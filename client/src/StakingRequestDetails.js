@@ -5,7 +5,12 @@ import {Link} from "react-router-dom";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) => {
+const StakingRequestDetails = ({ request, contract, accounts, onHide, show, ethPriceUsd }) => {
+
+  const weiToUsd = (amountInWei) => {
+    return (ethPriceUsd * (amountInWei / 1e18)).toFixed(2);
+  }
+
   return (
     <Modal
       show={show}
@@ -23,7 +28,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
       <Modal.Body>
         <h4>Invest in a Horse</h4>
         <p>
-          You are going to invest in {request.horse} for {request.amount} wei with a potential profit share
+          You are going to invest ${weiToUsd(request.amount)} in {request.horse} with a potential profit share
           of {request.profitShare}.
         </p>
         <Button

@@ -20,7 +20,7 @@ const ethereumUnits = (amountInWei) => {
 }
 
 const weiToUsd = (amountInWei, ethPriceUsd) => {
-  return (ethPriceUsd * (amountInWei / 1e18));
+  return (ethPriceUsd * (amountInWei / 1e18)).toFixed(2);
 }
 
 function PlayerInfo({ player }) { 
@@ -54,7 +54,7 @@ function PlayerStats({ ethPriceUsd, games }) {
   const profitReturnedRaw = games.reduce((prev, curr) => prev + (curr.profit * (curr.profitShare / 100)), 0)
   const profitReturned = ethereumUnits(profitReturnedRaw)
   const profitReturnedUsd = weiToUsd(profitReturnedRaw, ethPriceUsd)
-  const profitPercent = +((profitReturnedRaw / stakesRequestedRaw) * 100).toFixed(2);
+  const profitPercent = stakesRequestedRaw > 0 ? +((profitReturnedRaw / stakesRequestedRaw) * 100).toFixed(2) : 0;
 
 
   return (

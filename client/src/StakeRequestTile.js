@@ -26,13 +26,15 @@ export default function StakeRequestTile({ contract, request, onClick, ethPriceU
     if (contract != null) {
       contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
     }
+    // Wait until we get given the price
+    if (ethPriceUsd === 0) return;
     if (!escrow) {
-      setEscrow(ethPriceUsd * (request.escrow / 1e18));
+      setEscrow((ethPriceUsd * (request.escrow / 1e18)).toFixed(2));
     }
     if (!stake) {
-      setStake(ethPriceUsd * (request.amount / 1e18));
+      setStake((ethPriceUsd * (request.amount / 1e18)).toFixed(2));
     }
-  }, [contract, request, ethPriceUsd])
+  }, [contract, request, ethPriceUsd, escrow, stake])
 
   return (
     <div className={styles.stakeRequestTile} onClick={onClick}>
@@ -41,16 +43,16 @@ export default function StakeRequestTile({ contract, request, onClick, ethPriceU
         <span className={styles.value}>{player == null ? "null player" : player.name}</span>
       </div>
       <div>
-        <span className={styles.label}>Escrow (USD)</span>
-        <span className={styles.value}>{numberWithCommas(escrow)}</span>
+        <span className={styles.label}>Stake</span>
+        <span className={styles.value}>${numberWithCommas(stake)}</span>
       </div>
       <div>
-        <span className={styles.label}>Stake (USD)</span>
-        <span className={styles.value}>{numberWithCommas(stake)}</span>
+        <span className={styles.label}>Escrow</span>
+        <span className={styles.value}>${numberWithCommas(escrow)}</span>
       </div>
       <div>
-        <span className={styles.label}>Profit Share (%)</span>
-        <span className={styles.value}>{request.profitShare}</span>
+        <span className={styles.label}>Profit Share</span>
+        <span className={styles.value}>{request.profitShare}%</span>
       </div>
       <img alt="Right arrow" className={styles.details} src={rightArrow} />
     </div>

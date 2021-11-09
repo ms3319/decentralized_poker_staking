@@ -1,14 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import StakeRequestTile from "./StakeRequestTile";
-import { CoinGeckoClient } from "./utils";
 
-export default function StakeRequestList({ contract, requests, handleShowRequestDetails }) {
-  const [ethPriceUsd, setEthPriceUsd] = useState(0);
-
-  useEffect(() => {
-    CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => setEthPriceUsd(resp.data.ethereum.usd));
-  }, [])
-
+export default function StakeRequestList({ contract, requests, handleShowRequestDetails, ethPriceUsd}) {
   if (!requests || requests.length === 0) {
     return null
   } else {
