@@ -91,9 +91,11 @@ export default function Home(props) {
               Create New Player
             </Button>
           }
-          <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
-            Create Staking Request
-          </Button>
+          {props.hasPlayerAccount && 
+            <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
+              Create Staking Request
+            </Button>
+          }
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={props.accounts} contract={props.contract}/>
           <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
