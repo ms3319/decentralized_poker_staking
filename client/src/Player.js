@@ -3,11 +3,7 @@ import styles from "./Player.module.css"
 import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
-import { CoinGeckoClient, weiToUsd, StakeStatus } from "./utils";
-
-const numberWithCommas = (x) => {
-  return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-}
+import { CoinGeckoClient, weiToUsd, StakeStatus, numberWithCommas } from "./utils";
 
 const ethereumUnits = (amountInWei) => {
   if (amountInWei < 1e7) {

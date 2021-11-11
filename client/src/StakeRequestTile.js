@@ -1,10 +1,7 @@
 import styles from './StakeRequestTile.module.css'
 import rightArrow from './images/arrow-right.svg'
 import React, {useEffect, useState} from "react";
-
-const numberWithCommas = (x) => {
-  return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-}
+import { numberWithCommas } from './utils';
 
 // const ethereumUnits = (amountInWei) => {
 //   if (amountInWei < 1e9) {
