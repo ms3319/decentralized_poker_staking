@@ -15,7 +15,7 @@ contract Staking {
         Cancelled,
         AwaitingReturnPayment,
         Completed,
-        EscrowReturned
+        EscrowClaimed
     }
 
     struct Stake {
@@ -255,7 +255,7 @@ contract Staking {
 
 
     // Requesting back your escrow while awaiting return payment
-    event EscrowReturned(uint id, uint escrow, address backer);
+    event EscrowClaimed(uint id, uint escrow, address backer);
 
     /// You can only request your escrow back when the status of the stake is awaiting return payment
     error CanOnlyReturnEscrowWhenAwaitingReturnPayment(uint id, StakeStatus status);
@@ -264,8 +264,8 @@ contract Staking {
     /// Cannot return back escrow for a stake which never had an escrow put up
     error CannotReturnNoEscrow(uint id, uint escrow);
 
-    // TODO: Rename to claimEscrow
-    function requestEscrow(uint id) external {
+    // TODO: Only allow this when the state is actually AwaitingReturnPaymentClaimEscrow
+    function backerClaimEscrow(uint id) external {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
@@ -280,8 +280,8 @@ contract Staking {
         }
 
         stakes[id].backer.transfer(stakes[id].escrow);
-        stakes[id].status = StakeStatus.EscrowReturned;
-        emit EscrowReturned(id, stakes[id].escrow, stakes[id].backer);
+        stakes[id].status = StakeStatus.EscrowClaimed;
+        emit EscrowClaimed(id, stakes[id].escrow, stakes[id].backer);
     }
 
     function validId(uint id) internal view returns (bool) {
