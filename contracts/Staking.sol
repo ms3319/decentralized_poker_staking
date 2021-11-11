@@ -44,7 +44,13 @@ contract Staking {
 
     event PlayerCreated(address playerAddress, string name, string sharkscopeLink, string profilePicPath);
 
+    /// A player with this address already exists
+    error PlayerAlreadyExists(address playerAddress);
+
     function createPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+        if (players[msg.sender].playerAddress != address(0)) {
+            revert PlayerAlreadyExists(msg.sender);
+        }
         players[msg.sender].playerAddress = payable(msg.sender);
         players[msg.sender].name = name;
         players[msg.sender].sharkscopeLink = sharkscopeLink;
