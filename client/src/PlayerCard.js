@@ -1,16 +1,24 @@
 import Card from "react-bootstrap/Card";
 import { Row, Col } from "react-bootstrap";
-import { Component } from "react";
+import { useState, useEffect } from "react";
 
-export default class PlayerCard extends Component {
-  render() {
-    return (
-      <Card {...this.props}>
+export default function PlayerCard(props) {
+  const [player, setPlayer] = useState(null);
+
+  useEffect(() => {
+    if (props.contract != null) {
+      props.contract.methods.getPlayer(props.stake.horse).call().then((player) => {setPlayer(player)})
+    }
+  }, [props.contract, props.stake]);
+
+
+  return (
+    <Card {...props}>
       <Card.Body>
         <Row>
           <Col>
             <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-              {this.props.stake.horse}
+              {player ? player.name : ""} ({props.stake.horse})
             </div>
           </Col>
           <Col md="auto">
@@ -30,6 +38,5 @@ export default class PlayerCard extends Component {
         </Row>
       </Card.Body>
     </Card>
-    );
-  }
+  );
 }

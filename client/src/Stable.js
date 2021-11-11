@@ -9,6 +9,7 @@ export default function Stable(props) {
   const [stakeInFocus, setStakeInFocus] = useState(null);
   const [show, setShow] = useState(false);
   const [ethPriceUsd, setEthPriceUsd] = useState(0);
+
   const handleClose = () => {
     setShow(false);
     setStakeInFocus(null);
@@ -62,6 +63,7 @@ export default function Stable(props) {
             {/* TODO: Give this a better name */}
             <PlayerCard
               stake={stake}
+              contract={props.contract}
               bg={stake[0].toLowerCase()}
               text={stake[0] === "Dark" ? "light" : "dark"}
               style={{
