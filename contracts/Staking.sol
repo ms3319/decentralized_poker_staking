@@ -28,6 +28,9 @@ contract Staking {
         uint profit;
         StakeStatus status;
         bool horseWon;
+        uint256 createdTimestamp;
+        uint256 filledTimestamp;
+        uint256 gamePlayedTimestamp;
     }
 
     struct Player {
@@ -36,6 +39,7 @@ contract Staking {
         string sharkscopeLink;
         string profilePicPath;
         uint[] stakeIds; // stakes where the player is the horse.
+        uint256 createdTimestamp;
     }
 
     constructor() {
@@ -49,6 +53,7 @@ contract Staking {
         players[msg.sender].name = name;
         players[msg.sender].sharkscopeLink = sharkscopeLink;
         players[msg.sender].profilePicPath = profilePicPath;
+        players[msg.sender].createdTimestamp = block.timestamp;
 
         emit PlayerCreated(msg.sender, name, sharkscopeLink, profilePicPath);
     }
@@ -95,7 +100,7 @@ contract Staking {
         if (escrow > 0 && escrow != msg.value) {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, block.timestamp, 0, 0);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
@@ -136,6 +141,7 @@ contract Staking {
         // Update stake status and transfer funds
         stake.status = StakeStatus.Filled;
         stake.backer = backer;
+        stake.filledTimestamp = block.timestamp;
         horse.transfer(stake.amount);
 
         stakes[id] = stake;
@@ -242,7 +248,8 @@ contract Staking {
 
         stakes[id].status = StakeStatus.AwaitingReturnPayment;
         stakes[id].profit = profit;
-        stakes[id].horseWon = true;
+        stakes[id].horseWon = profit > 0; 
+        stakes[id].gamePlayedTimestamp = block.timestamp;
         emit GamePlayed(id, profit);
     }
 
