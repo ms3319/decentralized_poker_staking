@@ -18,9 +18,20 @@ class NewStakingRequestForm extends Component {
     const { accounts, contract } = this.props;
     // TODO: sanity check the values
     if (this.state.escrow > 0) {
-      await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString()).send({ from: accounts[0], value: this.state.weiEscrow });
+      await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
+        .send({ from: accounts[0], value: this.state.weiEscrow }, function (error, transactionHash) {
+          console.log(error);
+          console.log(transactionHash);
+        });
     } else {
-      await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString()).send({ from: accounts[0] });
+      try {
+        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
+          .send({ from: accounts[0] });
+      } catch (error) {
+        const response = JSON.parse(error.message.split("'")[1]);
+        console.log(response.value);
+        console.log(response.value.data.data);
+      }
     }
   };
 
@@ -31,7 +42,6 @@ class NewStakingRequestForm extends Component {
   handleAmountChange(event) {
     this.setState({weiAmount: this.usdToWei(event.target.value)});
     this.setState({amount: event.target.value});
-    console.log(this.state.weiAmount)
   }
 
   handleProfitShareChange(event) {
@@ -82,9 +92,9 @@ class NewStakingRequestForm extends Component {
             </Form.Group>
 
             <Button
-              onClick={this.createStakingRequest}
+              onClick={(event) => {event.preventDefault(); this.createStakingRequest();}}
               variant="primary"
-              type="submit"
+              // type="submit"
             >
               Submit
             </Button>

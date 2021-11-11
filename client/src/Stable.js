@@ -13,7 +13,6 @@ export default function Stable(props) {
     setStakeInFocus(null);
   }
   const handleShow = (stake) => {
-    console.log(stake);
     setStakeInFocus(stake);
     setShow(true);
   }
