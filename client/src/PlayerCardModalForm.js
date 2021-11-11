@@ -3,6 +3,10 @@ import { Component } from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button.js";
 
+const weiToUsd = (amountInWei, ethPriceUsd) => {
+  return (ethPriceUsd * (amountInWei / 1e18)).toFixed(2);
+}
+
 export default class PlayerCardModalForm extends Component {
 
   claimEscrow = async () => {
@@ -32,7 +36,7 @@ export default class PlayerCardModalForm extends Component {
           <Modal.Body>
             Stake ID: {this.props.stake.id}
             <br/>
-            You staked {this.props.stake.amount} for a profit share of {this.props.stake.profitShare}%.
+            You staked ${weiToUsd(this.props.stake.amount, this.props.ethPriceUsd)} for a profit share of {this.props.stake.profitShare}%.
             <br/>
             Stake status: {this.props.stake.status}
             <br/>

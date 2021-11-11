@@ -1,13 +1,14 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import PlayerCard from "./PlayerCard.js";
 import { Container } from "react-bootstrap";
-import { useState } from "react";
 import "./Stable.css";
 import PlayerCardModalForm from "./PlayerCardModalForm.js";
+import { CoinGeckoClient } from "./utils";
 
 export default function Stable(props) {
   const [stakeInFocus, setStakeInFocus] = useState(null);
   const [show, setShow] = useState(false);
+  const [ethPriceUsd, setEthPriceUsd] = useState(0);
   const handleClose = () => {
     setShow(false);
     setStakeInFocus(null);
@@ -16,6 +17,10 @@ export default function Stable(props) {
     setStakeInFocus(stake);
     setShow(true);
   }
+
+  useEffect(() => {
+    CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => setEthPriceUsd(resp.data.ethereum.usd));
+  }, [])
 
   if (
     props.accounts === null ||
@@ -73,6 +78,7 @@ export default function Stable(props) {
       </Container>
       {/* TODO: give this a better name */}
       <PlayerCardModalForm
+        ethPriceUsd={ethPriceUsd}
         contract={props.contract}
         accounts={props.accounts}
         stake={stakeInFocus}
