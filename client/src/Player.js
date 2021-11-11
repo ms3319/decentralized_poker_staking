@@ -109,7 +109,7 @@ const StakeStatus = {
   Cancelled: "3",
   AwaitingReturnPayment: "4",
   Completed: "5",
-  EscrowReturned: "6"
+  EscrowClaimed: "6"
 };
 
 function PastStakes({ returnProfits, stakes, isViewersAccount }) {
