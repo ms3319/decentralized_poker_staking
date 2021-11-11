@@ -2,10 +2,7 @@ import React from "react";
 import { Component } from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button.js";
-
-const weiToUsd = (amountInWei, ethPriceUsd) => {
-  return (ethPriceUsd * (amountInWei / 1e18)).toFixed(2);
-}
+import { weiToUsd } from "./utils.js";
 
 export default class PlayerCardModalForm extends Component {
 

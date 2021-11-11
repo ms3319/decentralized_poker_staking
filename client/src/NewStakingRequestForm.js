@@ -1,18 +1,13 @@
 import React, { Component } from "react";
 import { Modal, Form } from "react-bootstrap";
 import Button from "./Button"
-import { CoinGeckoClient } from "./utils";
+import { CoinGeckoClient, usdToWei } from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
 class NewStakingRequestForm extends Component {
   state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0 };
-
-  usdToWei = (usd) => {
-    if (this.state.ethPriceUsd === 0) return 0;
-    return (usd / this.state.ethPriceUsd) * 1e18;
-  }
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
@@ -40,7 +35,7 @@ class NewStakingRequestForm extends Component {
   }
 
   handleAmountChange(event) {
-    this.setState({weiAmount: this.usdToWei(event.target.value)});
+    this.setState({weiAmount: usdToWei(event.target.value, this.state.ethPriceUsd)});
     this.setState({amount: event.target.value});
   }
 
@@ -50,7 +45,7 @@ class NewStakingRequestForm extends Component {
 
   handleEscrowChange(event) {
     this.setState({escrow: event.target.value});
-    this.setState({weiEscrow: this.usdToWei(event.target.value)});
+    this.setState({weiEscrow: usdToWei(event.target.value, this.state.ethPriceUsd)});
   }
 
   render() {

@@ -3,7 +3,7 @@ import styles from "./Player.module.css"
 import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
-import { CoinGeckoClient } from "./utils";
+import { CoinGeckoClient, weiToUsd, StakeStatus } from "./utils";
 
 const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
@@ -17,10 +17,6 @@ const ethereumUnits = (amountInWei) => {
   } else {
     return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
   }
-}
-
-const weiToUsd = (amountInWei, ethPriceUsd) => {
-  return (ethPriceUsd * (amountInWei / 1e18)).toFixed(2);
 }
 
 function PlayerInfo({ player }) { 
@@ -109,16 +105,6 @@ function PlayerStats({ ethPriceUsd, games }) {
     </div>
   )
 }
-
-const StakeStatus = {
-  Requested: "0",
-  Filled: "1",
-  Expired: "2",
-  Cancelled: "3",
-  AwaitingReturnPayment: "4",
-  Completed: "5",
-  EscrowReturned: "6"
-};
 
 function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
 

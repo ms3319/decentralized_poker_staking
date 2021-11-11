@@ -2,14 +2,11 @@ import React from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button"
 import {Link} from "react-router-dom";
+import { weiToUsd } from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const StakingRequestDetails = ({ request, contract, accounts, onHide, show, ethPriceUsd }) => {
-
-  const weiToUsd = (amountInWei) => {
-    return (ethPriceUsd * (amountInWei / 1e18)).toFixed(2);
-  }
 
   return (
     <Modal
@@ -28,7 +25,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, ethP
       <Modal.Body>
         <h4>Invest in a Horse</h4>
         <p>
-          You are going to invest ${weiToUsd(request.amount)} in {request.horse} with a potential profit share
+          You are going to invest ${weiToUsd(request.amount, ethPriceUsd)} in {request.horse} with a potential profit share
           of {request.profitShare}.
         </p>
         <Button

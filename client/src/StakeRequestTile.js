@@ -6,16 +6,15 @@ const numberWithCommas = (x) => {
   return x.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 }
 
-const ethereumUnits = (amountInWei) => {
-  if (amountInWei < 1e9) {
-    return { units: "wei", amount: amountInWei};
-  } else if (1e9 <= amountInWei && amountInWei < 1e18) {
-    return { units: "Gwei", amount: +(amountInWei / 1e9).toFixed(2)};
-  } else {
-    return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
-  }
-}
-
+// const ethereumUnits = (amountInWei) => {
+//   if (amountInWei < 1e9) {
+//     return { units: "wei", amount: amountInWei};
+//   } else if (1e9 <= amountInWei && amountInWei < 1e18) {
+//     return { units: "Gwei", amount: +(amountInWei / 1e9).toFixed(2)};
+//   } else {
+//     return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
+//   }
+// }
 
 export default function StakeRequestTile({ contract, request, onClick, ethPriceUsd}) {
   const [player, setPlayer] = useState(null);
