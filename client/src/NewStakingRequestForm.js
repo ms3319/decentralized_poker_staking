@@ -13,11 +13,16 @@ class NewStakingRequestForm extends Component {
     const { accounts, contract } = this.props;
     // TODO: sanity check the values
     if (this.state.escrow > 0) {
-      await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
-        .send({ from: accounts[0], value: this.state.weiEscrow }, function (error, transactionHash) {
-          console.log(error);
-          console.log(transactionHash);
-        });
+      try {
+        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
+          .send({ from: accounts[0], value: this.state.weiEscrow });
+      } catch (error) {
+        const response = JSON.parse(error.message.split("'")[1]);
+        console.log(response.value);
+        console.log(response.value.data.data);
+        console.log(Object.keys(response.value.data.data));
+        console.log(response.value.data.data[Object.keys(response.value.data.data)[0]]);
+      }
     } else {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
@@ -26,6 +31,8 @@ class NewStakingRequestForm extends Component {
         const response = JSON.parse(error.message.split("'")[1]);
         console.log(response.value);
         console.log(response.value.data.data);
+        console.log(Object.keys(response.value.data.data));
+        console.log(response.value.data.data[Object.keys(response.value.data.data)[0]]);
       }
     }
   };
