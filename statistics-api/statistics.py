@@ -41,7 +41,10 @@ class Player:
 # POST: insert a new game in the list of games and return the id
 class Games:
     def on_get(self, req, resp):
+        filter = req.get_param_as_list("id")
         data = db.child("games").get().val()
+        if (filter != None):
+            data = { id: data[id] for id in set(filter) & set(data.keys()) }
         resp.text = json.dumps(data)
 
     def on_post(self, req, resp):
@@ -88,7 +91,10 @@ class Game:
 # POST: Create a new tournament and return its id
 class Tournaments:
     def on_get(self, req, resp):
+        filter = req.get_param_as_list("id")
         data = db.child("tournaments").get().val()
+        if (filter != None):
+            data = { id: data[id] for id in set(filter) & set(data.keys()) }
         resp.text = json.dumps(data)
 
     def on_post(self, req, resp):
@@ -98,7 +104,7 @@ class Tournaments:
         resp_data = db.child("tournaments").push(data)
         resp.text = json.dumps(resp_data)
 
-# /tournament/{id}
+# /tournaments/{id}
 # GET: Get an individual tournament occurred/to come with given id
 # PUT: Update tournament's details, return full tournament object
 class Tournament:
