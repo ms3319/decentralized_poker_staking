@@ -33,9 +33,10 @@ contract("Staking", (accounts) => {
 
     describe("Creating Players", async () => {
         it("Create a new player", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             
             let player = await staking.getPlayer(horseAccount1);
+            assert.equal(player.apiId, "api id", "Player API id doesn't match");
             assert.equal(player.name, "John Smith", "Player name doesn't match");
             assert.equal(player.sharkscopeLink, "www.sharkscope.com", "Player sharkscope link doesn't match");
             assert.equal(player.profilePicPath, "www.images.com/pic", "Player profile pic path doesn't match");
@@ -77,7 +78,7 @@ contract("Staking", (accounts) => {
         });
 
         it("Stake created by a player is associated with them", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             let player = await staking.getPlayer(horseAccount1);
             assert.equal(player.stakeIds.length, 0, "Player hasn't created any stakes");
 
@@ -94,7 +95,7 @@ contract("Staking", (accounts) => {
         });
 
         it("Player stakes can be modified via the global stake map", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
             await staking.createRequest(2000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
 

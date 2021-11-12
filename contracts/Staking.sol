@@ -39,6 +39,7 @@ contract Staking {
 
     struct Player {
         address payable playerAddress;
+        string apiId;
         string name;
         string sharkscopeLink;
         string profilePicPath;
@@ -49,15 +50,16 @@ contract Staking {
         owner = payable(msg.sender);
     }
 
-    event PlayerCreated(address playerAddress, string name, string sharkscopeLink, string profilePicPath);
+    event PlayerCreated(address playerAddress, string apiId, string name, string sharkscopeLink, string profilePicPath);
 
-    function createPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+    function createPlayer(string memory apiId, string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+        players[msg.sender].apiId = apiId;
         players[msg.sender].playerAddress = payable(msg.sender);
         players[msg.sender].name = name;
         players[msg.sender].sharkscopeLink = sharkscopeLink;
         players[msg.sender].profilePicPath = profilePicPath;
 
-        emit PlayerCreated(msg.sender, name, sharkscopeLink, profilePicPath);
+        emit PlayerCreated(msg.sender, apiId, name, sharkscopeLink, profilePicPath);
     }
 
     function getPlayer(address add) external view returns (Player memory) {
