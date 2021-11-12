@@ -28,8 +28,6 @@ async function getFilledStakes() {
       filledStakes.push(stake);
     }
   }
-  console.log(`Got filled games:`)
-  console.log(filledStakes)
   return filledStakes
 }
 
