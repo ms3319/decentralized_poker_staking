@@ -63,6 +63,8 @@ class Game:
 
     def on_put(self, req, resp, game_id):
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
+
+        max_key = None
         max_val = 0
         # Update each players total winnings and tournaments played
         for (key, val) in takeHomeMoney.items():
@@ -77,7 +79,7 @@ class Game:
 
             db.child("players").child(key).update({"gamesPlayed": playerGamesPlayed + 1, "totalWinnings": newTotalWinnings})
 
-        playerGamesWon = db.child("players").child(key).child("gamesWon").get().val()
+        playerGamesWon = db.child("players").child(max_key).child("gamesWon").get().val()
         db.child("players").child(max_key).update({"gamesWon": playerGamesWon + 1})
         completed = bool(req.get_param("completed"))
         data = {"takeHomeMoney": takeHomeMoney, "completed": completed}
@@ -115,6 +117,7 @@ class Tournament:
     def on_put(self, req, resp, tournament_id):
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
 
+        max_key = None
         max_val = 0
         # Update each players total winnings and tournaments played
         for (key, val) in takeHomeMoney.items():
@@ -129,7 +132,7 @@ class Tournament:
 
             db.child("players").child(key).update({"tournamentsPlayed": playerTournamentsPlayed + 1, "totalWinnings": newTotalWinnings})
 
-        playerTournamentsWon = db.child("players").child(key).child("tournamentsWon").get().val()
+        playerTournamentsWon = db.child("players").child(max_key).child("tournamentsWon").get().val()
         db.child("players").child(max_key).update({"tournamentsWon": playerTournamentsWon + 1})
         completed = bool(req.get_param("completed"))
         data = {"takeHomeMoney": takeHomeMoney, "completed": completed}
@@ -157,12 +160,12 @@ class TournamentTakeHome:
 # PUT : update the status of the tournament
 class TournamentStatus:
     def on_get(self, req, resp, tournament_id):
-        data = db.child("tournaments").child(tournament_id).child("status").get().val()
+        data = db.child("tournaments").child(tournament_id).child("completed").get().val()
         resp.text = json.dumps(data)
     
     def on_put(self, req, resp, tournament_id):
         completed = bool(req.get_param("completed"))
-        data = db.child("tournaments").child(tournament_id).child("status").update(completed);
+        data = db.child("tournaments").child(tournament_id).child("completed").update(completed);
         resp.text = json.dumps(data)
 
 api = falcon.App()
