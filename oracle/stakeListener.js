@@ -19,5 +19,3 @@ export default function start(watchedStakes, contract) {
     watchedStakes.splice(watchedStakes.findIndex(stake => stake.id === event.returnValues.stake.id), 1);
   }
 }
-
-// module.exports = { start }
