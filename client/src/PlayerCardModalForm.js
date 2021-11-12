@@ -7,7 +7,7 @@ import { weiToUsd } from "./utils.js";
 export default class PlayerCardModalForm extends Component {
 
   claimEscrow = async () => {
-    await this.props.contract.methods.requestEscrow(this.props.stake.id).send({from: this.props.accounts[0]});
+    await this.props.contract.methods.backerClaimEscrow(this.props.stake.id).send({from: this.props.accounts[0]});
   }
 
   render() {

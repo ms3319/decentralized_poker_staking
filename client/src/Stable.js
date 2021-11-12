@@ -67,8 +67,8 @@ export default function Stable(props) {
               bg={stake[0].toLowerCase()}
               text={stake[0] === "Dark" ? "light" : "dark"}
               style={{
-                width: "22rem",
-                height: "14rem",
+                width: "24rem",
+                height: "16rem",
                 float: "left",
                 margin: "15px",
                 border: "solid black 1px",

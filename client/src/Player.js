@@ -102,6 +102,7 @@ function PlayerStats({ ethPriceUsd, games }) {
   )
 }
 
+
 function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
 
   const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)

@@ -21,6 +21,8 @@ export default function PlayerCard(props) {
               {player ? player.name : ""} ({props.stake.horse})
             </div>
           </Col>
+        </Row>      
+        <Row>
           <Col md="auto">
             {" "}
             <img
@@ -29,13 +31,14 @@ export default function PlayerCard(props) {
               alt="Charlie Chaplin"
             ></img>{" "}
           </Col>
+          <Col style={{"display": "flex", "justifyContent": "center", "alignItems": "center"}}>
+            <div> {/* Used the div in order to main separation betweeen rows */}
+            <Row style={{"justifyContent": "center", "display": "flex"}}>Playing in</Row>
+            <Row style={{"justifyContent": "center", "display": "flex"}}>Poker Tournament X</Row>
+            </div>
+          </Col>
         </Row>
-        <Row>
-          <Col>Playing in</Col>
-        </Row>
-        <Row>
-          <Col>Poker Tournament X </Col>
-        </Row>
+        
       </Card.Body>
     </Card>
   );
