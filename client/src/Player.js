@@ -30,7 +30,7 @@ function PlayerInfo({ player }) {
           <div className={styles.label}>Wallet Address </div><div className={styles.value}>{player.playerAddress}</div>
         </div>
         <div>
-          <div className={styles.label}>Sharkscope Link</div><div className={styles.value}>{<a href={player.sharkscopeLink}>{player.sharkscopeLink}</a>}</div>
+          <div className={styles.label}>Sharkscope Link</div><div className={styles.value}><a href={"http://".concat(player.sharkscopeLink)}>{player.sharkscopeLink}</a></div>
         </div>
       </div>
     </div>
