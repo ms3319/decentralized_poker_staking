@@ -38,6 +38,18 @@ contract("Staking", (accounts) => {
         });
     });
 
+    describe("Editing Players", async () => {
+        it("Edit an existing player", async () => {
+            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+
+            await staking.editPlayer("Jake Smith", "www.dolphinscope.com", "www.images.com/not-a-pic", {from: horseAccount1});
+            let player = await staking.getPlayer(horseAccount1);
+            assert.equal(player.name, "Jake Smith", "Player name doesn't match");
+            assert.equal(player.sharkscopeLink, "www.dolphinscope.com", "Player sharkscope link doesn't match");
+            assert.equal(player.profilePicPath, "www.images.com/not-a-pic", "Player profile pic path doesn't match");
+        });
+    });
+
     describe("Creating Stakes", async () => {
         it("Create a new stake with valid arguments", async () => {
             await staking.createRequest(1000, 45, 0, {from: horseAccount1});

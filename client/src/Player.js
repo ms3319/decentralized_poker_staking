@@ -4,6 +4,7 @@ import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
 import { CoinGeckoClient, weiToUsd, StakeStatus, numberWithCommas } from "./utils";
+import EditPlayerForm from "./EditPlayerForm";
 
 const ethereumUnits = (amountInWei) => {
   if (amountInWei < 1e7) {
@@ -15,7 +16,17 @@ const ethereumUnits = (amountInWei) => {
   }
 }
 
-function PlayerInfo({ player }) { 
+function PlayerInfo({ player, accounts, contract }) { 
+
+  const [showEditPlayerForm, setShowEditPlayerForm] = useState(false)
+
+  const openEditPlayerForm = () => {
+    setShowEditPlayerForm(true)
+  }
+
+  const closeEditPlayerForm = () => {
+    setShowEditPlayerForm(false)
+  }
 
   return (
     <div className={styles.playerInfoTile}>
@@ -32,6 +43,12 @@ function PlayerInfo({ player }) {
         <div>
           <div className={styles.label}>Sharkscope Link</div><div className={styles.value}><a href={"http://".concat(player.sharkscopeLink)}>{player.sharkscopeLink}</a></div>
         </div>
+        <div>
+          <Button style={{margin: "10px 0px 0px 0px"}} onClick={openEditPlayerForm}>
+            Edit Profile
+          </Button>
+        </div>
+        <EditPlayerForm show={showEditPlayerForm} onHide={closeEditPlayerForm} accounts={accounts} contract={contract} player={player}/>
       </div>
     </div>
   )
@@ -206,8 +223,8 @@ export default function Player({ contract, accounts }) {
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)
   const [ethPriceUsd, setEthPriceUsd] = useState(0);
-  const history = useHistory()
-
+  const history = useHistory();
+  
   useEffect(() => {
     if (contract != null) {
       contract.methods.getPlayer(playerAddress).call().then((player) => {setPlayer(player)})
@@ -242,7 +259,7 @@ export default function Player({ contract, accounts }) {
 
   return (
     <div className={styles.playerPage}>
-      {player && <PlayerInfo player={player}/>}
+      {player && <PlayerInfo player={player} accounts={accounts} contract={contract}/>}
       {stakes && <PlayerStats ethPriceUsd={ethPriceUsd} games={stakes} />}
       {stakes && accounts && <PastStakes ethPriceUsd={ethPriceUsd} returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
     </div>
