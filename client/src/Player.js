@@ -5,6 +5,7 @@ import React, {useEffect, useState} from "react";
 import Button from "./Button";
 import { CoinGeckoClient, weiToUsd, StakeStatus, numberWithCommas } from "./utils";
 import EditPlayerForm from "./EditPlayerForm";
+import default_profile_pic from './images/default-profile-pic.png'
 
 const ethereumUnits = (amountInWei) => {
   if (amountInWei < 1e7) {
@@ -31,7 +32,11 @@ function PlayerInfo({ player, accounts, contract }) {
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
-        <img className={styles.profilePic} alt="Profile" src={player.profilePicPath} />
+        <img className={styles.profilePic} alt="Profile" src={player.profilePicPath} 
+          onError={event => {
+            event.target.src = default_profile_pic
+            event.onerror = null
+          }}/>
       </div>
       <div className={styles.details}>
         <div className={styles.playerName}>
