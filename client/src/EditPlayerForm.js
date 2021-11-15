@@ -56,7 +56,7 @@ class EditPlayerForm extends Component {
                         </Form.Group>
 
                         <Button
-                            onClick={this.saveProfileChanges}
+                            onClick={event => {event.preventDefault(); this.saveProfileChanges()}}
                             variant="primary"
                             type="submit"
                         >
