@@ -4,20 +4,13 @@ import Button from "./Button"
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-class NewPlayerForm extends Component {
-    state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: ""};
+class EditPlayerForm extends Component {
+    state = {name: this.props.player.name, sharkscopeLink: this.props.player.sharkscopeLink, profilePicPath: this.props.player.profilePicPath};
 
-    createNewPlayer = async () => {
+    saveProfileChanges = async () => {
         const { accounts, contract } = this.props;
-        console.log("creating new player...")
 
-        // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
-
-        await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
-    };
-
-    handleApiIdChange(event) {
-        this.setState({apiId: event.target.value});
+        await contract.methods.editPlayer(this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
     }
     
     handleNameChange(event) {
@@ -42,7 +35,7 @@ class NewPlayerForm extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">
-                        Create New Player
+                        Edit Player Profile
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -50,11 +43,6 @@ class NewPlayerForm extends Component {
                         <Form.Group className="mb-3">
                             <Form.Label>Name</Form.Label>
                             <Form.Control value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="text"/>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label>Unique Identifier</Form.Label>
-                            <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
@@ -68,11 +56,11 @@ class NewPlayerForm extends Component {
                         </Form.Group>
 
                         <Button
-                            onClick={event => {event.preventDefault(); this.createNewPlayer()}}
+                            onClick={event => {event.preventDefault(); this.saveProfileChanges()}}
                             variant="primary"
                             type="submit"
                         >
-                        Submit
+                        Save Changes
                         </Button>
                     </Form>
                 </Modal.Body>
@@ -84,4 +72,4 @@ class NewPlayerForm extends Component {
     }
 }
 
-export default NewPlayerForm;
+export default EditPlayerForm;

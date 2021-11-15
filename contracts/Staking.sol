@@ -81,6 +81,23 @@ contract Staking {
         return players[add];
     }
 
+    // player doesn't exist
+    error PlayerDoesntExist(address playerAddress);
+
+    event PlayerEdited(address playerAddress);
+
+    function editPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+        if (players[msg.sender].playerAddress == address(0)) {
+            revert PlayerDoesntExist(msg.sender);
+        }
+
+        players[msg.sender].name = name;
+        players[msg.sender].sharkscopeLink = sharkscopeLink;
+        players[msg.sender].profilePicPath = profilePicPath;
+
+        emit PlayerEdited(msg.sender);
+    }
+
     /// Only the owner can kill this contract
     error OnlyOwnerCanKill();
 
