@@ -7,14 +7,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 
 class NewStakingRequestForm extends Component {
-  state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0 };
+  state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0, gameType:0, apiId: "" };
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
     // TODO: sanity check the values
     if (this.state.escrow > 0) {
       try {
-        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
+        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0], value: this.state.weiEscrow });
       } catch (error) {
         const response = JSON.parse(error.message.split("'")[1]);
@@ -25,7 +25,7 @@ class NewStakingRequestForm extends Component {
       }
     } else {
       try {
-        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString())
+        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0] });
       } catch (error) {
         const response = JSON.parse(error.message.split("'")[1]);
@@ -55,7 +55,16 @@ class NewStakingRequestForm extends Component {
     this.setState({weiEscrow: usdToWei(event.target.value, this.state.ethPriceUsd)});
   }
 
+  handleApiIdChange(event) {
+    this.setState({apiId: event.target.value});
+  }
+
   render() {
+    const gameTypes = [
+      { name: "Single Game", value: 0 },
+      { name: "Tournament", value: 1 }
+    ]
+
     return (
       <Modal
         {...this.props}
@@ -93,6 +102,22 @@ class NewStakingRequestForm extends Component {
               </Form.Text>
             </Form.Group>
 
+            <Form.Group className="mb-3">
+              <Form.Label>Game Type</Form.Label>
+              { gameTypes.map((gameType) => <Form.Check type="radio" key={gameType.name} label={gameType.name} checked={this.state.gameType === gameType.value} onChange={() => this.setState({ gameType: gameType.value })} />) }
+              <Form.Text className="text-muted">
+                Select the type of game you are playing in.
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Game/Tournament ID</Form.Label>
+              <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="string" placeholder="e.g. -MnVll18N3qLF-Z2bVoU" />
+              <Form.Text className="text-muted">
+                Please provide the unique identifier of the game you wish to be staked in
+              </Form.Text>
+            </Form.Group>
+
             <Button
               onClick={(event) => {event.preventDefault(); this.createStakingRequest();}}
               variant="primary"
@@ -100,6 +125,7 @@ class NewStakingRequestForm extends Component {
             >
               Submit
             </Button>
+            
           </Form>
         </Modal.Body>
         <Modal.Footer>

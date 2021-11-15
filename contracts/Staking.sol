@@ -18,6 +18,11 @@ contract Staking {
         EscrowClaimed
     }
 
+    enum GameType {
+        SingleGame,
+        Tournament
+    }
+
     struct Stake {
         uint id;
         address payable horse;
@@ -28,6 +33,12 @@ contract Staking {
         uint profit;
         StakeStatus status;
         bool horseWon;
+        GameType gameType;
+        string apiId;
+        StakeTimeStamp stakeTimeStamp;
+    }
+
+    struct StakeTimeStamp {
         uint256 createdTimestamp;
         uint256 filledTimestamp;
         uint256 gamePlayedTimestamp;
@@ -35,6 +46,7 @@ contract Staking {
 
     struct Player {
         address payable playerAddress;
+        string apiId;
         string name;
         string sharkscopeLink;
         string profilePicPath;
@@ -46,22 +58,23 @@ contract Staking {
         owner = payable(msg.sender);
     }
 
-    event PlayerCreated(address playerAddress, string name, string sharkscopeLink, string profilePicPath);
+    event PlayerCreated(address playerAddress, string apiId, string name, string sharkscopeLink, string profilePicPath);
 
     /// A player with this address already exists
     error PlayerAlreadyExists(address playerAddress);
 
-    function createPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+    function createPlayer(string memory apiId, string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
         if (players[msg.sender].playerAddress != address(0)) {
             revert PlayerAlreadyExists(msg.sender);
         }
+        players[msg.sender].apiId = apiId;
         players[msg.sender].playerAddress = payable(msg.sender);
         players[msg.sender].name = name;
         players[msg.sender].sharkscopeLink = sharkscopeLink;
         players[msg.sender].profilePicPath = profilePicPath;
         players[msg.sender].createdTimestamp = block.timestamp;
 
-        emit PlayerCreated(msg.sender, name, sharkscopeLink, profilePicPath);
+        emit PlayerCreated(msg.sender, apiId, name, sharkscopeLink, profilePicPath);
     }
 
     function getPlayer(address add) external view returns (Player memory) {
@@ -99,14 +112,15 @@ contract Staking {
     /// Escrow does not match msg.value
     error EscrowValueNotMatching(uint escrow, uint value);
 
-    function createRequest(uint amount, uint profitShare, uint escrow) external payable {
+    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId) external payable {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
         if (escrow > 0 && escrow != msg.value) {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, block.timestamp, 0, 0);
+        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, gameType, apiId, stakeTimeStamp);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
@@ -114,7 +128,7 @@ contract Staking {
     }
 
     // Staking a request
-    event StakeFilled(uint stakeId, address horse, address backer, uint amount);
+    event StakeFilled(Stake stake);
     
     /// Stake has already been filled/cancelled
     error StakeNotFillable(uint id);
@@ -147,15 +161,15 @@ contract Staking {
         // Update stake status and transfer funds
         stake.status = StakeStatus.Filled;
         stake.backer = backer;
-        stake.filledTimestamp = block.timestamp;
+        stake.stakeTimeStamp.filledTimestamp = block.timestamp;
         horse.transfer(stake.amount);
 
         stakes[id] = stake;
-        emit StakeFilled(id, horse, backer, stake.amount);
+        emit StakeFilled(stake);
     }
 
     // Cancelling a reqested stake
-    event StakeCanceled(uint id);
+    event StakeCancelled(uint id);
     
     /// Only the horse can cancel a requested stake
     error CancellingSenderIsNotHorse(uint id, address canceller, address horse);
@@ -182,7 +196,7 @@ contract Staking {
         stake.status = StakeStatus.Cancelled;
 
         stakes[id] = stake;
-        emit StakeCanceled(id);
+        emit StakeCancelled(id);
     }
     
     // TODO: How might we allow this?
@@ -255,7 +269,7 @@ contract Staking {
         stakes[id].status = StakeStatus.AwaitingReturnPayment;
         stakes[id].profit = profit;
         stakes[id].horseWon = profit > 0; 
-        stakes[id].gamePlayedTimestamp = block.timestamp;
+        stakes[id].stakeTimeStamp.gamePlayedTimestamp = block.timestamp;
         emit GamePlayed(id, profit);
     }
 
