@@ -11,6 +11,11 @@ const StakeStatus = {
     EscrowClaimed: 6
 };
 
+const GameType = {
+    SingleGame: 0,
+    Tournament: 1
+};
+
 contract("Staking", (accounts) => {
     let staking;
     let ownerAccount = accounts[0];
@@ -28,9 +33,10 @@ contract("Staking", (accounts) => {
 
     describe("Creating Players", async () => {
         it("Create a new player", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             
             let player = await staking.getPlayer(horseAccount1);
+            assert.equal(player.apiId, "api id", "Player API id doesn't match");
             assert.equal(player.name, "John Smith", "Player name doesn't match");
             assert.equal(player.sharkscopeLink, "www.sharkscope.com", "Player sharkscope link doesn't match");
             assert.equal(player.profilePicPath, "www.images.com/pic", "Player profile pic path doesn't match");
@@ -52,39 +58,43 @@ contract("Staking", (accounts) => {
 
     describe("Creating Stakes", async () => {
         it("Create a new stake with valid arguments", async () => {
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0, GameType.SingleGame, "secret_id", {from: horseAccount1});
 
             let stake = await staking.getStake(0);
             assert.equal(stake.amount, 1000, "Stake amount doesn't match");
             assert.equal(stake.profitShare, 45, "Stake profit share doesn't match");
             assert.equal(stake.escrow, 0, "Stake escrow doesn't match");
             assert.equal(stake.status, StakeStatus.Requested, "Stake escrow doesn't match");
+            assert.equal(stake.gameType, GameType.SingleGame, "Stake game type doesn't match");
+            assert.equal(stake.apiId, "secret_id", "Stake apiId doesn't match");
         });
 
         it("Create a new escrow stake with valid arguments", async () => {
-            await staking.createRequest(1000, 45, 1000, {from: horseAccount1, value: 1000});
+            await staking.createRequest(1000, 45, 1000, GameType.Tournament, "secret_id", {from: horseAccount1, value: 1000});
 
             let stake = await staking.getStake(0);
             assert.equal(stake.amount, 1000, "Stake amount doesn't match");
             assert.equal(stake.profitShare, 45, "Stake profit share doesn't match");
             assert.equal(stake.escrow, 1000, "Stake escrow doesn't match");
             assert.equal(stake.status, StakeStatus.Requested, "Stake escrow doesn't match");
+            assert.equal(stake.gameType, GameType.Tournament, "Stake game type doesn't match");
+            assert.equal(stake.apiId, "secret_id", "Stake apiId doesn't match");
         });
 
         it("Cannot create a new escrow stake with msg.value != escrow", async () => {
-            await truffleAssert.reverts(staking.createRequest(1000, 45, 1000, {from: horseAccount1, value: 800}));
+            await truffleAssert.reverts(staking.createRequest(1000, 45, 1000, GameType.Tournament, "secret_id", {from: horseAccount1, value: 800}));
         });
 
         it("Cannot create a new stake with invalid profit share", async () => {
-            await truffleAssert.reverts(staking.createRequest(1000, 150, 0, {from: horseAccount1}));
+            await truffleAssert.reverts(staking.createRequest(1000, 150, 0, GameType.Tournament, "secret_id", {from: horseAccount1}));
         });
 
         it("Stake created by a player is associated with them", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             let player = await staking.getPlayer(horseAccount1);
             assert.equal(player.stakeIds.length, 0, "Player hasn't created any stakes");
 
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0,GameType.SingleGame, "secret_id",  {from: horseAccount1});
             player = await staking.getPlayer(horseAccount1);
             let stake = await staking.getStake(player.stakeIds[0]);
 
@@ -97,9 +107,9 @@ contract("Staking", (accounts) => {
         });
 
         it("Player stakes can be modified via the global stake map", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
-            await staking.createRequest(2000, 45, 0, {from: horseAccount1});
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
+            await staking.createRequest(2000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
 
             await staking.stakeHorse(1, {from: backerAccount1, value: 2000});
 
@@ -115,7 +125,7 @@ contract("Staking", (accounts) => {
 
     describe("Cancelling Standard Stakes", async () => {
         beforeEach("Create new non-escrow stake", async () => {
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
         });
 
         it("Horse can cancel requested stake", async () => {
@@ -141,7 +151,7 @@ contract("Staking", (accounts) => {
 
     describe("Cancelling Escrow Stakes", async () => {
         beforeEach("Create new escrow stake", async () => {
-            await staking.createRequest(1000, 45, 1000, {from: horseAccount1, value: 1000});
+            await staking.createRequest(1000, 45, 1000, GameType.Tournament, "secret_id", {from: horseAccount1, value: 1000});
         });
 
         // TODO: Find out if you can get transfers that happen inside smart contract function calls
@@ -153,7 +163,7 @@ contract("Staking", (accounts) => {
 
     describe("Filling Stakes", async () => {
         beforeEach("Create new non-escrow stake", async () => {
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
         });
 
         it("Stake a horse with valid args", async () => {
@@ -185,7 +195,7 @@ contract("Staking", (accounts) => {
 
     describe("Returning Profits", async () => {
         beforeEach("Create new non-escrow stake", async () => {
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
+            await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", {from: horseAccount1});
         });
 
         it("Cannot return profits of a requested stake", async () => {
@@ -208,8 +218,8 @@ contract("Staking", (accounts) => {
 
     describe("Requesting back escrow", async () => {
         beforeEach("Create new escrow and non-escrow stakes", async () => {
-            await staking.createRequest(1000, 45, 0, {from: horseAccount1});
-            await staking.createRequest(500, 62, 250, {from: horseAccount2, value: 250});
+            await staking.createRequest(1000, 45, 0, GameType.SingleGame, "some_id", {from: horseAccount1});
+            await staking.createRequest(500, 62, 250, GameType.Tournament, "another_id", {from: horseAccount2, value: 250});
         });
 
         it("Cannot return escrow from a non-completed stake", async () => {
