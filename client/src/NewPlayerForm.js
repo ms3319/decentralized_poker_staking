@@ -68,7 +68,7 @@ class NewPlayerForm extends Component {
                         </Form.Group>
 
                         <Button
-                            onClick={this.createNewPlayer}
+                            onClick={(event) => {event.preventDefault(); this.createNewPlayer()}}
                             variant="primary"
                             type="submit"
                         >

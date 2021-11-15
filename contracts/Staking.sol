@@ -35,6 +35,10 @@ contract Staking {
         bool horseWon;
         GameType gameType;
         string apiId;
+        StakeTimeStamp stakeTimeStamp;
+    }
+
+    struct StakeTimeStamp {
         uint256 createdTimestamp;
         uint256 filledTimestamp;
         uint256 gamePlayedTimestamp;
@@ -115,7 +119,8 @@ contract Staking {
         if (escrow > 0 && escrow != msg.value) {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, gameType, apiId, block.timestamp, 0, 0);
+        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, gameType, apiId, stakeTimeStamp);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
@@ -156,7 +161,7 @@ contract Staking {
         // Update stake status and transfer funds
         stake.status = StakeStatus.Filled;
         stake.backer = backer;
-        stake.filledTimestamp = block.timestamp;
+        stake.stakeTimeStamp.filledTimestamp = block.timestamp;
         horse.transfer(stake.amount);
 
         stakes[id] = stake;
@@ -264,7 +269,7 @@ contract Staking {
         stakes[id].status = StakeStatus.AwaitingReturnPayment;
         stakes[id].profit = profit;
         stakes[id].horseWon = profit > 0; 
-        stakes[id].gamePlayedTimestamp = block.timestamp;
+        stakes[id].stakeTimeStamp.gamePlayedTimestamp = block.timestamp;
         emit GamePlayed(id, profit);
     }
 

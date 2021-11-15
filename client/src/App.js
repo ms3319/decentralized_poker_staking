@@ -38,10 +38,11 @@ export default function App() {
       );
       const requestCount = await contract.methods.requestCount().call();
       const requests = [];
-      for (let i = requestCount - 1; i > 0; i--) {
+      for (let i = requestCount - 1; i >= 0; i--) {
+        console.log(i);
         requests.push(await contract.methods.getStake(i).call());
       }
-      setHasPlayerAccount((await  contract.methods.getPlayer(accounts[0]).call()).playerAddress !== "0x0000000000000000000000000000000000000000")
+      setHasPlayerAccount((await contract.methods.getPlayer(accounts[0]).call()).playerAddress !== "0x0000000000000000000000000000000000000000")
       setContract(contract)
       setRequests(requests)
       setAccounts(accounts)
