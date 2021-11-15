@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Col, Container, Row} from "react-bootstrap";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
@@ -13,6 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
 import Button from "./Button";
 import { useWeb3React } from "@web3-react/core";
+import { CoinGeckoClient } from "./utils";
 
 export default function Home(props) {
   
@@ -20,8 +21,13 @@ export default function Home(props) {
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false)
+  const [ethPriceUsd, setEthPriceUsd] = useState(0);
 
   const {active, activate} = useWeb3React();
+
+  useEffect(() => {
+    CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => setEthPriceUsd(resp.data.ethereum.usd));
+  }, [])
 
   const closeRequestDetails = () => {
     setShowRequestDetails(false);
@@ -80,18 +86,24 @@ export default function Home(props) {
       {active &&
         <div className={styles.mainContentContainer}>
           <h2>Marketplace</h2>
-          <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
-            Create New Player
-          </Button>
-          <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
-            Create Staking Request
-          </Button>
+          {!props.hasPlayerAccount &&
+            <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
+              Create New Player
+            </Button>
+          }
+          {props.hasPlayerAccount && 
+            <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
+              Create Staking Request
+            </Button>
+          }
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={props.accounts} contract={props.contract}/>
           <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakingRequestDetails contract={props.contract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
-          <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
+          <StakingRequestDetails contract={props.contract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} ethPriceUsd={ethPriceUsd} />
+          <div className={styles.stakingListContainer}>
+            <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} ethPriceUsd={ethPriceUsd} />
+          </div>
         </div>
       }
     </div>

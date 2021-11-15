@@ -38,10 +38,11 @@ export default function App() {
       );
       const requestCount = await contract.methods.requestCount().call();
       const requests = [];
-      for (let i = 0; i < requestCount; i++) {
+      for (let i = requestCount - 1; i >= 0; i--) {
+        console.log(i);
         requests.push(await contract.methods.getStake(i).call());
       }
-      setHasPlayerAccount((await  contract.methods.getPlayer(accounts[0]).call()).playerAddress !== "0x0000000000000000000000000000000000000000")
+      setHasPlayerAccount((await contract.methods.getPlayer(accounts[0]).call()).playerAddress !== "0x0000000000000000000000000000000000000000")
       setContract(contract)
       setRequests(requests)
       setAccounts(accounts)
@@ -54,7 +55,7 @@ export default function App() {
       <Router>
         <NavBar hasPlayerAccount={hasPlayerAccount} />
         <Route exact path={"/"}>
-          <Home requests={requests} accounts={accounts} contract={contract} />
+          <Home hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} />
         </Route>
         <Route exact path = "/my-stable">
           <Stable requests={requests} accounts={accounts} contract={contract}/>

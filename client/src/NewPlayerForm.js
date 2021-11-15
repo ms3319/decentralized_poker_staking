@@ -5,7 +5,7 @@ import Button from "./Button"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class NewPlayerForm extends Component {
-    state = {name: "", sharkscopeLink: "", profilePicPath: ""};
+    state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: ""};
 
     createNewPlayer = async () => {
         const { accounts, contract } = this.props;
@@ -13,8 +13,12 @@ class NewPlayerForm extends Component {
 
         // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
 
-        await contract.methods.createPlayer(this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+        await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
     };
+
+    handleApiIdChange(event) {
+        this.setState({apiId: event.target.value});
+    }
     
     handleNameChange(event) {
         this.setState({name: event.target.value});
@@ -49,6 +53,11 @@ class NewPlayerForm extends Component {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
+                            <Form.Label>Unique Identifier</Form.Label>
+                            <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="text"/>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
                             <Form.Label>Sharkscope Link</Form.Label>
                             <Form.Control value={this.state.sharkscopeLink} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
                         </Form.Group>
@@ -59,7 +68,7 @@ class NewPlayerForm extends Component {
                         </Form.Group>
 
                         <Button
-                            onClick={this.createNewPlayer}
+                            onClick={(event) => {event.preventDefault(); this.createNewPlayer()}}
                             variant="primary"
                             type="submit"
                         >
