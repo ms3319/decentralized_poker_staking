@@ -2,11 +2,12 @@ import React from "react";
 import { Component } from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button.js";
+import { weiToUsd } from "./utils.js";
 
 export default class PlayerCardModalForm extends Component {
 
   claimEscrow = async () => {
-    await this.props.contract.methods.requestEscrow(this.props.stake.id).send({from: this.props.accounts[0]});
+    await this.props.contract.methods.backerClaimEscrow(this.props.stake.id).send({from: this.props.accounts[0]});
   }
 
   render() {
@@ -32,7 +33,7 @@ export default class PlayerCardModalForm extends Component {
           <Modal.Body>
             Stake ID: {this.props.stake.id}
             <br/>
-            You staked {this.props.stake.amount} for a profit share of {this.props.stake.profitShare}%.
+            You staked ${weiToUsd(this.props.stake.amount, this.props.ethPriceUsd)} for a profit share of {this.props.stake.profitShare}%.
             <br/>
             Stake status: {this.props.stake.status}
             <br/>

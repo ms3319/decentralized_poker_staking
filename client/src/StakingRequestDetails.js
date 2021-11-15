@@ -1,11 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button"
 import {Link} from "react-router-dom";
+import { weiToUsd } from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) => {
+const StakingRequestDetails = ({ request, contract, accounts, onHide, show, ethPriceUsd }) => {
+  const [player, setPlayer] = useState(null);
+
+  useEffect(() => {
+    if (contract != null && request != null) {
+      contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
+    }
+  }, [contract, request])
+
   return (
     <Modal
       show={show}
@@ -23,7 +32,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show }) =>
       <Modal.Body>
         <h4>Invest in a Horse</h4>
         <p>
-          You are going to invest in {request.horse} for {request.amount} wei with a potential profit share
+          You are going to invest ${weiToUsd(request.amount, ethPriceUsd)} in {player ? player.name : ""} ({request.horse}) with a potential profit share
           of {request.profitShare}.
         </p>
         <Button

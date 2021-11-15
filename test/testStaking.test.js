@@ -8,7 +8,7 @@ const StakeStatus = {
     Cancelled: 3,
     AwaitingReturnPayment: 4,
     Completed: 5,
-    EscrowReturned: 6
+    EscrowClaimed: 6
 };
 
 const GameType = {
@@ -211,28 +211,28 @@ contract("Staking", (accounts) => {
         });
 
         it("Cannot return escrow from a non-completed stake", async () => {
-            await truffleAssert.reverts(staking.requestEscrow(0, {from: backerAccount1}));
+            await truffleAssert.reverts(staking.backerClaimEscrow(0, {from: backerAccount1}));
         });
 
         it("Cannot return escrow from a non-escrow stake", async () => {
             await staking.stakeHorse(0, {from: backerAccount1, value: 1000});
             await staking.gamePlayed(0, 1000);
-            await truffleAssert.reverts(staking.requestEscrow(0, {from: backerAccount1}));
+            await truffleAssert.reverts(staking.backerClaimEscrow(0, {from: backerAccount1}));
         });
 
         it("Cannot return escrow to non-backer", async () => {
             await staking.stakeHorse(1, {from: backerAccount1, value: 500});
             await staking.gamePlayed(1, 1000, {from: ownerAccount});
-            await truffleAssert.reverts(staking.requestEscrow(1, {from: horseAccount1}));
+            await truffleAssert.reverts(staking.backerClaimEscrow(1, {from: horseAccount1}));
         });
 
         it("Can return escrow to backer when awaiting return payment", async () => {
             await staking.stakeHorse(1, {from: backerAccount1, value: 500});
             await staking.gamePlayed(1, 1000, {from: ownerAccount});
-            await staking.requestEscrow(1, {from: backerAccount1});
+            await staking.backerClaimEscrow(1, {from: backerAccount1});
 
             let stake = await staking.getStake(1);
-            assert.equal(stake.status, StakeStatus.EscrowReturned);
+            assert.equal(stake.status, StakeStatus.EscrowClaimed);
         });
     });
 });
