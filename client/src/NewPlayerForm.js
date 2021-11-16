@@ -8,12 +8,13 @@ class NewPlayerForm extends Component {
     state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: ""};
 
     createNewPlayer = async () => {
-        const { accounts, contract } = this.props;
+        const { accounts, contract, onHide } = this.props;
         console.log("creating new player...")
 
         // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
 
         await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+        onHide()
     };
 
     handleApiIdChange(event) {

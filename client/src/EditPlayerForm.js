@@ -8,9 +8,10 @@ class EditPlayerForm extends Component {
     state = {name: this.props.player.name, sharkscopeLink: this.props.player.sharkscopeLink, profilePicPath: this.props.player.profilePicPath};
 
     saveProfileChanges = async () => {
-        const { accounts, contract } = this.props;
+        const { accounts, contract, onHide } = this.props;
 
         await contract.methods.editPlayer(this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+        onHide()
     }
     
     handleNameChange(event) {
