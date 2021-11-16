@@ -2,17 +2,23 @@ import React, { Component } from "react";
 import { Modal, Form } from "react-bootstrap";
 import Button from "./Button"
 import { CoinGeckoClient, usdToWei } from "./utils";
+import { Col } from "react-bootstrap";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
 class NewStakingRequestForm extends Component {
-  state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0, gameType:0, apiId: "" };
+  state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0, gameType:0, apiId: "", sanitaryId: true, sanitaryPercent: true};
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
-    // TODO: sanity check the values
-    if (this.state.escrow > 0) {
+    // TODO: sanity check the values here before if statement
+    // console.log("About to check if api id exists")
+    const apiIdExists = await this.checkIfApiIdExists()
+    const percentCorrect = this.checkPercentCorrect()
+    // console.log(`api id exists: ${apiIdExists}`)
+    this.setState({ sanitaryId: apiIdExists, sanitaryPercent: percentCorrect })
+    if (apiIdExists && this.state.escrow > 0 && percentCorrect) {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0], value: this.state.weiEscrow });
@@ -23,7 +29,7 @@ class NewStakingRequestForm extends Component {
         console.log(Object.keys(response.value.data.data));
         console.log(response.value.data.data[Object.keys(response.value.data.data)[0]]);
       }
-    } else {
+    } else if (apiIdExists && percentCorrect) {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0] });
@@ -36,6 +42,24 @@ class NewStakingRequestForm extends Component {
       }
     }
   };
+
+  checkPercentCorrect() {
+    return (this.state.profitShare <= 100)
+  }
+
+  async checkIfApiIdExists() {
+    if (this.state.gameType === 0) {
+      return await fetch(`http://localhost:8000/games/${this.state.apiId}`, 
+      { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
+        .then(response => response.json())
+        .then(data => Object.keys(data).length !== 0)
+    } else {
+      return await fetch(`http://127.0.0.1:8000/tournaments/${this.state.apiId}`,
+      { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
+        .then(response => response.json())
+        .then(data => Object.keys(data).length !== 0)
+    }
+  }
 
   componentDidMount() {
     CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => this.setState({ethPriceUsd: resp.data.ethereum.usd}));
@@ -86,6 +110,11 @@ class NewStakingRequestForm extends Component {
 
             <Form.Group className="mb-3">
               <Form.Label>Profit Sharing Percentage (%) </Form.Label>
+              { !this.state.sanitaryPercent &&
+                  <p style={{color: "red", marginTop:"-0.5em"}}>
+                    Make sure you enter a valid Percentage!
+                  </p>
+              }
               <Form.Control value={this.state.profitShare} onChange={(event) => this.handleProfitShareChange(event)} inputMode="numeric" placeholder="e.g. 50" />
               <Form.Text className="text-muted">
                 If the amount I'm looking for is $50, and profit sharing
@@ -112,6 +141,11 @@ class NewStakingRequestForm extends Component {
 
             <Form.Group className="mb-3">
               <Form.Label>Game/Tournament ID</Form.Label>
+              { !this.state.sanitaryId &&
+                  <p style={{color: "red", marginTop:"-0.5em"}}>
+                    Make sure you enter a valid Game/Tournament ID!
+                  </p>
+              }
               <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="string" placeholder="e.g. -MnVll18N3qLF-Z2bVoU" />
               <Form.Text className="text-muted">
                 Please provide the unique identifier of the game you wish to be staked in
@@ -129,7 +163,16 @@ class NewStakingRequestForm extends Component {
           </Form>
         </Modal.Body>
         <Modal.Footer>
+          <Col>
+          { !this.state.sanitaryId &&
+            <p style={{color: "red"}}>
+              Make sure you enter a valid Game/Tournament ID!
+            </p>
+          }
+          </Col>
+          <Col>
           <Button onClick={this.props.onHide}>Close</Button>
+          </Col>
         </Modal.Footer>
       </Modal>
     );

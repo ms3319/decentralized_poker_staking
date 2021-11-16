@@ -5,16 +5,27 @@ import Button from "./Button"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class NewPlayerForm extends Component {
-    state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: ""};
+    state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: "", sanitary: true};
 
     createNewPlayer = async () => {
         const { accounts, contract } = this.props;
+        this.checkPlayerIdExists()
         console.log("creating new player...")
 
         // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
 
         await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
     };
+
+    checkPlayerIdExists(userId) {
+        fetch(`http://127.0.0.1:8000/players/${userId}`,
+        { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
+        .then(response => response.json())
+        .then(data => {if (!Object.keys(data).length) {
+          this.setState({sanitary: false})
+        }
+        })
+    }
 
     handleApiIdChange(event) {
         this.setState({apiId: event.target.value});
@@ -77,6 +88,11 @@ class NewPlayerForm extends Component {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
+                { !this.state.sanitary &&
+                    <h2>
+                        Make sure you enter a valid Tournament/Game ID!
+                    </h2>
+                }
                     <Button onClick={this.props.onHide}>Close</Button>
                 </Modal.Footer>
             </Modal>

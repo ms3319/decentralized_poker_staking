@@ -34,7 +34,10 @@ class Players:
 class Player:
     def on_get(self, req, resp, player_id):
         data = db.child("players").child(player_id).get().val()
-        resp.text = json.dumps(data)
+        if not data:
+            resp.text = json.dumps({})
+        else:
+            resp.text = json.dumps(data)
 
 # /games
 # GET: retrieve a list of all games occured/to come
@@ -59,7 +62,10 @@ class Games:
 class Game:
     def on_get(self, req, resp, game_id):
         data = db.child("games").child(game_id).get().val()
-        resp.text = json.dumps(data)
+        if not data:
+            resp.text = json.dumps({})
+        else:
+            resp.text = json.dumps(data)
 
     def on_put(self, req, resp, game_id):
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
@@ -112,7 +118,10 @@ class Tournaments:
 class Tournament:
     def on_get(self, req, resp, tournament_id):
         data = db.child("tournaments").child(tournament_id).get().val()
-        resp.text = json.dumps(data)
+        if not data:
+            resp.text = json.dumps({})
+        else:
+            resp.text = json.dumps(data)
     
     def on_put(self, req, resp, tournament_id):
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
@@ -168,7 +177,7 @@ class TournamentStatus:
         data = db.child("tournaments").child(tournament_id).child("completed").update(completed);
         resp.text = json.dumps(data)
 
-api = falcon.App()
+api = falcon.App(cors_enable=True)
 api.req_options.auto_parse_form_urlencoded = True
 
 players_endpoint = Players()
