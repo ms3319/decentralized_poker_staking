@@ -164,14 +164,14 @@ class NewStakingRequestForm extends Component {
         </Modal.Body>
         <Modal.Footer>
           <Col>
-          { !this.state.sanitaryId &&
+          { !(this.state.sanitaryId || this.sanitaryPercent) &&
             <p style={{color: "red"}}>
-              Make sure you enter a valid Game/Tournament ID!
+              Make sure all your entries are valid!
             </p>
           }
           </Col>
           <Col>
-          <Button onClick={this.props.onHide}>Close</Button>
+          <Button onClick={this.props.onHide} style={{float: "right"}}>Close</Button>
           </Col>
         </Modal.Footer>
       </Modal>
