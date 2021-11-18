@@ -17,12 +17,13 @@ class NewPlayerForm extends Component {
         const sharkscopeCheck = this.checkSharkscope()
 
         this.setState({ sanitaryId: apiIdExists, sanitaryName: nameCheck, sanitarySharkscope: sharkscopeCheck })
-        if (apiIdExists || nameCheck || sharkscopeCheck) {
+        if (apiIdExists && nameCheck && sharkscopeCheck) {
             await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
         }    
     };
 
     async checkPlayerIdExists() {
+        if (this.state.apiId === "") return false;
         fetch(`http://127.0.0.1:8000/players/${this.state.apiId}`,
         { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
         .then(response => response.json())
@@ -80,7 +81,7 @@ class NewPlayerForm extends Component {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Unique Identifier</Form.Label>
-                            { !this.state.sanitaryName &&
+                            { !this.state.sanitaryId &&
                              <p style={{color: "red", marginTop:"-0.5em"}}>
                                 Make sure you enter a valid Unique Identifier!
                             </p>
@@ -114,7 +115,7 @@ class NewPlayerForm extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                 <Col>
-                { !(this.state.sanitaryId || this.state.sanitaryName || this.state.sanitarySharkscope) &&
+                { !(this.state.sanitaryId && this.state.sanitaryName && this.state.sanitarySharkscope) &&
                     <p style={{color: "red", marginTop:"-0.5em"}}>
                         Make sure you all your entries are valid!
                     </p>
