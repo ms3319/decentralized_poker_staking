@@ -11,6 +11,9 @@ pyrebase_config = {
     "storageBucket": os.getenv('FIREBASE_STORAGE_BUCKET')
 }
 
+def noquote(s):
+    return s
+pyrebase.pyrebase.quote = noquote
 firebase = pyrebase.initialize_app(pyrebase_config)
 db = firebase.database()
 
@@ -45,9 +48,15 @@ class Player:
 class Games:
     def on_get(self, req, resp):
         filter = req.get_param_as_list("id")
+        completed_value = req.get_param_as_bool("completed")
         data = db.child("games").get().val()
+        if (data == None):
+            resp.text = json.dumps({})
+            return
         if (filter != None):
             data = { id: data[id] for id in set(filter) & set(data.keys()) }
+        if (completed_value != None):
+            data = {k: v for k, v in data.items() if v["completed"] == completed_value}
         resp.text = json.dumps(data)
 
     def on_post(self, req, resp):
@@ -100,9 +109,15 @@ class Game:
 class Tournaments:
     def on_get(self, req, resp):
         filter = req.get_param_as_list("id")
+        completed_value = req.get_param_as_bool("completed")
         data = db.child("tournaments").get().val()
+        if (data == None):
+            resp.text = json.dumps({})
+            return
         if (filter != None):
             data = { id: data[id] for id in set(filter) & set(data.keys()) }
+        if (completed_value != None):
+            data = {k: v for k, v in data.items() if v["completed"] == completed_value}
         resp.text = json.dumps(data)
 
     def on_post(self, req, resp):

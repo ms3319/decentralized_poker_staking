@@ -3,51 +3,70 @@ import { Modal, Form } from "react-bootstrap";
 import Button from "./Button"
 import { CoinGeckoClient, usdToWei } from "./utils";
 import { Col } from "react-bootstrap";
-
+import Autosuggest from "react-autosuggest";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import "./Autosuggest.css"
+
+// TODO: Figure out how tf to keep the whole suggestion object, as well as letting the user
+// type their value in
+
+
+const renderSuggestion = suggestion => (
+  <span>
+    {suggestion[1].name + " "}
+    <span className="suggestion-id">
+      {suggestion[0]}
+    </span>
+  </span>
+)
 
 class NewStakingRequestForm extends Component {
-  state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0, gameType:0, apiId: "", sanitaryId: true, sanitaryPercent: true};
+  state = { selectedSuggestion: null, futureTournaments: {}, futureGames: {}, gameSuggestions: [], gameSearchValue: "", amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0, gameType:0, apiId: "", sanitaryId: true, sanitaryPercent: true};
 
   createStakingRequest = async () => {
     const { accounts, contract } = this.props;
-    // TODO: sanity check the values here before if statement
-    // console.log("About to check if api id exists")
     const apiIdExists = await this.checkIfApiIdExists()
     const percentCorrect = this.checkPercentCorrect()
-    // console.log(`api id exists: ${apiIdExists}`)
     this.setState({ sanitaryId: apiIdExists, sanitaryPercent: percentCorrect })
-    if (apiIdExists && this.state.escrow > 0 && percentCorrect) {
-      try {
-        await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
-          .send({ from: accounts[0], value: this.state.weiEscrow });
-      } catch (error) {
-        const response = JSON.parse(error.message.split("'")[1]);
-        console.log(response.value);
-        console.log(response.value.data.data);
-        console.log(Object.keys(response.value.data.data));
-        console.log(response.value.data.data[Object.keys(response.value.data.data)[0]]);
-      }
-    } else if (apiIdExists && percentCorrect) {
+    if (apiIdExists && percentCorrect) {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0] });
+        this.props.onHide();
       } catch (error) {
-        const response = JSON.parse(error.message.split("'")[1]);
-        console.log(response.value);
-        console.log(response.value.data.data);
-        console.log(Object.keys(response.value.data.data));
-        console.log(response.value.data.data[Object.keys(response.value.data.data)[0]]);
+        console.error(error);
       }
     }
   };
 
   checkPercentCorrect() {
-    return (this.state.profitShare <= 100)
+    return (0 <= this.state.profitShare <= 100)
+  }
+
+  async fetchFutureGamesAndTournaments() {
+    // console.log(process.env.REACT_APP_STATS_API_URL);
+    const tournaments = await fetch(`http://localhost:8000/tournaments?completed=false`,
+        {
+          method: "GET",
+          mode: "cors",
+          headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json());
+
+    const games = await fetch(`http://localhost:8000/games?completed=false`,
+        {
+          method: "GET",
+          mode: "cors",
+          headers: {'Content-Type': 'application/json'}
+        })
+        .then(response => response.json());
+      
+    this.setState({futureTournaments: tournaments, futureGames: games});
   }
 
   async checkIfApiIdExists() {
+    if (this.state.apiId === "") return false;
     if (this.state.gameType === 0) {
       return await fetch(`http://localhost:8000/games/${this.state.apiId}`, 
       { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
@@ -63,6 +82,7 @@ class NewStakingRequestForm extends Component {
 
   componentDidMount() {
     CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => this.setState({ethPriceUsd: resp.data.ethereum.usd}));
+    this.fetchFutureGamesAndTournaments();
   }
 
   handleAmountChange(event) {
@@ -83,11 +103,44 @@ class NewStakingRequestForm extends Component {
     this.setState({apiId: event.target.value});
   }
 
+  getSuggestions = (value) => {
+    if (this.state.gameType === 0) {
+      return Object.entries(this.state.futureGames);
+    } else {
+      return Object.entries(this.state.futureTournaments);
+    }
+  }
+
+  onSuggestionsFetchRequested = ({ value }) => {
+    this.setState({gameSuggestions: this.getSuggestions(value)});
+  }
+
+  onSuggestionsClearRequested = () => {
+    this.setState({gameSuggestions: []});
+  }
+
+  onGameSearchChanged = (event, { newValue }) => {
+    this.setState({gameSearchValue: newValue});
+  }
+
+  getSuggestionValue = suggestion => {
+    this.setState({apiId: suggestion[0]});
+    return suggestion[1].name;
+  }
+
   render() {
     const gameTypes = [
       { name: "Single Game", value: 0 },
       { name: "Tournament", value: 1 }
     ]
+
+    const { gameSearchValue, gameSuggestions } = this.state;
+
+    const suggestionInputProps = {
+      placeholder: 'Start typing the name of your game/tournament',
+      value: gameSearchValue,
+      onChange: this.onGameSearchChanged
+    };
 
     return (
       <Modal
@@ -143,12 +196,18 @@ class NewStakingRequestForm extends Component {
               <Form.Label>Game/Tournament ID</Form.Label>
               { !this.state.sanitaryId &&
                   <p style={{color: "red", marginTop:"-0.5em"}}>
-                    Make sure you enter a valid Game/Tournament ID!
+                    Make sure you SELECT a Game or Tournament!
                   </p>
               }
-              <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="string" placeholder="e.g. -MnVll18N3qLF-Z2bVoU" />
+              <Autosuggest 
+                  suggestions={gameSuggestions}
+                  onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
+                  onSuggestionsClearRequested={this.onSuggestionsClearRequested}
+                  getSuggestionValue={this.getSuggestionValue}
+                  renderSuggestion={renderSuggestion}
+                  inputProps={suggestionInputProps}/>
               <Form.Text className="text-muted">
-                Please provide the unique identifier of the game you wish to be staked in
+                Please select the tournament or game you wish to be staked in
               </Form.Text>
             </Form.Group>
 
