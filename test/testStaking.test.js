@@ -46,8 +46,7 @@ contract("Staking", (accounts) => {
 
     describe("Editing Players", async () => {
         it("Edit an existing player", async () => {
-            await staking.createPlayer("John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
-
+            await staking.createPlayer("api id", "John Smith", "www.sharkscope.com", "www.images.com/pic", {from: horseAccount1});
             await staking.editPlayer("Jake Smith", "www.dolphinscope.com", "www.images.com/not-a-pic", {from: horseAccount1});
             let player = await staking.getPlayer(horseAccount1);
             assert.equal(player.name, "Jake Smith", "Player name doesn't match");
@@ -205,9 +204,30 @@ contract("Staking", (accounts) => {
         it("Can return profits of an awaiting return payment stake", async () => {
             await staking.stakeHorse(0, {from: backerAccount1, value: 1000});
             await staking.gamePlayed(0, 3000);
-            await staking.returnProfits(0, {from: horseAccount1, value: 3000});
             let stake = await staking.getStake(0);
-            assert.equal(stake.profit, 3000, "Stake profit not updated");
+            assert.equal(stake.pnl, 3000, "Stake profit not updated");
+            assert.equal(stake.status, StakeStatus.AwaitingReturnPayment, "Stake status not updated to completed");
+            assert.equal(stake.backerReturns, 1000 + 0.45 * 3000, "Backer returns is incorrect");
+
+            await staking.returnProfits(0, {from: horseAccount1, value: 1000 + 0.45 * 3000});
+        });
+
+        it("If losses are less than stake amount, difference is returned", async () => {
+            await staking.stakeHorse(0, {from: backerAccount1, value: 1000});
+            await staking.gamePlayed(0, -800);
+            let stake = await staking.getStake(0);
+            assert.equal(stake.pnl, -800, "Stake profit not updated");
+            assert.equal(stake.status, StakeStatus.AwaitingReturnPayment, "Stake status not updated to completed");
+            assert.equal(stake.backerReturns, 200, "Backer returns does not match expected");
+            const result = await staking.returnProfits(0, {from: horseAccount1, value: 200});
+            truffleAssert.eventEmitted(result, 'ProfitsReturned', ev => ev.id.words[0] === 0 && ev.backerReturns.words[0] === 200);
+        });
+
+        it("If losses exceed stake amount, nothing is returned", async () => {
+            await staking.stakeHorse(0, {from: backerAccount1, value: 1000});
+            await staking.gamePlayed(0, -5000);
+            let stake = await staking.getStake(0);
+            assert.equal(stake.pnl, -5000, "Stake profit not updated");
             assert.equal(stake.status, StakeStatus.Completed, "Stake status not updated to completed");
         });
 

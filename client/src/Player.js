@@ -30,7 +30,7 @@ function PlayerInfo({ player, accounts, contract }) {
   }
 
   // a flag to only display the Edit Profile button if the current profile is mine
-  const isMyProfile = accounts[0] == player.playerAddress;
+  const isMyProfile = accounts[0] === player.playerAddress;
   
   return (
     <div className={styles.playerInfoTile}>
@@ -70,10 +70,10 @@ function PlayerStats({ ethPriceUsd, games }) {
   const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequested = ethereumUnits(stakesRequestedRaw)
   const stakesRequestedUsd = weiToUsd(stakesRequestedRaw, ethPriceUsd)
-  const profitReturnedRaw = games.reduce((prev, curr) => prev + (curr.profit * (curr.profitShare / 100)), 0)
-  const profitReturned = ethereumUnits(profitReturnedRaw)
-  const profitReturnedUsd = weiToUsd(profitReturnedRaw, ethPriceUsd)
-  const profitPercent = stakesRequestedRaw > 0 ? +((profitReturnedRaw / stakesRequestedRaw) * 100).toFixed(2) : 0;
+  const totalPnlRaw = games.reduce((prev, curr) => prev + curr.pnl, 0)
+  const totalPnl = ethereumUnits(totalPnlRaw)
+  const totalPnlUsd = weiToUsd(totalPnlRaw, ethPriceUsd)
+  const profitPercent = stakesRequestedRaw > 0 ? +((totalPnlRaw / stakesRequestedRaw) * 100).toFixed(2) : 0;
 
 
   return (
@@ -109,10 +109,10 @@ function PlayerStats({ ethPriceUsd, games }) {
 
         <div>
           <div className={styles.label}>
-            Total Profit
+            Net Pnl
           </div>
           <div className={styles.value}>
-            {numberWithCommas(profitReturned.amount) + " " + profitReturned.units + " ($" + profitReturnedUsd + ")"}
+            {numberWithCommas(totalPnl.amount) + " " + totalPnl.units + " ($" + totalPnlUsd + ")"}
           </div>
         </div>
 
@@ -147,7 +147,7 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
               <th>Investor Address</th>
               <th>Amount Requested</th>
               <th>Profit Share</th>
-              <th>Profit</th>
+              <th>Pnl</th>
               <th>Amount owed</th>
               <th>Pay Back</th>
             </tr>
@@ -157,10 +157,10 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
               <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-              <td>{stake.profitShare}</td>
-              <td>${weiToUsd(stake.profit, ethPriceUsd)}</td>
-              <td>${weiToUsd(parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100), ethPriceUsd)}</td>
-              <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.amount) + ((parseInt(stake.profit) * parseInt(stake.profitShare)) / 100))}>Pay Back</Button></td>
+              <td>{stake.profitShare}%</td>
+              <td>${weiToUsd(parseInt(stake.pnl), ethPriceUsd)}</td>
+              <td>${weiToUsd(parseInt(stake.backerReturns), ethPriceUsd)}</td>
+              <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.backerReturns))}>Pay Back</Button></td>
             </tr>)}
           </tbody>
         </Table>
@@ -183,8 +183,8 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
               <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-              <td>{stake.profitShare}</td>
-              <td>{stake.status}</td>
+              <td>{stake.profitShare}%</td>
+              <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
             </tr>)}
             </tbody>
           </Table>
@@ -198,7 +198,7 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
             <th>Investor Address</th>
             <th>Amount Requested</th>
             <th>Profit Share</th>
-            <th>Profit</th>
+            <th>Pnl</th>
             <th>Won?</th>
             <th>Status</th>
           </tr>
@@ -208,19 +208,19 @@ function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
             <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-            <td>{stake.profitShare}</td>
-            <td>${weiToUsd(stake.profit, ethPriceUsd)}</td>
+            <td>{stake.profitShare}%</td>
+            <td>${weiToUsd(stake.pnl, ethPriceUsd)}</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
-            <td>{stake.status}</td>
+            <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
           </tr>) :
           stakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
             <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-            <td>{stake.profitShare}</td>
-            <td>${weiToUsd(stake.profit, ethPriceUsd)}</td>
+            <td>{stake.profitShare}%</td>
+            <td>${weiToUsd(stake.pnl, ethPriceUsd)}</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
-            <td>{stake.status}</td>
+            <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
           </tr>)}
         </tbody>
       </Table>
