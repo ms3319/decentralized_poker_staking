@@ -1,1 +1,1 @@
-web: gunicorn --reload statistics:api
+web: cd statistics-api && pip install -r requirements.txt && gunicorn --reload statistics:api
