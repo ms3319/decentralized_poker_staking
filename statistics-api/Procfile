@@ -1,1 +1,1 @@
-web: ls && gunicorn --reload statistics:api
+web: gunicorn --reload statistics:api
