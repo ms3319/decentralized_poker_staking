@@ -1,7 +1,6 @@
 const CoinGecko = require('coingecko-api')
 const CoinGeckoClient = new CoinGecko();
 
-
 const usdToWei = (usd, ethPriceUsd) => {
     if (ethPriceUsd === 0) return 0;
     return (usd / ethPriceUsd) * 1e18;

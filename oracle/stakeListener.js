@@ -1,5 +1,5 @@
 export default function start(watchedStakes, contract) {
-  // Listen for emitted events from the smart contract - when a new staking request is created (or staked?), add it to a list of stakes to "watch"
+  // Listen for emitted events from the smart contract - when a staking request is staked, add it to a list of stakes to "watch"
   contract.events.StakeFilled()
     .on('data', event => { handleStakeFilled(event) })
     .on('error', err => { throw err })
