@@ -1,6 +1,6 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const StakingContract = require('contracts/Staking.json');
+const StakingContract = require('./contracts/Staking.json');
 
 import startStakeListener from './stakeListener.js'
 import startApiListener from './apiListener.js'
