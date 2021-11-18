@@ -10,12 +10,13 @@ class NewStakingRequestForm extends Component {
   state = { amount: 0, profitShare: 0, escrow: 0, ethPriceUsd: 0, weiAmount: 0, weiEscrow: 0, gameType:0, apiId: "" };
 
   createStakingRequest = async () => {
-    const { accounts, contract } = this.props;
+    const { accounts, contract, onHide } = this.props;
     // TODO: sanity check the values
     if (this.state.escrow > 0) {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0], value: this.state.weiEscrow });
+        onHide()
       } catch (error) {
         const response = JSON.parse(error.message.split("'")[1]);
         console.log(response.value);
@@ -27,6 +28,7 @@ class NewStakingRequestForm extends Component {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
           .send({ from: accounts[0] });
+        onHide()
       } catch (error) {
         const response = JSON.parse(error.message.split("'")[1]);
         console.log(response.value);

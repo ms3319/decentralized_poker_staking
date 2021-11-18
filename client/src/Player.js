@@ -29,6 +29,9 @@ function PlayerInfo({ player, accounts, contract }) {
     setShowEditPlayerForm(false)
   }
 
+  // a flag to only display the Edit Profile button if the current profile is mine
+  const isMyProfile = accounts[0] == player.playerAddress;
+  
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
@@ -49,9 +52,11 @@ function PlayerInfo({ player, accounts, contract }) {
           <div className={styles.label}>Sharkscope Link</div><div className={styles.value}><a href={"http://".concat(player.sharkscopeLink)}>{player.sharkscopeLink}</a></div>
         </div>
         <div>
-          <Button style={{margin: "10px 0px 0px 0px"}} onClick={openEditPlayerForm}>
-            Edit Profile
-          </Button>
+          {isMyProfile &&
+            <Button style={{margin: "10px 0px 0px 0px"}} onClick={openEditPlayerForm}>
+              Edit Profile
+            </Button>
+          }
         </div>
         <EditPlayerForm show={showEditPlayerForm} onHide={closeEditPlayerForm} accounts={accounts} contract={contract} player={player}/>
       </div>
