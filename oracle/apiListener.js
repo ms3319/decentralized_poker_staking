@@ -5,20 +5,24 @@ const GameType = {
   Tournament: '1'
 };
 
+const apiUrl = process.env.API_URL
+
 export default function start(watchedStakes, contract, interval, sendGamePlayedTransaction) {
+  console.log(`Starting api listener with interval duration ${interval}ms`)
   setInterval(() => { checkGamesChanged(watchedStakes, contract, sendGamePlayedTransaction) }, interval)
 }
 
 function checkGamesChanged(watchedStakes, contract, sendGamePlayedTransaction) {
+  console.log(`Making api calls to check status of ${watchedStakes.length} games`)
   const watchedSingleGames = watchedStakes.filter(game => game.gameType === GameType.SingleGame)
   const watchedTournaments = watchedStakes.filter(game => game.gameType === GameType.Tournament)
   if (watchedSingleGames.length > 0) {
-    fetch(`http://127.0.0.1:8000/games?id=${watchedSingleGames.map(game => game.apiId).join('&id=')}`)
+    fetch(`${apiUrl}/games?id=${watchedSingleGames.map(game => game.apiId).join('&id=')}`)
       .then(response => response.json())
       .then(data => { compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransaction) })
   }
   if (watchedTournaments.length > 0) {
-    fetch(`http://127.0.0.1:8000/tournaments?id=${watchedTournaments.map(game => game.apiId).join('&id=')}`)
+    fetch(`${apiUrl}/tournaments?id=${watchedTournaments.map(game => game.apiId).join('&id=')}`)
       .then(response => response.json())
       .then(data => { compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransaction) })
   }

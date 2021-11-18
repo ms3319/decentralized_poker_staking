@@ -13,6 +13,7 @@ const contractAddress = process.env.CONTRACT_ADDRESS;
 const account = process.env.ACCOUNT_ADDRESS;
 const accountPrivateKey = process.env.PRIVATE_KEY;
 const contract = new web3.eth.Contract(StakingContract.abi, contractAddress)
+const interval = process.env.INTERVAL
 
 const StakeStatus = {
   Requested: '0',
@@ -54,7 +55,7 @@ async function getFilledStakes() {
 
 function startListeners(watchedStakes) {
   startStakeListener(watchedStakes, contract)
-  startApiListener(watchedStakes, contract, 10000, sendGamePlayedTransaction)
+  startApiListener(watchedStakes, contract, interval, sendGamePlayedTransaction)
 }
 
 getFilledStakes().then(stakes => startListeners(stakes))
