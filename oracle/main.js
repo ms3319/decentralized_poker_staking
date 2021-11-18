@@ -1,13 +1,19 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const StakingContract = require('./contracts/Staking.json');
+
 import startStakeListener from './stakeListener.js'
 import startApiListener from './apiListener.js'
 import Web3 from 'web3'
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const StakingContract = require('../client/src/contracts/Staking.json');
-// TODO: These should be set with environment variables
-const web3 = new Web3("ws://127.0.0.1:7545")
-const contractAddress = '0x29ce3349226137f5266E739cA5131014064b4fBd'
+import dotenv from 'dotenv';
+dotenv.config()
+
+const web3 = new Web3(process.env.BLOCKCHAIN_LINK)
+const contractAddress = process.env.CONTRACT_ADDRESS;
+const account = process.env.ACCOUNT_ADDRESS;
+const accountPrivateKey = process.env.PRIVATE_KEY;
 const contract = new web3.eth.Contract(StakingContract.abi, contractAddress)
+const interval = process.env.INTERVAL
 
 const StakeStatus = {
   Requested: '0',
@@ -18,6 +24,22 @@ const StakeStatus = {
   Completed: '5',
   EscrowReturned: '6'
 };
+
+const sendGamePlayedTransaction = async (id, profit) => {
+  const transaction = contract.methods.gamePlayed(id, profit)
+  const options = {
+    to: contractAddress,
+    data: transaction.encodeABI(),
+    gas: await transaction.estimateGas({from: account}),
+    gasPrice: await web3.eth.getGasPrice() // or use some predefined value
+  };
+
+  const signed  = await web3.eth.accounts.signTransaction(options, accountPrivateKey);
+  const receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+  console.log("Signed and issued GamePlayed transaction:")
+  console.log(receipt)
+}
 
 async function getFilledStakes() {
   let filledStakes = []
@@ -33,7 +55,7 @@ async function getFilledStakes() {
 
 function startListeners(watchedStakes) {
   startStakeListener(watchedStakes, contract)
-  startApiListener(watchedStakes, contract, 10000)
+  startApiListener(watchedStakes, contract, interval, sendGamePlayedTransaction)
 }
 
 getFilledStakes().then(stakes => startListeners(stakes))

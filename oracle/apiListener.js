@@ -5,29 +5,31 @@ const GameType = {
   Tournament: '1'
 };
 
-const account = '0xF6aE2Fc452d2E0414231243E9E09b7c9493E5362'
+const apiUrl = process.env.API_URL
 
-export default function start(watchedStakes, contract, interval) {
-  setInterval(() => { checkGamesChanged(watchedStakes, contract) }, interval)
+export default function start(watchedStakes, contract, interval, sendGamePlayedTransaction) {
+  console.log(`Starting api listener with interval duration ${interval}ms`)
+  setInterval(() => { checkGamesChanged(watchedStakes, contract, sendGamePlayedTransaction) }, interval)
 }
 
-function checkGamesChanged(watchedStakes, contract) {
+function checkGamesChanged(watchedStakes, contract, sendGamePlayedTransaction) {
+  console.log(`Making api calls to check status of ${watchedStakes.length} games`)
   const watchedSingleGames = watchedStakes.filter(game => game.gameType === GameType.SingleGame)
   const watchedTournaments = watchedStakes.filter(game => game.gameType === GameType.Tournament)
   if (watchedSingleGames.length > 0) {
-    fetch(`http://127.0.0.1:8000/games?id=${watchedSingleGames.map(game => game.apiId).join('&id=')}`)
+    fetch(`${apiUrl}/games?id=${watchedSingleGames.map(game => game.apiId).join('&id=')}`)
       .then(response => response.json())
-      .then(data => { compareAndUpdate(data, watchedStakes, contract) })
+      .then(data => { compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransaction) })
   }
   if (watchedTournaments.length > 0) {
-    fetch(`http://127.0.0.1:8000/tournaments?id=${watchedTournaments.map(game => game.apiId).join('&id=')}`)
+    fetch(`${apiUrl}/tournaments?id=${watchedTournaments.map(game => game.apiId).join('&id=')}`)
       .then(response => response.json())
-      .then(data => { compareAndUpdate(data, watchedStakes, contract) })
+      .then(data => { compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransaction) })
   }
 }
 
 // Should we check at some point that all of the watchedGames are in the api response?
-function compareAndUpdate(data, watchedStakes, contract) {
+function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransaction) {
   for (let game in data) {
     if (data[game].completed) {
       // In case there is more than one stake for this game/tournament
@@ -38,8 +40,7 @@ function compareAndUpdate(data, watchedStakes, contract) {
         contract.methods.getPlayer(matchingStake.horse).call()
           .then(player => {
             const amountWon = player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0
-            //TODO: This transaction should be signed - otherwise it won't work in production
-            contract.methods.gamePlayed(matchingStake.id, amountWon).send({from: account}).then((err, result) => { if (err) {console.log(err)} else console.log(result) })
+            sendGamePlayedTransaction(matchingStake.id, amountWon)
           })
         // Remove from the watched stakes
         watchedStakes.splice(watchedStakes.findIndex(stake => stake.id === matchingStake.id), 1);
@@ -47,3 +48,4 @@ function compareAndUpdate(data, watchedStakes, contract) {
     }
   }
 }
+
