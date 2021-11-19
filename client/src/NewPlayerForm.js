@@ -1,21 +1,43 @@
 import React, { Component } from "react";
 import { Modal, Form } from "react-bootstrap";
-import Button from "./Button"
+import Button from "./Button";
+import validator from 'validator'
+import { Col } from "react-bootstrap";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class NewPlayerForm extends Component {
-    state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: ""};
+    state = {apiId: "", name: "", sharkscopeLink: "", profilePicPath: "", sanitaryId: true, sanitaryName: true, sanitarySharkscope: true};
 
     createNewPlayer = async () => {
         const { accounts, contract, onHide } = this.props;
-        console.log("creating new player...")
 
-        // TO-DO: perform form input validation (mainly just check for empty strings in both name & sharkscope link)
+        const apiIdExists = await this.checkPlayerIdExists()
+        const nameCheck = this.checkName()
+        const sharkscopeCheck = this.checkSharkscope()
 
-        await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
-        onHide()
+        this.setState({ sanitaryId: apiIdExists, sanitaryName: nameCheck, sanitarySharkscope: sharkscopeCheck })
+        if (apiIdExists && nameCheck && sharkscopeCheck) {
+            await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+            onHide()
+        }
     };
+
+    async checkPlayerIdExists() {
+        if (this.state.apiId === "") return false;
+        fetch(`http://127.0.0.1:8000/players/${this.state.apiId}`,
+        { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
+        .then(response => response.json())
+        .then(data => Object.keys(data).length !== 0)
+    }
+
+    checkName() {
+        return (this.state.name.length !== 0)
+    }
+
+    checkSharkscope() {
+        return validator.isURL(this.state.name);
+    }
 
     handleApiIdChange(event) {
         this.setState({apiId: event.target.value});
@@ -43,29 +65,45 @@ class NewPlayerForm extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">
-                        Create New Player
+                        Sign up as a player
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <p>Create a player account, which will be linked to your wallet address. This will allow you to create staking requests, so that you can receive funds from potential investors, in return for a share of your winnings.</p>
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="text"/>
+                            <Form.Label>Display Name</Form.Label>
+                            { !this.state.sanitaryName &&
+                             <p style={{color: "red", marginTop:"-0.5em"}}>
+                                Make sure you enter a valid Name!
+                            </p>
+                            }
+                            <Form.Control placeholder="johnsmith123" value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Unique Identifier</Form.Label>
-                            <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="text"/>
+                            <Form.Label>Player ID</Form.Label>
+                            { !this.state.sanitaryId &&
+                             <p style={{color: "red", marginTop:"-0.5em"}}>
+                                Make sure you enter a valid Unique Identifier!
+                            </p>
+                            }
+                            <Form.Control placeholder="-MnWmBbGYTHAXIWAZ9HA" value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Sharkscope Link</Form.Label>
-                            <Form.Control value={this.state.sharkscopeLink} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
+                            <Form.Label>Link to poker stats</Form.Label>
+                            { !this.state.sanitarySharkscope &&
+                             <p style={{color: "red", marginTop:"-0.5em"}}>
+                                Make sure you enter a valid Sharkscope Link!
+                            </p>
+                            }
+                            <Form.Control placeholder="www.sharkscope.com/#Player-Statistics//networks/PokerStars/players/JohnSmith" value={this.state.sharkscopeLink} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Profile Picture Path</Form.Label>
-                            <Form.Control value={this.state.profilePicPath} onChange={(event) => this.handleProfilePicPathChange(event)} inputMode="text"/>
+                            <Form.Label>Link to Profile Picture</Form.Label>
+                            <Form.Control placeholder="i.imgur.com/AD3MbBi.jpeg" value={this.state.profilePicPath} onChange={(event) => this.handleProfilePicPathChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Button
@@ -78,7 +116,16 @@ class NewPlayerForm extends Component {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.props.onHide}>Close</Button>
+                <Col>
+                { !(this.state.sanitaryId && this.state.sanitaryName && this.state.sanitarySharkscope) &&
+                    <p style={{color: "red", marginTop:"-0.5em"}}>
+                        Make sure you all your entries are valid!
+                    </p>
+                }
+                </Col>
+                <Col>
+                    <Button onClick={this.props.onHide} style={{float: "right"}}>Close</Button>
+                </Col>
                 </Modal.Footer>
             </Modal>
         );
@@ -86,3 +133,18 @@ class NewPlayerForm extends Component {
 }
 
 export default NewPlayerForm;
+
+
+/*
+function isValidHttpUrl(string) {
+  let url;
+  
+  try {
+    url = new URL(string);
+  } catch (_) {
+    return false;  
+  }
+
+  return url.protocol === "http:" || url.protocol === "https:";
+}
+*/

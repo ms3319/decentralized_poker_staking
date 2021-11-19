@@ -30,9 +30,9 @@ contract Staking {
         uint amount;
         uint escrow;
         uint profitShare;
-        uint profit;
+        int pnl;
+        uint backerReturns;
         StakeStatus status;
-        bool horseWon;
         GameType gameType;
         string apiId;
         StakeTimeStamp stakeTimeStamp;
@@ -86,8 +86,9 @@ contract Staking {
 
     event PlayerEdited(address playerAddress);
 
-    function editPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external payable {
+    function editPlayer(string memory name, string memory sharkscopeLink, string memory profilePicPath) external {
         if (players[msg.sender].playerAddress == address(0)) {
+            emit PlayerEdited(msg.sender);
             revert PlayerDoesntExist(msg.sender);
         }
 
@@ -137,7 +138,7 @@ contract Staking {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
         StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, StakeStatus.Requested, false, gameType, apiId, stakeTimeStamp);
+        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, 0, StakeStatus.Requested, gameType, apiId, stakeTimeStamp);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
@@ -249,32 +250,29 @@ contract Staking {
             revert StakeProfitNotReturnable(id, stake.status);
         }
 
-        // TODO: Check this calculation. Do we do it here or calculate it in the frontend?
-        uint backerReturns = stake.amount + ((stake.profit * stake.profitShare) / 100);
-
         // TODO: See above before we can do this
         // if (msg.value != backerReturns) {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
-        stake.backer.transfer(backerReturns);
+        stake.backer.transfer(stake.backerReturns);
         if (stake.escrow > 0) {
             stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Completed;
 
         stakes[id] = stake;
-        emit ProfitsReturned(id, backerReturns);
+        emit ProfitsReturned(id, stake.backerReturns);
     }
 
 
     // Setting the status of a stake to AwaitingReturnPayment
 
-    event GamePlayed(uint id, uint profit);
+    event GamePlayed(uint id, int pnl, uint backerReturns);
 
     /// You can only complete a game after it has been filled
     error CanOnlyPlayedFilledStakes(uint id, StakeStatus status);
 
-    function gamePlayed(uint id, uint profit) external {
+    function gamePlayed(uint id, int pnl) external {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
@@ -283,11 +281,26 @@ contract Staking {
             revert CanOnlyPlayedFilledStakes(id, stakes[id].status);
         }
 
-        stakes[id].status = StakeStatus.AwaitingReturnPayment;
-        stakes[id].profit = profit;
-        stakes[id].horseWon = profit > 0; 
+        // TODO: Check this calculation. Do we do it here or calculate it in the frontend?
+        uint backerReturns;
+        if (pnl < 0) {
+            int owed = int(stakes[id].amount) + pnl;
+            if (owed <= 0) {
+                backerReturns = 0;
+                stakes[id].status = StakeStatus.Completed;
+            } else {
+                backerReturns = uint(owed);
+                stakes[id].status = StakeStatus.AwaitingReturnPayment;
+            }
+        } else {
+            backerReturns = stakes[id].amount + ((uint(pnl) * stakes[id].profitShare) / 100);
+            stakes[id].status = StakeStatus.AwaitingReturnPayment;
+        }
+
+        stakes[id].pnl = pnl;
+        stakes[id].backerReturns = backerReturns;
         stakes[id].stakeTimeStamp.gamePlayedTimestamp = block.timestamp;
-        emit GamePlayed(id, profit);
+        emit GamePlayed(id, pnl, backerReturns);
     }
 
 

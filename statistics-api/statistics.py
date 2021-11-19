@@ -11,6 +11,9 @@ pyrebase_config = {
     "storageBucket": os.getenv('FIREBASE_STORAGE_BUCKET')
 }
 
+def noquote(s):
+    return s
+pyrebase.pyrebase.quote = noquote
 firebase = pyrebase.initialize_app(pyrebase_config)
 db = firebase.database()
 
@@ -34,7 +37,10 @@ class Players:
 class Player:
     def on_get(self, req, resp, player_id):
         data = db.child("players").child(player_id).get().val()
-        resp.text = json.dumps(data)
+        if not data:
+            resp.text = json.dumps({})
+        else:
+            resp.text = json.dumps(data)
 
 # /games
 # GET: retrieve a list of all games occured/to come
@@ -42,15 +48,22 @@ class Player:
 class Games:
     def on_get(self, req, resp):
         filter = req.get_param_as_list("id")
+        completed_value = req.get_param_as_bool("completed")
         data = db.child("games").get().val()
+        if (data == None):
+            resp.text = json.dumps({})
+            return
         if (filter != None):
             data = { id: data[id] for id in set(filter) & set(data.keys()) }
+        if (completed_value != None):
+            data = {k: v for k, v in data.items() if v["completed"] == completed_value}
         resp.text = json.dumps(data)
 
     def on_post(self, req, resp):
         buyIn = float(req.get_param("buyIn", required=True))
+        name = req.get_param("name", required=True)
         players = json.loads(req.get_param("players"))
-        data = {"buyIn": buyIn, "players": players, "completed": False} 
+        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name}
         resp_data = db.child("games").push(data)
         resp.text = json.dumps(resp_data)
 
@@ -59,7 +72,10 @@ class Games:
 class Game:
     def on_get(self, req, resp, game_id):
         data = db.child("games").child(game_id).get().val()
-        resp.text = json.dumps(data)
+        if not data:
+            resp.text = json.dumps({})
+        else:
+            resp.text = json.dumps(data)
 
     def on_put(self, req, resp, game_id):
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
@@ -94,15 +110,22 @@ class Game:
 class Tournaments:
     def on_get(self, req, resp):
         filter = req.get_param_as_list("id")
+        completed_value = req.get_param_as_bool("completed")
         data = db.child("tournaments").get().val()
+        if (data == None):
+            resp.text = json.dumps({})
+            return
         if (filter != None):
             data = { id: data[id] for id in set(filter) & set(data.keys()) }
+        if (completed_value != None):
+            data = {k: v for k, v in data.items() if v["completed"] == completed_value}
         resp.text = json.dumps(data)
 
     def on_post(self, req, resp):
         buyIn = float(req.get_param("buyIn", required=True))
+        name = req.get_param("name", required=True)
         players = json.loads(req.get_param("players"))
-        data = {"buyIn": buyIn, "players": players, "completed": False} 
+        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name}
         resp_data = db.child("tournaments").push(data)
         resp.text = json.dumps(resp_data)
 
@@ -112,7 +135,10 @@ class Tournaments:
 class Tournament:
     def on_get(self, req, resp, tournament_id):
         data = db.child("tournaments").child(tournament_id).get().val()
-        resp.text = json.dumps(data)
+        if not data:
+            resp.text = json.dumps({})
+        else:
+            resp.text = json.dumps(data)
     
     def on_put(self, req, resp, tournament_id):
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
@@ -168,7 +194,7 @@ class TournamentStatus:
         data = db.child("tournaments").child(tournament_id).child("completed").update(completed);
         resp.text = json.dumps(data)
 
-api = falcon.App()
+api = falcon.App(cors_enable=True)
 api.req_options.auto_parse_form_urlencoded = True
 
 players_endpoint = Players()
