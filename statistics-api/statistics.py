@@ -2,7 +2,6 @@ import falcon, json
 import pyrebase
 import os
 from dotenv import load_dotenv
-from sys import maxint
 
 load_dotenv()
 pyrebase_config = {
@@ -145,7 +144,7 @@ class Tournament:
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
 
         max_key = None
-        max_val = -maxint
+        max_val = -1000000
         # Update each players total winnings and tournaments played
         for (key, val) in takeHomeMoney.items():
             if max_val < val:
