@@ -46,7 +46,7 @@ class NewStakingRequestForm extends Component {
 
   async fetchFutureGamesAndTournaments() {
     // console.log(process.env.REACT_APP_STATS_API_URL);
-    const tournaments = await fetch(`http://localhost:8000/tournaments?completed=false`,
+    const tournaments = await fetch(`https://safe-stake-mock-api.herokuapp.com/tournaments?completed=false`,
         {
           method: "GET",
           mode: "cors",
@@ -54,7 +54,7 @@ class NewStakingRequestForm extends Component {
         })
         .then(response => response.json());
 
-    const games = await fetch(`http://localhost:8000/games?completed=false`,
+    const games = await fetch(`https://safe-stake-mock-api.herokuapp.com/games?completed=false`,
         {
           method: "GET",
           mode: "cors",
@@ -68,12 +68,12 @@ class NewStakingRequestForm extends Component {
   async checkIfApiIdExists() {
     if (this.state.apiId === "") return false;
     if (this.state.gameType === 0) {
-      return await fetch(`http://localhost:8000/games/${this.state.apiId}`, 
+      return await fetch(`https://safe-stake-mock-api.herokuapp.com/games/${this.state.apiId}`,
       { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
         .then(response => response.json())
         .then(data => Object.keys(data).length !== 0)
     } else {
-      return await fetch(`http://127.0.0.1:8000/tournaments/${this.state.apiId}`,
+      return await fetch(`https://safe-stake-mock-api.herokuapp.com/tournaments/${this.state.apiId}`,
       { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
         .then(response => response.json())
         .then(data => Object.keys(data).length !== 0)

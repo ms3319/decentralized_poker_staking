@@ -25,7 +25,7 @@ class NewPlayerForm extends Component {
 
     async checkPlayerIdExists() {
         if (this.state.apiId === "") return false;
-        fetch(`http://127.0.0.1:8000/players/${this.state.apiId}`,
+        fetch(`https://safe-stake-mock-api.herokuapp.com/players/${this.state.apiId}`,
         { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
         .then(response => response.json())
         .then(data => Object.keys(data).length !== 0)
