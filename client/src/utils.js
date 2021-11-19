@@ -24,8 +24,14 @@ const StakeStatus = {
   EscrowClaimed: "6"
 };
 
+const GameType = {
+  SingleGame: 0,
+  Tournament: 1
+}
+
 exports.CoinGeckoClient = CoinGeckoClient;
 exports.usdToWei = usdToWei;
 exports.weiToUsd = weiToUsd;
 exports.numberWithCommas = numberWithCommas;
 exports.StakeStatus = StakeStatus;
+exports.GameType = GameType;

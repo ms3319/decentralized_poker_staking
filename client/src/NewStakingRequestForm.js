@@ -32,7 +32,7 @@ class NewStakingRequestForm extends Component {
     if (apiIdExists && percentCorrect) {
       try {
         await contract.methods.createRequest(this.state.weiAmount.toString(), this.state.profitShare, this.state.weiEscrow.toString(), this.state.gameType, this.state.apiId)
-          .send({ from: accounts[0] });
+          .send({ from: accounts[0], value: this.state.weiEscrow.toString() });
         onHide();
       } catch (error) {
         console.error(error);
@@ -41,7 +41,7 @@ class NewStakingRequestForm extends Component {
   };
 
   checkPercentCorrect() {
-    return (0 <= this.state.profitShare <= 100)
+    return (0 <= parseFloat(this.state.profitShare) && parseFloat(this.state.profitShare) <= 100)
   }
 
   async fetchFutureGamesAndTournaments() {

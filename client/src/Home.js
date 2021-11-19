@@ -87,8 +87,8 @@ export default function Home(props) {
         <div className={styles.mainContentContainer}>
           <h2>Marketplace</h2>
           {!props.hasPlayerAccount &&
-            <Button style={{margin: "50px"}} icon={addIcon} onClick={openNewPlayerForm}>
-              Create New Player
+            <Button style={{margin: "50px"}} onClick={openNewPlayerForm}>
+              Sign up as a player
             </Button>
           }
           {props.hasPlayerAccount && 

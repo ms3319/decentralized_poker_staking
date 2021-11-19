@@ -61,8 +61,9 @@ class Games:
 
     def on_post(self, req, resp):
         buyIn = float(req.get_param("buyIn", required=True))
+        name = req.get_param("name", required=True)
         players = json.loads(req.get_param("players"))
-        data = {"buyIn": buyIn, "players": players, "completed": False} 
+        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name}
         resp_data = db.child("games").push(data)
         resp.text = json.dumps(resp_data)
 
@@ -122,8 +123,9 @@ class Tournaments:
 
     def on_post(self, req, resp):
         buyIn = float(req.get_param("buyIn", required=True))
+        name = req.get_param("name", required=True)
         players = json.loads(req.get_param("players"))
-        data = {"buyIn": buyIn, "players": players, "completed": False} 
+        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name}
         resp_data = db.child("tournaments").push(data)
         resp.text = json.dumps(resp_data)
 

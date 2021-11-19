@@ -65,44 +65,45 @@ class NewPlayerForm extends Component {
             >
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">
-                        Create New Player
+                        Sign up as a player
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
+                    <p>Create a player account, which will be linked to your wallet address. This will allow you to create staking requests, so that you can receive funds from potential investors, in return for a share of your winnings.</p>
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Name</Form.Label>
+                            <Form.Label>Display Name</Form.Label>
                             { !this.state.sanitaryName &&
                              <p style={{color: "red", marginTop:"-0.5em"}}>
                                 Make sure you enter a valid Name!
                             </p>
                             }
-                            <Form.Control value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="text"/>
+                            <Form.Control placeholder="johnsmith123" value={this.state.name} onChange={(event) => this.handleNameChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Unique Identifier</Form.Label>
+                            <Form.Label>Player ID</Form.Label>
                             { !this.state.sanitaryId &&
                              <p style={{color: "red", marginTop:"-0.5em"}}>
                                 Make sure you enter a valid Unique Identifier!
                             </p>
                             }
-                            <Form.Control value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="text"/>
+                            <Form.Control placeholder="-MnWmBbGYTHAXIWAZ9HA" value={this.state.apiId} onChange={(event) => this.handleApiIdChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Sharkscope Link</Form.Label>
+                            <Form.Label>Link to poker stats</Form.Label>
                             { !this.state.sanitarySharkscope &&
                              <p style={{color: "red", marginTop:"-0.5em"}}>
                                 Make sure you enter a valid Sharkscope Link!
                             </p>
                             }
-                            <Form.Control value={this.state.sharkscopeLink} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
+                            <Form.Control placeholder="www.sharkscope.com/#Player-Statistics//networks/PokerStars/players/JohnSmith" value={this.state.sharkscopeLink} onChange={(event) => this.handleSharkscopeLinkChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label>Profile Picture Path</Form.Label>
-                            <Form.Control value={this.state.profilePicPath} onChange={(event) => this.handleProfilePicPathChange(event)} inputMode="text"/>
+                            <Form.Label>Link to Profile Picture</Form.Label>
+                            <Form.Control placeholder="i.imgur.com/AD3MbBi.jpeg" value={this.state.profilePicPath} onChange={(event) => this.handleProfilePicPathChange(event)} inputMode="text"/>
                         </Form.Group>
 
                         <Button

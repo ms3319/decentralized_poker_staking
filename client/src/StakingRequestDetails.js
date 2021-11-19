@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button"
 import {Link} from "react-router-dom";
-import { weiToUsd } from "./utils";
+import { weiToUsd, GameType } from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -25,35 +25,29 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, ethP
     >
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
-          Modal heading
+          Staking Request
         </Modal.Title>
       </Modal.Header>
       {request &&
       <Modal.Body>
-        <h4>Invest in a Horse</h4>
         <p>
-          You are going to invest ${weiToUsd(request.amount, ethPriceUsd)} in {player ? player.name : ""} ({request.horse}) with a potential profit share
-          of {request.profitShare}.
+          <Link style={{color: "var(--safestake-gold)"}} to={`players/${request.horse}`}><strong>{player ? player.name : ""}</strong></Link> is requesting <strong>${weiToUsd(request.amount, ethPriceUsd)}</strong> to
+          play in a {request.gameType === GameType.SingleGame ? "single game" : "tournament"} with id <strong>{request.apiId}</strong>, for a
+          potential profit share of <strong>{request.profitShare}%</strong>
         </p>
+        <p>The player is willing to put up an escrow of <strong>${weiToUsd(request.escrow, ethPriceUsd)}</strong>, meaning that if it is found that the player
+        made a profit from their {request.gameType === GameType.SingleGame ? "game" : "tournament"}, and they do not return the appropriate share of the winnings,
+        you will be transferred ${weiToUsd(request.escrow, ethPriceUsd)} to reduce your losses</p>
         <Button
           onClick={() => contract.methods.stakeHorse(request.id).send({
             from: accounts[0],
             value: parseInt(request.amount)
-          })}
+          }).then(() => onHide())}
           style={{
             marginRight: "10px",
           }}
         >
           Invest
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "var(--safestake-off-black-lighter)",
-            marginLeft: "10px",
-            marginRight: "10px",
-          }}
-        >
-          Wishlist
         </Button>
         <Link to={`players/${request.horse}`}>
         {/* <Link to="players/test"> */}
