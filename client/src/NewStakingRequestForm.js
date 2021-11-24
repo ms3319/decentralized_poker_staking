@@ -104,11 +104,12 @@ class NewStakingRequestForm extends Component {
   }
 
   getSuggestions = (value) => {
-    if (this.state.gameType === 0) {
-      return Object.entries(this.state.futureGames);
-    } else {
-      return Object.entries(this.state.futureTournaments);
-    }
+    const suggestions = this.state.gameType === 0 ? this.state.futureGames : this.state.futureTournaments;
+    const inputValue = value.trim().toLowerCase();
+    const inputLength = inputValue.length;
+    return inputLength === 0 ? [] : Object.entries(suggestions).filter(entry => {
+        return entry[1].name.toLowerCase().slice(0, inputLength) === inputValue
+    });
   }
 
   onSuggestionsFetchRequested = ({ value }) => {
