@@ -15,7 +15,8 @@ contract Staking {
         Cancelled,
         AwaitingReturnPayment,
         Completed,
-        EscrowClaimed
+        EscrowClaimed,
+        PartiallyFilled
     }
 
     enum GameType {
@@ -26,8 +27,10 @@ contract Staking {
     struct Stake {
         uint id;
         address payable horse;
-        address payable backer;
+        address payable[] backers;
+        uint[] investments;
         uint amount;
+        uint filled_amount;
         uint escrow;
         uint profitShare;
         int pnl;
@@ -40,7 +43,7 @@ contract Staking {
 
     struct StakeTimeStamp {
         uint256 createdTimestamp;
-        uint256 filledTimestamp;
+        uint256 lastFilledTimestamp;
         uint256 gamePlayedTimestamp;
     }
 
@@ -138,7 +141,17 @@ contract Staking {
             revert EscrowValueNotMatching(escrow, msg.value);
         }
         StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
-        stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, 0, StakeStatus.Requested, gameType, apiId, stakeTimeStamp);
+        stakes[requestCount].id = requestCount;
+        stakes[requestCount].horse = payable(msg.sender);
+        stakes[requestCount].amount = amount;
+        stakes[requestCount].filled_amount = 0;
+        stakes[requestCount].escrow = escrow;
+        stakes[requestCount].profitShare = profitShare;
+        stakes[requestCount].status = StakeStatus.Requested;
+        stakes[requestCount].gameType = gameType;
+        stakes[requestCount].apiId = apiId;
+        stakes[requestCount].stakeTimeStamp = stakeTimeStamp;
+
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
@@ -152,17 +165,19 @@ contract Staking {
     error StakeNotFillable(uint id);
     /// You cannot stake yourself
     error StakingSelf(uint id, address horse, address backer);
-    /// Message value doesn't match the requested amount
-    error ValueDoesNotMatchStakeAmount(uint id, uint value, uint amount);
+    /// Cannot stake more than the remaining amount
+    error StakedMoreThanRemaining(uint id, uint stakedAmount, uint remainingAmount);
+    /// Staked amount and msg value do not match
+    error ValueAndAmountDoNotMatch(uint amount, uint value);
    
-    function stakeHorse(uint id) external payable {
+    function stakeHorse(uint id, uint amount) external payable {
         // require(validId(id), "This is not a valid ID for a stake!");
         if (id >= requestCount) {
             revert InvalidStakeId(id);
         }
     
-        Stake memory stake = stakes[id];
-        if (stake.status != StakeStatus.Requested) {
+        Stake storage stake = stakes[id];
+        if (stake.status != StakeStatus.Requested || stake.status != StakeStatus.PartiallyFilled) {
             revert StakeNotFillable(id);
         }
 
@@ -172,15 +187,25 @@ contract Staking {
             revert StakingSelf(id, horse, backer);
         }
         
-        if (msg.value != stake.amount) {
-            revert ValueDoesNotMatchStakeAmount(id, msg.value, stake.amount);
+        if (msg.value != amount) {
+            revert ValueAndAmountDoNotMatch(amount, msg.value);
+        }
+
+        if (amount + stake.filled_amount > stake.amount) {
+            revert StakedMoreThanRemaining(id, amount, stake.amount - stake.filled_amount);
         }
 
         // Update stake status and transfer funds
-        stake.status = StakeStatus.Filled;
-        stake.backer = backer;
-        stake.stakeTimeStamp.filledTimestamp = block.timestamp;
-        horse.transfer(stake.amount);
+        stake.filled_amount += amount;
+        if (stake.filled_amount == stake.amount) {
+            stake.status = StakeStatus.Filled;
+            horse.transfer(stake.amount); // Only send the investment once completely filled
+        } else {
+            stake.status = StakeStatus.PartiallyFilled;
+        }
+        stake.backers.push(payable(backer));
+        stake.investments.push(amount);
+        stake.stakeTimeStamp.lastFilledTimestamp = block.timestamp;
 
         stakes[id] = stake;
         emit StakeFilled(stake);
@@ -217,13 +242,6 @@ contract Staking {
         emit StakeCancelled(id);
     }
     
-    // TODO: How might we allow this?
-    
-    // function cancelStakeAsBacker(uint id) external payable {
-    //     Stake memory stake = stakes[id];
-    //     require(msg.sender == stake.backer);
-    //     require(validId(id), "This is not a valid ID for a stake!");
-    // }
 
     // Returning profits to backer after completing games
     event ProfitsReturned(uint id, uint backerReturns);
@@ -235,12 +253,11 @@ contract Staking {
     /// Message value not equal to the profit returns of the backer
     error MessageValueNotEqualToBackerReturns(uint value, uint backerReturns);
     
-    // TODO: handle the case where no profit was made
     function returnProfits(uint id) external payable {
         if(!validId(id)) {
             revert InvalidStakeId(id);
         }
-        Stake memory stake = stakes[id];
+        Stake storage stake = stakes[id];
 
         if (msg.sender != stake.horse) {
             revert ReturningProfitsSenderIsNotHorse(id, msg.sender, stake.horse);
@@ -254,7 +271,9 @@ contract Staking {
         // if (msg.value != backerReturns) {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
-        stake.backer.transfer(stake.backerReturns);
+        for (uint i = 0; i < stake.backers.length; i++) {
+            stake.backers[i].transfer((stake.backerReturns * stake.amount) / stake.investments[i]);
+        }
         if (stake.escrow > 0) {
             stake.horse.transfer(stake.escrow);
         }
@@ -310,7 +329,7 @@ contract Staking {
     /// You can only request your escrow back when the status of the stake is awaiting return payment
     error CanOnlyReturnEscrowWhenAwaitingReturnPayment(uint id, StakeStatus status);
     /// Only the stake backer can request the contract's escrow
-    error OnlyBackerCanRequestEscrow(uint id, address backer, address sender);
+    error OnlyBackerCanRequestEscrow(uint id, address sender);
     /// Cannot return back escrow for a stake which never had an escrow put up
     error CannotReturnNoEscrow(uint id, uint escrow);
 
@@ -322,16 +341,24 @@ contract Staking {
         if (stakes[id].status != StakeStatus.AwaitingReturnPayment) {
             revert CanOnlyReturnEscrowWhenAwaitingReturnPayment(id, stakes[id].status);
         }
-        if (msg.sender != stakes[id].backer) {
-            revert OnlyBackerCanRequestEscrow(id, stakes[id].backer, msg.sender);
-        }
+
         if (stakes[id].escrow == 0) {
             revert CannotReturnNoEscrow(id, stakes[id].escrow);
         }
 
-        stakes[id].backer.transfer(stakes[id].escrow);
+        bool isBacker = false;
+        for (uint i = 0; i < stakes[id].backers.length; i++) {
+            if (msg.sender == stakes[id].backers[i]) {
+                isBacker = true;
+                stakes[id].backers[i].transfer((stakes[id].escrow * stakes[id].amount) / stakes[id].investments[i]);
+            }
+        }
+        if (!isBacker) {
+            revert OnlyBackerCanRequestEscrow(id, msg.sender);
+        }
+
         stakes[id].status = StakeStatus.EscrowClaimed;
-        emit EscrowClaimed(id, stakes[id].escrow, stakes[id].backer);
+        emit EscrowClaimed(id, stakes[id].escrow, msg.sender);
     }
 
     function validId(uint id) internal view returns (bool) {
