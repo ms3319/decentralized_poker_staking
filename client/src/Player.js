@@ -245,7 +245,7 @@ export default function Player({ contract, accounts }) {
     if (player != null) {
       const updateStakes = async () => {
         let stakes = []
-        for (const stakeId in player.stakeIds) {
+        for (const stakeId of player.stakeIds) {
           stakes.push(await contract.methods.getStake(stakeId).call())
         }
         setStakes(stakes)

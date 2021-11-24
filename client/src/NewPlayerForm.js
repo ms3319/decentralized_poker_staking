@@ -25,10 +25,10 @@ class NewPlayerForm extends Component {
 
     async checkPlayerIdExists() {
         if (this.state.apiId === "") return false;
-        fetch(`https://safe-stake-mock-api.herokuapp.com/players/${this.state.apiId}`,
+        return await fetch(`https://safe-stake-mock-api.herokuapp.com/players/${this.state.apiId}`,
         { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
-        .then(response => response.json())
-        .then(data => Object.keys(data).length !== 0)
+            .then(response => response.json())
+            .then(data => Object.keys(data).length !== 0)
     }
 
     checkName() {
@@ -36,7 +36,7 @@ class NewPlayerForm extends Component {
     }
 
     checkSharkscope() {
-        return validator.isURL(this.state.name);
+        return validator.isURL(this.state.sharkscopeLink);
     }
 
     handleApiIdChange(event) {
