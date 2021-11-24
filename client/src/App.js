@@ -9,6 +9,8 @@ import NavBar from "./NavBar";
 import Player from "./Player"
 require('./globals.css')
 
+// TODO: Get the stake coin instance and pass it down to the other components here
+
 
 export default function App() {
   const [requests, setRequests] = useState(null)

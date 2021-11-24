@@ -8,10 +8,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import "./Autosuggest.css"
 
-// TODO: Figure out how tf to keep the whole suggestion object, as well as letting the user
-// type their value in
-
-
 const renderSuggestion = suggestion => (
   <span>
     {suggestion[1].name + " "}
