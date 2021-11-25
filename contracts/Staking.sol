@@ -6,7 +6,6 @@ interface Token {
     function transfer(address dst, uint amount) external returns (bool);
     function transferFrom(address src, address dst, uint amount) external returns (bool);
     function balanceOf(address guy) external view returns (uint);
-    function approve(address spender, uint amount) external returns (bool);
 }
 
 contract Staking {

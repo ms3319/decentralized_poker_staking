@@ -29,11 +29,11 @@ export default function StakeRequestTile({ contract, request, onClick }) {
       </div>
       <div>
         <span className={styles.label}>Stake</span>
-        <span className={styles.value}>${numberWithCommas(stake)}</span>
+        <span className={styles.value}>{numberWithCommas(stake)} ◈</span>
       </div>
       <div>
         <span className={styles.label}>Escrow</span>
-        <span className={styles.value}>${numberWithCommas(escrow)}</span>
+        <span className={styles.value}>{numberWithCommas(escrow)} ◈</span>
       </div>
       <div>
         <span className={styles.label}>Profit Share</span>

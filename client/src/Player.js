@@ -25,7 +25,6 @@ function PlayerInfo({ player, accounts, contract }) {
 
   // a flag to only display the Edit Profile button if the current profile is mine
   const isMyProfile = accounts[0] === player.playerAddress;
-  
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
@@ -95,7 +94,7 @@ function PlayerStats({ games }) {
             Total Stakes Requested
           </div>
           <div className={styles.value}>
-            ${numberWithCommas(stakesRequested)}
+            {numberWithCommas(stakesRequested)} ◈
           </div>
         </div>
 
@@ -104,7 +103,7 @@ function PlayerStats({ games }) {
             Net Pnl
           </div>
           <div className={styles.value}>
-            ${numberWithCommas(totalPnl)}
+            {numberWithCommas(totalPnl)} ◈
           </div>
         </div>
 
@@ -148,10 +147,10 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
             {awaitingRepayment.map((stake, index) => <tr key={stake.id}>
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
-              <td>${units(stake.amount)}</td>
+              <td>{units(stake.amount)} ◈</td>
               <td>{stake.profitShare}%</td>
-              <td>${units(parseInt(stake.pnl))}</td>
-              <td>${units(parseInt(stake.backerReturns))}</td>
+              <td>{units(parseInt(stake.pnl))} ◈</td>
+              <td>{units(parseInt(stake.backerReturns))} ◈</td>
               <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.backerReturns))}>Pay Back</Button></td>
             </tr>)}
           </tbody>
@@ -174,7 +173,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
             {inProgress.map((stake, index) => <tr key={stake.id}>
               <td>{index + 1}</td>
               <td>{stake.backer}</td>
-              <td>${units(stake.amount)}</td>
+              <td>{units(stake.amount)} ◈</td>
               <td>{stake.profitShare}%</td>
               <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
             </tr>)}
@@ -199,18 +198,18 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
           {isViewersAccount ? pastStakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
-            <td>${units(stake.amount)}</td>
+            <td>{units(stake.amount)} ◈</td>
             <td>{stake.profitShare}%</td>
-            <td>${units(stake.pnl)}</td>
+            <td>{units(stake.pnl)} ◈</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
             <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
           </tr>) :
           stakes.map((stake, index) => <tr key={index}>
             <td>{index + 1}</td>
             <td>{stake.backer}</td>
-            <td>${units(stake.amount)}</td>
+            <td>{units(stake.amount)} ◈</td>
             <td>{stake.profitShare}%</td>
-            <td>${units(stake.pnl)}</td>
+            <td>{units(stake.pnl)} ◈</td>
             <td>{stake.horseWon ? "Yes" : "No"}</td>
             <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
           </tr>)}
