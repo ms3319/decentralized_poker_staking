@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./StakeCoin.sol";
+// Dai or StakeCoin (production or development)
+interface Token {
+    function transfer(address dst, uint amount) external returns (bool);
+    function transferFrom(address src, address dst, uint amount) external returns (bool);
+    function balanceOf(address guy) external view returns (uint);
+    function approve(address spender, uint amount) external returns (bool);
+}
 
 contract Staking {
-    StakeCoin public stakeCoin;
+    Token public token;
     uint public requestCount = 0;
     mapping(uint => Stake) public stakes;
     address payable public owner;
@@ -57,9 +63,9 @@ contract Staking {
         uint256 createdTimestamp;
     }
 
-    constructor(address stakeCoinAddress) {
+    constructor(address tokenAddress) {
         owner = payable(msg.sender);
-        stakeCoin = StakeCoin(stakeCoinAddress);
+        token = Token(tokenAddress);
     }
 
     event PlayerCreated(address playerAddress, string apiId, string name, string sharkscopeLink, string profilePicPath);
@@ -138,11 +144,8 @@ contract Staking {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
-        if (escrow > 0 && escrow != msg.value) {
-            revert EscrowValueNotMatching(escrow, msg.value);
-        }
         if (escrow > 0) {
-            stakeCoin.transferFrom(msg.sender, address(this), escrow);
+            token.transferFrom(msg.sender, address(this), escrow);
         }
         StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
         stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, 0, StakeStatus.Requested, gameType, apiId, stakeTimeStamp);
@@ -179,17 +182,11 @@ contract Staking {
             revert StakingSelf(id, horse, backer);
         }
         
-        if (msg.value != stake.amount) {
-            revert ValueDoesNotMatchStakeAmount(id, msg.value, stake.amount);
-        }
-
         // Update stake status and transfer funds
         stake.status = StakeStatus.Filled;
         stake.backer = backer;
         stake.stakeTimeStamp.filledTimestamp = block.timestamp;
-        stakeCoin.approve(address(this), stake.amount);
-        stakeCoin.transferFrom(msg.sender, stake.horse, stake.amount);
-        // horse.transfer(stake.amount);
+        token.transferFrom(msg.sender, stake.horse, stake.amount);
 
         stakes[id] = stake;
         emit StakeFilled(stake);
@@ -218,7 +215,7 @@ contract Staking {
         }
 
         if (stake.escrow > 0) {
-            stakeCoin.transfer(stake.horse, stake.escrow);
+            token.transfer(stake.horse, stake.escrow);
             // stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Cancelled;
@@ -264,10 +261,10 @@ contract Staking {
         // if (msg.value != backerReturns) {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
-        stakeCoin.transferFrom(stake.horse, stake.backer, stake.backerReturns);
+        token.transferFrom(stake.horse, stake.backer, stake.backerReturns);
         // stake.backer.transfer(stake.backerReturns);
         if (stake.escrow > 0) {
-            stakeCoin.transfer(stake.horse, stake.escrow);
+            token.transfer(stake.horse, stake.escrow);
             // stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Completed;
@@ -341,7 +338,7 @@ contract Staking {
             revert CannotReturnNoEscrow(id, stakes[id].escrow);
         }
 
-        stakeCoin.transfer(stakes[id].backer, stakes[id].escrow);
+        token.transfer(stakes[id].backer, stakes[id].escrow);
         // stakes[id].backer.transfer(stakes[id].escrow);
         stakes[id].status = StakeStatus.EscrowClaimed;
         emit EscrowClaimed(id, stakes[id].escrow, stakes[id].backer);

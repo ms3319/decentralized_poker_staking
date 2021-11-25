@@ -97,10 +97,10 @@ export default function Home(props) {
             </Button>
           }
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
-                                 accounts={props.accounts} contract={props.contract}/>
+                                 accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakingRequestDetails contract={props.contract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} ethPriceUsd={ethPriceUsd} />
+          <StakingRequestDetails contract={props.contract} tokenContract={props.tokenContract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} ethPriceUsd={ethPriceUsd} />
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} ethPriceUsd={ethPriceUsd} />
           </div>

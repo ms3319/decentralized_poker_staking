@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import StakingContract from "./contracts/Staking.json";
+import Token from "./contracts/Token.json";
 import { useWeb3React } from "@web3-react/core"
 import { useEagerConnect } from "./hooks";
 import { BrowserRouter as Router, Route } from 'react-router-dom';
@@ -17,6 +18,7 @@ export default function App() {
   const [accounts, setAccounts] = useState(null)
   const [contract, setContract] = useState(null)
   const [hasPlayerAccount, setHasPlayerAccount] = useState(false)
+  const [tokenContract, setTokenContract] = useState(null);
 
   const { active, library } = useWeb3React()
 
@@ -34,6 +36,7 @@ export default function App() {
       // Get the contract instance.
       const networkId = await library.eth.net.getId();
       const deployedNetwork = StakingContract.networks[networkId];
+      const tokenContract = new library.eth.Contract(Token.abi, deployedNetwork && "0xCd3D1F4DB66A8C07ea57ac1517E2220C1C3CC64E");
       const contract = new library.eth.Contract(
         StakingContract.abi,
         deployedNetwork && deployedNetwork.address,
@@ -47,6 +50,7 @@ export default function App() {
       setContract(contract)
       setRequests(requests)
       setAccounts(accounts)
+      setTokenContract(tokenContract);
     }
     getContractData().catch()
   }, [active, library])
@@ -56,7 +60,7 @@ export default function App() {
       <Router>
         <NavBar hasPlayerAccount={hasPlayerAccount} />
         <Route exact path={"/"}>
-          <Home hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} />
+          <Home hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
         </Route>
         <Route exact path = "/my-stable">
           <Stable requests={requests} accounts={accounts} contract={contract}/>
