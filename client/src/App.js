@@ -63,10 +63,10 @@ export default function App() {
           <Home hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
         </Route>
         <Route exact path = "/my-stable">
-          <Stable requests={requests} accounts={accounts} contract={contract}/>
+          <Stable requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
         </Route>
         <Route exact path = "/players/:playerAddress">
-          <Player contract={contract} accounts={accounts} />
+          <Player contract={contract} accounts={accounts} tokenContract={tokenContract} />
         </Route>
       </Router>
   )

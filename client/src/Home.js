@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {Col, Container, Row} from "react-bootstrap";
 import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
@@ -13,7 +13,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
 import Button from "./Button";
 import { useWeb3React } from "@web3-react/core";
-import { CoinGeckoClient } from "./utils";
 
 export default function Home(props) {
   
@@ -21,13 +20,8 @@ export default function Home(props) {
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false)
-  const [ethPriceUsd, setEthPriceUsd] = useState(0);
 
   const {active, activate} = useWeb3React();
-
-  useEffect(() => {
-    CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => setEthPriceUsd(resp.data.ethereum.usd));
-  }, [])
 
   const closeRequestDetails = () => {
     setShowRequestDetails(false);
@@ -100,9 +94,9 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakingRequestDetails contract={props.contract} tokenContract={props.tokenContract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} ethPriceUsd={ethPriceUsd} />
+          <StakingRequestDetails contract={props.contract} tokenContract={props.tokenContract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
           <div className={styles.stakingListContainer}>
-            <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} ethPriceUsd={ethPriceUsd} />
+            <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
           </div>
         </div>
       }
