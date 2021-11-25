@@ -8,7 +8,7 @@ import EditPlayerForm from "./EditPlayerForm";
 import default_profile_pic from './images/default-profile-pic.png'
 
 const units = (amount) => {
-  return amount / 1e18; 
+  return Math.round(amount / 1e18); 
 }
 
 function PlayerInfo({ player, accounts, contract }) { 

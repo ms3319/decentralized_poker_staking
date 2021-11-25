@@ -31,13 +31,13 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, toke
       {request &&
       <Modal.Body>
         <p>
-          <Link style={{color: "var(--safestake-gold)"}} to={`players/${request.horse}`}><strong>{player ? player.name : ""}</strong></Link> is requesting <strong>${request.amount / 1e18}</strong> to
+          <Link style={{color: "var(--safestake-gold)"}} to={`players/${request.horse}`}><strong>{player ? player.name : ""}</strong></Link> is requesting <strong>${Math.round(request.amount / 1e18)}</strong> to
           play in a {request.gameType === GameType.SingleGame ? "single game" : "tournament"} with id <strong>{request.apiId}</strong>, for a
           potential profit share of <strong>{request.profitShare}%</strong>
         </p>
-        <p>The player is willing to put up an escrow of <strong>${request.escrow / 1e18}</strong>, meaning that if it is found that the player
+        <p>The player is willing to put up an escrow of <strong>${Math.round(request.escrow / 1e18)}</strong>, meaning that if it is found that the player
         made a profit from their {request.gameType === GameType.SingleGame ? "game" : "tournament"}, and they do not return the appropriate share of the winnings,
-        you will be transferred ${request.escrow / 1e18} to reduce your losses</p>
+        you will be transferred ${Math.round(request.escrow / 1e18)} to reduce your losses</p>
         <Button
           onClick={async () => { 
             const amountString = "0x" + parseInt(request.amount).toString(16);

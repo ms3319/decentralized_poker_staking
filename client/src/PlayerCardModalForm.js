@@ -32,7 +32,7 @@ export default class PlayerCardModalForm extends Component {
           <Modal.Body>
             Stake ID: {this.props.stake.id}
             <br/>
-            You staked ${this.props.stake.amount / 1e18} for a profit share of {this.props.stake.profitShare}%.
+            You staked ${Math.round(this.props.stake.amount / 1e18)} for a profit share of {this.props.stake.profitShare}%.
             <br/>
             Stake status: {this.props.stake.status}
             <br/>
