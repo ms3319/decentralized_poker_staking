@@ -1,9 +1,21 @@
 import React, {useEffect, useState} from "react";
 import PlayerCard from "./PlayerCard.js";
 import { Container } from "react-bootstrap";
-import "./Stable.css";
 import PlayerCardModalForm from "./PlayerCardModalForm.js";
 import { CoinGeckoClient } from "./utils";
+import styles from "./Stable.module.css"
+import Button from "./Button";
+import {Link} from "react-router-dom";
+
+const Separator = () => <div className={styles.separator} />
+
+const MarketPlaceRedirect = () => (
+  <div className={styles.marketPlaceRedirect}>
+    <h1>No Investment Activity</h1>
+    <p>Visit the marketplace to make your first investments!</p>
+    <Link to="/"><Button>Visit Marketplace</Button></Link>
+  </div>
+)
 
 export default function Stable(props) {
   const [stakeInFocus, setStakeInFocus] = useState(null);
@@ -35,48 +47,41 @@ export default function Stable(props) {
     (request) => request.backer === investor
   );
 
-  if (investments.length === 0) {
-    return (
-      <div>
-        <h1 align="center">Stable is empty</h1>
-        <h3 align="center">You have not staked any games</h3>
-      </div>
-    );
-  }
-
   return (
-    <div className="Stable" style={{ overflowY: "scroll" }}>
-      <Container
-        style={{
-          position: "absolute",
-          left: "170px",
-          backgroundColor: "white",
-        }}
-        fluid={true}
-      >
-        {investments.map((stake, i) => (
-          <button
-            onClick={() => handleShow(stake)}
-            style={{ padding: 0, border: "none", background: "none" }}
-            key={i}
-          >
-            {/* TODO: Give this a better name */}
-            <PlayerCard
-              stake={stake}
-              contract={props.contract}
-              bg={stake[0].toLowerCase()}
-              text={stake[0] === "Dark" ? "light" : "dark"}
-              style={{
-                width: "24rem",
-                height: "16rem",
-                float: "left",
-                margin: "15px",
-                border: "solid black 1px",
-              }}
-              className="mb-2"
-            />
-          </button>
-        ))}
+    <div className={styles.page}>
+      <Container>
+        <div className={styles.header}>
+          <h1>My Stable</h1>
+          <p className={styles.pageDescription}>View the status of your current and past investments. If a player is overdue on their repayment, you will also be able to claim the escrow from this page.</p>
+        </div>
+        <Separator />
+        {investments.length === 0 ?
+          <MarketPlaceRedirect />
+        :
+          investments.map((stake, i) => (
+            <button
+              onClick={() => handleShow(stake)}
+              style={{ padding: 0, border: "none", background: "none" }}
+              key={i}
+            >
+              {/* TODO: Give this a better name */}
+              <PlayerCard
+                stake={stake}
+                contract={props.contract}
+                bg={stake[0].toLowerCase()}
+                text={stake[0] === "Dark" ? "light" : "dark"}
+                style={{
+                  width: "24rem",
+                  height: "16rem",
+                  float: "left",
+                  margin: "15px",
+                  border: "solid black 1px",
+                }}
+                className="mb-2"
+              />
+            </button>
+          ))
+        }
       </Container>
       {/* TODO: give this a better name */}
       <PlayerCardModalForm

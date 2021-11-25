@@ -1,0 +1,37 @@
+.page {
+    text-align: center;
+}
+
+.header {
+    padding: 75px;
+}
+
+.header h1 {
+    font-weight: 700;
+    font-size: 5em;
+    margin-bottom: 20px;
+}
+
+.pageDescription {
+    font-weight: 600;
+    font-size: 2em;
+    line-height: 1.2em;
+}
+
+.separator {
+    width: 75px;
+    height: 10px;
+    background: var(--safestake-gold);
+    margin: 0 auto;
+}
+
+.marketPlaceRedirect {
+    padding: 75px;
+}
+.marketPlaceRedirect h1 {
+    font-weight: 900;
+}
+
+.marketPlaceRedirect p {
+    font-size: 2em;
+}

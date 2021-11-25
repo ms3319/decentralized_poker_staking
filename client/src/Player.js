@@ -5,7 +5,7 @@ import React, {useEffect, useState} from "react";
 import Button from "./Button";
 import { CoinGeckoClient, weiToUsd, StakeStatus, numberWithCommas } from "./utils";
 import EditPlayerForm from "./EditPlayerForm";
-import default_profile_pic from './images/default-profile-pic.png'
+import defaultProfilePic from './images/default-profile-pic.png'
 
 const ethereumUnits = (amountInWei) => {
   if (amountInWei < 1e7) {
@@ -31,13 +31,13 @@ function PlayerInfo({ player, accounts, contract }) {
 
   // a flag to only display the Edit Profile button if the current profile is mine
   const isMyProfile = accounts[0] === player.playerAddress;
-  
+
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
         <img className={styles.profilePic} alt="Profile" src={player.profilePicPath} 
           onError={event => {
-            event.target.src = default_profile_pic
+            event.target.src = defaultProfilePic
             event.onerror = null
           }}/>
       </div>
@@ -70,7 +70,7 @@ function PlayerStats({ ethPriceUsd, games }) {
   const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequested = ethereumUnits(stakesRequestedRaw)
   const stakesRequestedUsd = weiToUsd(stakesRequestedRaw, ethPriceUsd)
-  const totalPnlRaw = games.reduce((prev, curr) => prev + curr.pnl, 0)
+  const totalPnlRaw = games.reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
   const totalPnl = ethereumUnits(totalPnlRaw)
   const totalPnlUsd = weiToUsd(totalPnlRaw, ethPriceUsd)
   const profitPercent = stakesRequestedRaw > 0 ? +((totalPnlRaw / stakesRequestedRaw) * 100).toFixed(2) : 0;
@@ -112,6 +112,8 @@ function PlayerStats({ ethPriceUsd, games }) {
             Net Pnl
           </div>
           <div className={styles.value}>
+            {console.log(`amount: ${totalPnl.amount}`)}
+            {console.log(numberWithCommas(totalPnl.amount))}
             {numberWithCommas(totalPnl.amount) + " " + totalPnl.units + " ($" + totalPnlUsd + ")"}
           </div>
         </div>
