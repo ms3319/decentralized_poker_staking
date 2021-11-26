@@ -3,13 +3,9 @@ import styles from "./Player.module.css"
 import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
-import { StakeStatus, numberWithCommas } from "./utils";
+import { StakeStatus, numberWithCommas, units } from "./utils";
 import EditPlayerForm from "./EditPlayerForm";
 import defaultProfilePic from './images/default-profile-pic.png'
-
-const units = (amount) => {
-  return Math.round(amount / 1e18); 
-}
 
 function PlayerInfo({ player, accounts, contract }) { 
 

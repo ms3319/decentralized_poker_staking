@@ -4,6 +4,7 @@ import Button from "./Button"
 import { Col } from "react-bootstrap";
 import Autosuggest from "react-autosuggest";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { GameType } from "./utils"
 
 import "./Autosuggest.css"
 
@@ -31,7 +32,8 @@ const NewStakingRequestForm = (props) => {
 
   const createStakingRequest = async () => {
     const { accounts, contract, onHide, tokenContract } = props;
-    const apiIdExists = await checkIfApiIdExists()
+    const gameOrTournamentFromApi = await fetchGameOrTournamentFromApi()
+    const apiIdExists = Object.keys(gameOrTournamentFromApi).length !== 0
     const percentCorrect = checkPercentCorrect()
     setSanitaryId(apiIdExists);
     setSanitaryPercent(percentCorrect);
@@ -40,7 +42,7 @@ const NewStakingRequestForm = (props) => {
         const amountString = "0x" + (amount * 1e18).toString(16);
         const escrowString = "0x" + (escrow * 1e18).toString(16);
         await tokenContract.methods.approve(contract.options.address, escrowString).send({from: accounts[0]});
-        await contract.methods.createRequest(amountString, profitShare, escrowString, gameType, apiId)
+        await contract.methods.createRequest(amountString, profitShare, escrowString, gameType, apiId, gameOrTournamentFromApi.scheduledFor)
           .send({ from: accounts[0] });
         onHide();
       } catch (error) {
@@ -75,18 +77,16 @@ const NewStakingRequestForm = (props) => {
     setFutureGames(games);
   }
 
-  const checkIfApiIdExists = async () => {
+  const fetchGameOrTournamentFromApi = async () => {
     if (apiId === "") return false;
-    if (gameType === 0) {
+    if (gameType === GameType.SingleGame) {
       return await fetch(`https://safe-stake-mock-api.herokuapp.com/games/${apiId}`,
       { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
         .then(response => response.json())
-        .then(data => Object.keys(data).length !== 0)
     } else {
       return await fetch(`https://safe-stake-mock-api.herokuapp.com/tournaments/${apiId}`,
       { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
         .then(response => response.json())
-        .then(data => Object.keys(data).length !== 0)
     }
   }
 

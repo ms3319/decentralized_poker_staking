@@ -1,10 +1,13 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import PlayerCard from "./PlayerCard.js";
 import { Container } from "react-bootstrap";
 import PlayerCardModalForm from "./PlayerCardModalForm.js";
 import styles from "./Stable.module.css"
 import Button from "./Button";
 import {Link} from "react-router-dom";
+import {numberWithCommas, StakeStatus, units, dateFromTimeStamp, timeUntilDate, GameType} from "./utils"
+import HorizontalTile from "./HorizontalTile";
+import tileStyles from "./HorizontalTile.module.css";
 
 const Separator = () => <div className={styles.separator} />
 
@@ -16,7 +19,127 @@ const MarketPlaceRedirect = () => (
   </div>
 )
 
-export default function Stable(props) {
+const Statistics = ({ currentInvestments, pastInvestments }) => {
+  const currentlyInvested = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
+  const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
+  const totalWinnings = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
+  const profit = (totalWinnings - pastInvestmentsAmount).toFixed(2)
+
+  return (
+    <div className={styles.statsTile}>
+      <div className={styles.background} />
+      <h2>My Stats</h2>
+      <div className={styles.stats}>
+        <div>
+          <div className={styles.label}>
+            Currently Invested
+          </div>
+          <div className={styles.value}>
+            {numberWithCommas(currentlyInvested)} ◈
+          </div>
+        </div>
+
+        <div>
+          <div className={styles.label}>
+            Total Past Investments
+          </div>
+          <div className={styles.value}>
+            {numberWithCommas(pastInvestmentsAmount)} ◈
+          </div>
+        </div>
+
+        <div>
+          <div className={styles.label}>
+            Total Winnings
+          </div>
+          <div className={styles.value}>
+            {numberWithCommas(totalWinnings)} ◈
+          </div>
+        </div>
+
+        <div className={profit >= 0 ? styles.green : styles.red}>
+          <div className={styles.label}>
+            Net PnL
+          </div>
+          <div className={styles.value}>
+            {pastInvestmentsAmount !== 0 ? ((profit * 100) / pastInvestmentsAmount).toFixed(2) : 0}%
+          </div>
+          <div className={styles.underValue}>
+            ({profit} ◈)
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const CurrentInvestments = ({ currentInvestments, contract }) => {
+  const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
+
+  const investmentsByPlayerRaw = Array.from(currentInvestments.reduce(
+    (entryMap, investment) => entryMap.set(investment.horse, [...entryMap.get(investment.horse)||[], investment]),
+    new Map()
+  ).entries());
+
+  useEffect(() => {
+    Promise.all(investmentsByPlayerRaw.map(async playerInvestment => {
+      const [player, investments] = playerInvestment
+      const playerName = await contract.methods.getPlayer(player).call()
+      const investmentsWithNames = await Promise.all(investments.map(async investment => {
+        const gameOrTournamentFromApi = (parseInt(investment.gameType) === GameType.SingleGame) ?
+          (await fetch(`https://safe-stake-mock-api.herokuapp.com/games/${investment.apiId}`).then(response => response.json()).catch((err) => {console.error(err); return {name: "Couldn't get tournament name"}})) :
+          (await fetch(`https://safe-stake-mock-api.herokuapp.com/tournaments/${investment.apiId}`).then(response => response.json()).catch((err) => {console.error(err); return {name: "Couldn't get tournament name"}}))
+        console.log(gameOrTournamentFromApi)
+        return [gameOrTournamentFromApi.name, investment];
+      }))
+      return [playerName, investmentsWithNames]
+    })).then(investmentsByPlayer => {setInvestmentsByPlayer(investmentsByPlayer)})
+  }, [])
+
+  return (
+    <div className={styles.currentInvestments}>
+      <h1>Current Investments</h1>
+      {investmentsByPlayer.map(playerInvestments => {
+        const [player, investments] = playerInvestments
+        return (
+          <div className={styles.currentInvestment} key={player}>
+            <span className={styles.investmentPlayerName}>{player.name}</span>
+            {investments.map(namedInvestment => {
+              const [name, investment] = namedInvestment
+              const scheduledFor = dateFromTimeStamp(parseInt(investment.stakeTimeStamp.scheduledForTimestamp))
+              const timeLeft = timeUntilDate(scheduledFor)
+              return (
+                <HorizontalTile key={investment.id}>
+                  <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
+                    <span className={tileStyles.value}>{name}</span>
+                  </div>
+                  <div>
+                    <span className={tileStyles.label}>Stake (Dai)</span>
+                    <span className={tileStyles.value}>{units(investment.amount)}◈</span>
+                  </div>
+                  <div>
+                    <span className={tileStyles.label}>Profit Share (%)</span>
+                    <span className={tileStyles.value}>{investment.profitShare}</span>
+                  </div>
+                  <div>
+                    <span className={tileStyles.label}>Time left</span>
+                    <span className={tileStyles.value}>{`${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m`}</span>
+                  </div>
+                </HorizontalTile>
+            )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+const PastInvestments = ({ pastInvestments }) => {
+  return null
+}
+
+export default function Stable({ requests, accounts, contract, tokenContract }) {
   const [stakeInFocus, setStakeInFocus] = useState(null);
   const [show, setShow] = useState(false);
 
@@ -30,16 +153,19 @@ export default function Stable(props) {
   }
 
   if (
-    props.accounts === null ||
-    props.requests === null ||
-    props.contract == null
+    accounts === null ||
+    requests === null ||
+    contract == null
   )
     return null;
 
-  let investor = props.accounts[0];
-  let investments = props.requests.filter(
+  let investor = accounts[0];
+  let investments = requests.filter(
     (request) => request.backer === investor
   );
+
+  const currentInvestments = investments.filter(investment => investment.status === StakeStatus.Filled)
+  const pastInvestments = investments.filter(investment => investment.status === StakeStatus.Completed || investment.status === StakeStatus.EscrowClaimed)
 
   return (
     <div className={styles.page}>
@@ -52,35 +178,17 @@ export default function Stable(props) {
         {investments.length === 0 ?
           <MarketPlaceRedirect />
         :
-          investments.map((stake, i) => (
-            <button
-              onClick={() => handleShow(stake)}
-              style={{ padding: 0, border: "none", background: "none" }}
-              key={i}
-            >
-              {/* TODO: Give this a better name */}
-              <PlayerCard
-                stake={stake}
-                contract={props.contract}
-                bg={stake[0].toLowerCase()}
-                text={stake[0] === "Dark" ? "light" : "dark"}
-                style={{
-                  width: "24rem",
-                  height: "16rem",
-                  float: "left",
-                  margin: "15px",
-                  border: "solid black 1px",
-                }}
-                className="mb-2"
-              />
-            </button>
-          ))
+          <>
+            <Statistics currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
+            <CurrentInvestments currentInvestments={currentInvestments} contract={contract} />
+            <PastInvestments pastInvestments={pastInvestments} />
+          </>
         }
       </Container>
       {/* TODO: give this a better name */}
       <PlayerCardModalForm
-        contract={props.contract}
-        accounts={props.accounts}
+        contract={contract}
+        accounts={accounts}
         stake={stakeInFocus}
         show={show}
         style={{ position: "absolute", left: "170px" }}

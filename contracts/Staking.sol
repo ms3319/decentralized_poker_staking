@@ -51,6 +51,7 @@ contract Staking {
         uint256 createdTimestamp;
         uint256 filledTimestamp;
         uint256 gamePlayedTimestamp;
+        uint256 scheduledForTimestamp;
     }
 
     struct Player {
@@ -140,14 +141,14 @@ contract Staking {
     /// Escrow does not match msg.value
     error EscrowValueNotMatching(uint escrow, uint value);
 
-    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId) external payable {
+    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId, uint256 scheduledFor) external payable {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
         if (escrow > 0) {
             token.transferFrom(msg.sender, address(this), escrow);
         }
-        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
+        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0, scheduledFor);
         stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, 0, StakeStatus.Requested, gameType, apiId, stakeTimeStamp);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
