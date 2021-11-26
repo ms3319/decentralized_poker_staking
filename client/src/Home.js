@@ -85,10 +85,13 @@ export default function Home(props) {
               Sign up as a player
             </Button>
           }
-          {props.hasPlayerAccount && 
+          {props.hasPlayerAccount && props.player && props.player.canCreateStake && 
             <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
               Create Staking Request
             </Button>
+          }
+          {props.hasPlayerAccount && props.player && !props.player.canCreateStake && 
+            <div className={styles.inDebtMessage}>You are currently in debt. You cannot create a new stake until all profits are returned.</div>  
           }
           <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />

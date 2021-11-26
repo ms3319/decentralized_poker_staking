@@ -161,7 +161,7 @@ const NewStakingRequestForm = (props) => {
       <Modal.Body>
         <Form>
           <Form.Group className="mb-3">
-            <Form.Label>Amount I'm looking for ($)</Form.Label>
+            <Form.Label>Amount I'm looking for (◈)</Form.Label>
             <Form.Control value={amount} onChange={(event) => handleAmountChange(event)} inputMode="numeric" placeholder="e.g. 100" />
           </Form.Group>
 
@@ -174,14 +174,14 @@ const NewStakingRequestForm = (props) => {
             }
             <Form.Control value={profitShare} onChange={(event) => handleProfitShareChange(event)} inputMode="numeric" placeholder="e.g. 50" />
             <Form.Text className="text-muted">
-              If the amount I'm looking for is $50, and profit sharing
-              percentage is 50% and I make $50 in profit. I must return to the 
-              investor $75 ($50 original investment + $50 profit * 0.5) 
+              If the amount I'm looking for is 50 ◈, and profit sharing
+              percentage is 50% and I make 50 ◈ in profit. I must return to the 
+              investor 75 ◈ (50 ◈ original investment + 50 ◈ profit * 0.5) 
             </Form.Text>
           </Form.Group>
 
           <Form.Group className="mb-3">
-            <Form.Label>Escrow Amount ($)</Form.Label>
+            <Form.Label>Escrow Amount (◈)</Form.Label>
             <Form.Control value={escrow} onChange={(event) => handleEscrowChange(event)} inputMode="numeric" placeholder="e.g. 50" />
             <Form.Text className="text-muted">
               If you would like to provide some collateral to increase the trust involved in transaction please specify the amount here.
