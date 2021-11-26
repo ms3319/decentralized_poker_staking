@@ -1,7 +1,5 @@
-import React, {useEffect, useState} from "react";
-import PlayerCard from "./PlayerCard.js";
+import React, {useEffect} from "react";
 import { Container } from "react-bootstrap";
-import PlayerCardModalForm from "./PlayerCardModalForm.js";
 import styles from "./Stable.module.css"
 import Button from "./Button";
 import {Link} from "react-router-dom";
@@ -102,7 +100,7 @@ const PendingInvestments = ({ pendingInvestments, contract }) => {
   useEffect(() => {
     groupAndNameInvestments(pendingInvestments, contract)
       .then(groupedAndNamedInvestments => setInvestmentsByPlayer(groupedAndNamedInvestments))
-  }, [])
+  }, [pendingInvestments, contract])
 
   return (
     <div className={styles.investmentSection}>
@@ -151,7 +149,7 @@ const CurrentInvestments = ({ currentInvestments, contract }) => {
   useEffect(() => {
     groupAndNameInvestments(currentInvestments, contract)
       .then(groupedAndNamedInvestments => setInvestmentsByPlayer(groupedAndNamedInvestments))
-  }, [])
+  }, [currentInvestments, contract])
 
   return (
     <div className={styles.investmentSection}>
@@ -197,18 +195,6 @@ const PastInvestments = ({ pastInvestments }) => {
 }
 
 export default function Stable({ requests, accounts, contract, tokenContract }) {
-  const [stakeInFocus, setStakeInFocus] = useState(null);
-  const [show, setShow] = useState(false);
-
-  const handleClose = () => {
-    setShow(false);
-    setStakeInFocus(null);
-  }
-  const handleShow = (stake) => {
-    setStakeInFocus(stake);
-    setShow(true);
-  }
-
   if (
     accounts === null ||
     requests === null ||
@@ -244,15 +230,6 @@ export default function Stable({ requests, accounts, contract, tokenContract }) 
           </>
         }
       </Container>
-      {/* TODO: give this a better name */}
-      <PlayerCardModalForm
-        contract={contract}
-        accounts={accounts}
-        stake={stakeInFocus}
-        show={show}
-        style={{ position: "absolute", left: "170px" }}
-        handleClose={handleClose}
-      />
     </div>
   );
 }
