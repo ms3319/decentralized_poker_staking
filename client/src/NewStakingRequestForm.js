@@ -44,6 +44,7 @@ const NewStakingRequestForm = (props) => {
         await tokenContract.methods.approve(contract.options.address, escrowString).send({from: accounts[0]});
         await contract.methods.createRequest(amountString, profitShare, escrowString, gameType, apiId, gameOrTournamentFromApi.scheduledFor)
           .send({ from: accounts[0] });
+        props.reloadContractState();
         onHide();
       } catch (error) {
         console.error(error);

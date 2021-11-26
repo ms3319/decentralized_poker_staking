@@ -194,7 +194,7 @@ const PastInvestments = ({ pastInvestments }) => {
   return null
 }
 
-export default function Stable({ requests, accounts, contract, tokenContract }) {
+export default function Stable({ requests, accounts, contract, reloadContractState }) {
   if (
     accounts === null ||
     requests === null ||
@@ -224,7 +224,7 @@ export default function Stable({ requests, accounts, contract, tokenContract }) 
         :
           <>
             <Statistics currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
-            {pendingInvestments.length > 0 && <PendingInvestments pendingInvestments={pendingInvestments} contract={contract} />}
+            {pendingInvestments.length > 0 && <PendingInvestments reloadContractState={reloadContractState} pendingInvestments={pendingInvestments} contract={contract} />}
             {currentInvestments.length > 0 && <CurrentInvestments currentInvestments={currentInvestments} contract={contract}/>}
             {pastInvestments.length > 0 && <PastInvestments pastInvestments={pastInvestments} />}
           </>

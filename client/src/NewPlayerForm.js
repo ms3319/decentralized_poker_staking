@@ -19,6 +19,7 @@ class NewPlayerForm extends Component {
         this.setState({ sanitaryId: apiIdExists, sanitaryName: nameCheck, sanitarySharkscope: sharkscopeCheck })
         if (apiIdExists && nameCheck && sharkscopeCheck) {
             await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+            this.props.reloadContractState();
             onHide()
         }
     };

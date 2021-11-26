@@ -57,11 +57,13 @@ function PlayerInfo({ player, accounts, contract }) {
 function PlayerStats({ games }) {
   const totalStakes = games.length
   const totalWins = games.filter(game => game.horseWon).length
+  const completedStakes = games.filter(game => game.status == StakeStatus.Completed);
+  const totalCompletedStakes = completedStakes.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequested = units(stakesRequestedRaw)
   const totalPnlRaw = games.reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
   const totalPnl = units(totalPnlRaw)
-  const profitPercent = stakesRequestedRaw > 0 ? +((totalPnlRaw / stakesRequestedRaw) * 100).toFixed(2) : 0;
+  const profitPercent = totalCompletedStakes > 0 ? +((totalPnlRaw / totalCompletedStakes) * 100).toFixed(2) : 0;
 
 
   return (
@@ -92,6 +94,15 @@ function PlayerStats({ games }) {
           </div>
           <div className={styles.value}>
             {numberWithCommas(stakesRequested)} ◈
+          </div>
+        </div>
+
+        <div>
+          <div className={styles.label}>
+            Total Completed Stakes
+          </div>
+          <div className={styles.value}>
+            {numberWithCommas(units(totalCompletedStakes))} ◈
           </div>
         </div>
 
@@ -216,7 +227,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
   );
 }
 
-export default function Player({ contract, accounts, tokenContract }) {
+export default function Player({ contract, accounts, tokenContract, reloadContractState }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)
@@ -248,6 +259,7 @@ export default function Player({ contract, accounts, tokenContract }) {
     const amountString = "0x" + (profits + 1e16).toString(16);
     await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
     await contract.methods.returnProfits(id).send({ from: accounts[0] });
+    reloadContractState();
   }
 
   // Unknown Player
