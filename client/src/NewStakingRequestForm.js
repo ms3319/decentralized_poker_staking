@@ -116,10 +116,12 @@ const NewStakingRequestForm = (props) => {
   }
 
   const onSuggestionsFetchRequested = ({ value }) => {
+    setApiId("");
     setGameSuggestions(getSuggestions(value));
   }
 
   const onSuggestionsClearRequested = () => {
+    setApiId("");
     setGameSuggestions([]);
   }
 
