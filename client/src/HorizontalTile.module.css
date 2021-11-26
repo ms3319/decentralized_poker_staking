@@ -36,6 +36,12 @@
     width: 100%;
 }
 
+.underValue {
+    width: 100%;
+    color: var(--safestake-gold);
+    display: inline-block;
+}
+
 .tile .label {
     color: var(--safestake-gold);
     font-size: 0.8em;

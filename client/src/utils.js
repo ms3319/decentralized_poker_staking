@@ -3,7 +3,7 @@ const numberWithCommas = (x) => {
 }
 
 const units = (amount) => {
-  return Math.round(amount / 1e18);
+  return Math.round((amount / 1e18 + Number.EPSILON) * 100) / 100;
 }
 
 const dateFromTimeStamp = timeStamp => new Date(timeStamp * 1000);
@@ -36,7 +36,6 @@ const timeUntilDate = date => {
 }
 
 const addDaysToDate = (date, days) => {
-  console.log(date)
   let result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
