@@ -52,6 +52,7 @@ contract Staking {
         string profilePicPath;
         uint[] stakeIds; // stakes where the player is the horse.
         uint256 createdTimestamp;
+        bool canCreateStake; // False when they have a stake that is awaiting repayment
     }
 
     constructor() {
@@ -73,6 +74,7 @@ contract Staking {
         players[msg.sender].sharkscopeLink = sharkscopeLink;
         players[msg.sender].profilePicPath = profilePicPath;
         players[msg.sender].createdTimestamp = block.timestamp;
+        players[msg.sender].canCreateStake = true;
 
         emit PlayerCreated(msg.sender, apiId, name, sharkscopeLink, profilePicPath);
     }
@@ -129,8 +131,18 @@ contract Staking {
     error InvalidProfitShare(uint profitShare);
     /// Escrow does not match msg.value
     error EscrowValueNotMatching(uint escrow, uint value);
+    /// Player has not registered
+    error PlayerDoesNotExist(address sender);
+    /// Player is locked from creating new stakes. Return awaiting payments first.
+    error PlayerNotAllowedToCreateStake(address player);
 
     function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId) external payable {
+        if (players[msg.sender].playerAddress == address(0)) {
+            revert PlayerDoesNotExist(msg.sender);
+        }
+        if (!players[msg.sender].canCreateStake) {
+            revert PlayerNotAllowedToCreateStake(msg.sender);
+        }
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
@@ -259,6 +271,7 @@ contract Staking {
             stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Completed;
+        players[stake.horse].canCreateStake = true;
 
         stakes[id] = stake;
         emit ProfitsReturned(id, stake.backerReturns);
@@ -300,6 +313,7 @@ contract Staking {
         stakes[id].pnl = pnl;
         stakes[id].backerReturns = backerReturns;
         stakes[id].stakeTimeStamp.gamePlayedTimestamp = block.timestamp;
+        players[stakes[id].horse].canCreateStake = false;
         emit GamePlayed(id, pnl, backerReturns);
     }
 
