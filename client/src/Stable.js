@@ -20,7 +20,7 @@ const MarketPlaceRedirect = () => (
 const Statistics = ({ currentInvestments, pastInvestments }) => {
   const currentlyInvested = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
   const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
-  const totalWinnings = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
+  const totalWinnings = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
   const profit = (totalWinnings - pastInvestmentsAmount).toFixed(2)
 
   return (

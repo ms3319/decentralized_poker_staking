@@ -17,3 +17,8 @@
 .stakingListContainer {
   margin: 2rem 0 0 0;
 }
+
+.inDebtMessage {
+  color: red;
+  margin: 1rem 0;
+}

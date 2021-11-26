@@ -85,7 +85,7 @@ export default function Home(props) {
               Sign up as a player
             </Button>
           }
-          {props.hasPlayerAccount && 
+          {props.hasPlayerAccount && props.player && props.player.canCreateStake && 
             <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={openStakeRequestForm}>
               Create Staking Request
             </Button>
