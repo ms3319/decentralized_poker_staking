@@ -216,7 +216,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
   );
 }
 
-export default function Player({ contract, accounts }) {
+export default function Player({ contract, accounts, tokenContract }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)
@@ -244,7 +244,10 @@ export default function Player({ contract, accounts }) {
   if (contract == null) return null
 
   const returnProfits = async (id, profits) => {
-    await contract.methods.returnProfits(id).send({ from: accounts[0], value: profits + 10 });
+    // Add 1 cent transaction fee... and to protect from rounding errors :)
+    const amountString = "0x" + (profits + 1e16).toString(16);
+    await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
+    await contract.methods.returnProfits(id).send({ from: accounts[0] });
   }
 
   // Unknown Player

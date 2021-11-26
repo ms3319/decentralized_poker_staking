@@ -243,7 +243,6 @@ contract Staking {
     /// Message value not equal to the profit returns of the backer
     error MessageValueNotEqualToBackerReturns(uint value, uint backerReturns);
     
-    // TODO: handle the case where no profit was made
     function returnProfits(uint id) external payable {
         if(!validId(id)) {
             revert InvalidStakeId(id);

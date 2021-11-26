@@ -35,6 +35,13 @@ const timeUntilDate = date => {
   }
 }
 
+const addDaysToDate = (date, days) => {
+  console.log(date)
+  let result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 const StakeStatus = {
   Requested: "0",
   Filled: "1",
@@ -56,3 +63,4 @@ exports.GameType = GameType;
 exports.units = units;
 exports.dateFromTimeStamp = dateFromTimeStamp;
 exports.timeUntilDate = timeUntilDate;
+exports.addDaysToDate = addDaysToDate;

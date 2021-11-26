@@ -42,10 +42,9 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, toke
           onClick={async () => { 
             const amountString = "0x" + parseInt(request.amount).toString(16);
             await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
-            await contract.methods.stakeHorse(request.id).send({
-            from: accounts[0]
-          }).then(() => onHide())}
-        }
+            await contract.methods.stakeHorse(request.id).send({ from: accounts[0] })
+              .then(() => onHide())
+          }}
           style={{
             marginRight: "10px",
           }}

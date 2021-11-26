@@ -115,11 +115,11 @@
 
 /* Current Investments Styles */
 
-.currentInvestments {
+.investmentSection {
     margin: 75px 0;
 }
 
-.currentInvestments h1 {
+.investmentSection h1 {
     font-weight: 700;
     margin: 20px 0;
 }
