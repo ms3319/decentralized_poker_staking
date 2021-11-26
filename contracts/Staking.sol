@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+// Dai or StakeCoin (production or development)
+interface Token {
+    function transfer(address dst, uint amount) external returns (bool);
+    function transferFrom(address src, address dst, uint amount) external returns (bool);
+    function balanceOf(address guy) external view returns (uint);
+    function approve(address spender, uint amount) external returns (bool);
+}
+
 contract Staking {
+    Token public token;
     uint public requestCount = 0;
     mapping(uint => Stake) public stakes;
     address payable public owner;
@@ -42,6 +51,7 @@ contract Staking {
         uint256 createdTimestamp;
         uint256 filledTimestamp;
         uint256 gamePlayedTimestamp;
+        uint256 scheduledForTimestamp;
     }
 
     struct Player {
@@ -54,8 +64,9 @@ contract Staking {
         uint256 createdTimestamp;
     }
 
-    constructor() {
+    constructor(address tokenAddress) {
         owner = payable(msg.sender);
+        token = Token(tokenAddress);
     }
 
     event PlayerCreated(address playerAddress, string apiId, string name, string sharkscopeLink, string profilePicPath);
@@ -130,14 +141,14 @@ contract Staking {
     /// Escrow does not match msg.value
     error EscrowValueNotMatching(uint escrow, uint value);
 
-    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId) external payable {
+    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId, uint256 scheduledFor) external payable {
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
-        if (escrow > 0 && escrow != msg.value) {
-            revert EscrowValueNotMatching(escrow, msg.value);
+        if (escrow > 0) {
+            token.transferFrom(msg.sender, address(this), escrow);
         }
-        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
+        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0, scheduledFor);
         stakes[requestCount] = Stake(requestCount, payable(msg.sender), payable(address(0)), amount, escrow, profitShare, 0, 0, StakeStatus.Requested, gameType, apiId, stakeTimeStamp);
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
@@ -172,15 +183,11 @@ contract Staking {
             revert StakingSelf(id, horse, backer);
         }
         
-        if (msg.value != stake.amount) {
-            revert ValueDoesNotMatchStakeAmount(id, msg.value, stake.amount);
-        }
-
         // Update stake status and transfer funds
         stake.status = StakeStatus.Filled;
         stake.backer = backer;
         stake.stakeTimeStamp.filledTimestamp = block.timestamp;
-        horse.transfer(stake.amount);
+        token.transferFrom(msg.sender, stake.horse, stake.amount);
 
         stakes[id] = stake;
         emit StakeFilled(stake);
@@ -209,7 +216,8 @@ contract Staking {
         }
 
         if (stake.escrow > 0) {
-            stake.horse.transfer(stake.escrow);
+            token.transfer(stake.horse, stake.escrow);
+            // stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Cancelled;
 
@@ -235,7 +243,6 @@ contract Staking {
     /// Message value not equal to the profit returns of the backer
     error MessageValueNotEqualToBackerReturns(uint value, uint backerReturns);
     
-    // TODO: handle the case where no profit was made
     function returnProfits(uint id) external payable {
         if(!validId(id)) {
             revert InvalidStakeId(id);
@@ -254,9 +261,11 @@ contract Staking {
         // if (msg.value != backerReturns) {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
-        stake.backer.transfer(stake.backerReturns);
+        token.transferFrom(stake.horse, stake.backer, stake.backerReturns);
+        // stake.backer.transfer(stake.backerReturns);
         if (stake.escrow > 0) {
-            stake.horse.transfer(stake.escrow);
+            token.transfer(stake.horse, stake.escrow);
+            // stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Completed;
 
@@ -329,7 +338,8 @@ contract Staking {
             revert CannotReturnNoEscrow(id, stakes[id].escrow);
         }
 
-        stakes[id].backer.transfer(stakes[id].escrow);
+        token.transfer(stakes[id].backer, stakes[id].escrow);
+        // stakes[id].backer.transfer(stakes[id].escrow);
         stakes[id].status = StakeStatus.EscrowClaimed;
         emit EscrowClaimed(id, stakes[id].escrow, stakes[id].backer);
     }
