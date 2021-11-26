@@ -129,7 +129,8 @@ function PlayerStats({ games }) {
 }
 
 
-function PastStakes({ returnProfits, stakes, isViewersAccount }) {
+function PastStakes({ returnProfits, stakes, isViewersAccount, cancelStake }) {
+
 
   const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)
   const inProgress = stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.Filled)
@@ -175,6 +176,7 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
               <th>Amount Requested</th>
               <th>Profit Share</th>
               <th>Status</th>
+              <th>Cancel Stake</th>
             </tr>
             </thead>
             <tbody>
@@ -184,6 +186,10 @@ function PastStakes({ returnProfits, stakes, isViewersAccount }) {
               <td>{units(stake.amount)} ◈</td>
               <td>{stake.profitShare}%</td>
               <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
+              <td>
+                {stake.status === StakeStatus.Requested && <Button onClick={() => cancelStake(stake.id)}>Cancel Stake</Button>}
+                {stake.status !== StakeStatus.Requested && <div>X</div>}
+              </td>
             </tr>)}
             </tbody>
           </Table>
@@ -262,6 +268,11 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
     reloadContractState();
   }
 
+  const cancelStake = async (id) => {
+    await contract.methods.cancelStakeAsHorse(id).send({from: accounts[0] });
+    reloadContractState();
+  }
+
   // Unknown Player
   if (player != null && player.playerAddress === "0x0000000000000000000000000000000000000000") {
     history.push("/")
@@ -272,7 +283,7 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
     <div className={styles.playerPage}>
       {player && <PlayerInfo player={player} accounts={accounts} contract={contract}/>}
       {stakes && <PlayerStats games={stakes} />}
-      {stakes && accounts && <PastStakes returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
+      {stakes && accounts && <PastStakes cancelStake={cancelStake} returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
     </div>
   )
 }
