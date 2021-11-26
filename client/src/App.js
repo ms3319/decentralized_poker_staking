@@ -20,6 +20,11 @@ export default function App() {
   const [hasPlayerAccount, setHasPlayerAccount] = useState(false)
   const [tokenContract, setTokenContract] = useState(null);
   const [player, setPlayer] = useState(null);
+  const [reloadStateToggle, setReloadStateToggle] = useState(false);
+
+  const reloadContractState = () => {
+    setReloadStateToggle(!reloadStateToggle);
+  }
 
   const { active, library } = useWeb3React()
 
@@ -58,20 +63,20 @@ export default function App() {
       setTokenContract(tokenContract);
     }
     getContractData().catch()
-  }, [active, library])
+  }, [active, library, reloadStateToggle])
 
 
   return (
       <Router>
         <NavBar hasPlayerAccount={hasPlayerAccount} />
         <Route exact path={"/"}>
-          <Home player={player} hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
+          <Home reloadContractState={reloadContractState} player={player} hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
         </Route>
         <Route exact path = "/my-stable">
-          <Stable requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
+          <Stable reloadContractState={reloadContractState} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
         </Route>
         <Route exact path = "/players/:playerAddress">
-          <Player contract={contract} accounts={accounts} tokenContract={tokenContract} />
+          <Player reloadContractState={reloadContractState} contract={contract} accounts={accounts} tokenContract={tokenContract} />
         </Route>
       </Router>
   )

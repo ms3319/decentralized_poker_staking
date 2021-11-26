@@ -90,14 +90,11 @@ export default function Home(props) {
               Create Staking Request
             </Button>
           }
-          {props.hasPlayerAccount && props.player && !props.player.canCreateStake && 
-            <div className={styles.inDebtMessage}>You are currently in debt. You cannot create a new stake until all profits are returned.</div>  
-          }
-          <NewStakingRequestForm show={showStakeRequestForm} onHide={closeStakeRequestForm}
+          <NewStakingRequestForm reloadContractState={props.reloadContractState} show={showStakeRequestForm} onHide={closeStakeRequestForm}
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
-          <NewPlayerForm show={showNewPlayerForm} onHide={closeNewPlayerForm}
+          <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakingRequestDetails contract={props.contract} tokenContract={props.tokenContract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
+          <StakingRequestDetails reloadContractState={props.reloadContractState} contract={props.contract} tokenContract={props.tokenContract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
           </div>
