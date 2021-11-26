@@ -57,7 +57,7 @@ function PlayerInfo({ player, accounts, contract }) {
 function PlayerStats({ games }) {
   const totalStakes = games.length
   const totalWins = games.filter(game => game.horseWon).length
-  const completedStakes = games.filter(game => game.status == StakeStatus.Completed);
+  const completedStakes = games.filter(game => game.status === StakeStatus.Completed);
   const totalCompletedStakes = completedStakes.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
   const stakesRequested = units(stakesRequestedRaw)
