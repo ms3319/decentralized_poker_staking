@@ -125,11 +125,11 @@ const PendingInvestments = ({ pendingInvestments, contract }) => {
                   </div>
                   <div>
                     <span className={tileStyles.label}>Original Stake</span>
-                    <span className={tileStyles.value}>{units(investment.amount)}◈</span>
+                    <span className={tileStyles.value}>{units(investment.amount)} ◈</span>
                   </div>
                   <div>
                     <span className={tileStyles.label}>Amount Owed</span>
-                    <span className={tileStyles.value}>{units(investment.backerReturns)}◈</span>
+                    <span className={tileStyles.value}>{units(investment.backerReturns)} ◈</span>
                   </div>
                   <div>
                     <span className={tileStyles.label}>Escrow can be claimed in</span>
@@ -172,7 +172,7 @@ const CurrentInvestments = ({ currentInvestments, contract }) => {
                   </div>
                   <div>
                     <span className={tileStyles.label}>Stake (Dai)</span>
-                    <span className={tileStyles.value}>{units(investment.amount)}◈</span>
+                    <span className={tileStyles.value}>{units(investment.amount)} ◈</span>
                   </div>
                   <div>
                     <span className={tileStyles.label}>Profit Share (%)</span>
