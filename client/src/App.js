@@ -8,6 +8,7 @@ import Home from "./Home";
 import Stable from "./Stable";
 import NavBar from "./NavBar";
 import Player from "./Player"
+import About from "./About"
 require('./globals.css')
 
 // TODO: Get the stake coin instance and pass it down to the other components here
@@ -71,6 +72,9 @@ export default function App() {
         <NavBar hasPlayerAccount={hasPlayerAccount} />
         <Route exact path={"/"}>
           <Home reloadContractState={reloadContractState} player={player} hasPlayerAccount={hasPlayerAccount} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />
+        </Route>
+        <Route exact path = "/about">
+          <About />
         </Route>
         <Route exact path = "/my-stable">
           <Stable reloadContractState={reloadContractState} requests={requests} accounts={accounts} contract={contract} tokenContract={tokenContract} />

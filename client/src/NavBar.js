@@ -18,7 +18,7 @@ const NavBar = ({ hasPlayerAccount }) => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" style={{border: "none"}} />
         <Navbar.Collapse className={"justify-content-end"}>
           <Nav>
-            <Link to="" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>About</Link>
+            <Link to="/about" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>About</Link>
             {active && hasPlayerAccount && <Link to={"/players/" + account} style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Profile</Link>}
             {active && <Link to="/my-stable" style={{color:"white", textDecoration: "none", marginLeft: "30px"}}>My Stable</Link>}
           </Nav>
