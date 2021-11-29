@@ -6,7 +6,6 @@ interface Token {
     function transfer(address dst, uint amount) external returns (bool);
     function transferFrom(address src, address dst, uint amount) external returns (bool);
     function balanceOf(address guy) external view returns (uint);
-    function approve(address spender, uint amount) external returns (bool);
 }
 
 contract Staking {
@@ -146,6 +145,8 @@ contract Staking {
     error PlayerDoesNotExist(address sender);
     /// Player is locked from creating new stakes. Return awaiting payments first.
     error PlayerNotAllowedToCreateStake(address player);
+    /// The minimum amount for a staking request is 50 tokens
+    error MinimumAmountNotMet(uint amount); 
 
     function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId, uint256 scheduledFor) external payable {
         if (players[msg.sender].playerAddress == address(0)) {
@@ -153,6 +154,9 @@ contract Staking {
         }
         if (!players[msg.sender].canCreateStake) {
             revert PlayerNotAllowedToCreateStake(msg.sender);
+        }
+        if (amount < 50000000000000000000) { // 50 tokens
+            revert MinimumAmountNotMet(amount);
         }
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);

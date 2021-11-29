@@ -16,7 +16,7 @@ const renderSuggestion = suggestion => (
     </span>
   </span>
 )
-
+const minimumAmountToBeStaked = 50;
 const NewStakingRequestForm = (props) => {
   const [futureTournaments, setFutureTournaments] = useState({});
   const [futureGames, setFutureGames] = useState({});
@@ -29,14 +29,18 @@ const NewStakingRequestForm = (props) => {
   const [apiId, setApiId] = useState("");
   const [sanitaryId, setSanitaryId] = useState(true);
   const [sanitaryPercent, setSanitaryPercent] = useState(true);
+  const [minimumAmount, setMiniminimumAmount] = useState(true);
 
   const createStakingRequest = async () => {
+    
     const { accounts, contract, onHide, tokenContract } = props;
     const gameOrTournamentFromApi = await fetchGameOrTournamentFromApi()
     const apiIdExists = Object.keys(gameOrTournamentFromApi).length !== 0
     const percentCorrect = checkPercentCorrect()
     setSanitaryId(apiIdExists);
     setSanitaryPercent(percentCorrect);
+    setMiniminimumAmount(amount >= minimumAmountToBeStaked);
+    
     if (apiIdExists && percentCorrect) {
       try {
         const amountString = "0x" + (amount * 1e18).toString(16);
@@ -122,7 +126,6 @@ const NewStakingRequestForm = (props) => {
   }
 
   const onSuggestionsClearRequested = () => {
-    setApiId("");
     setGameSuggestions([]);
   }
 
@@ -163,6 +166,12 @@ const NewStakingRequestForm = (props) => {
         <Form>
           <Form.Group className="mb-3">
             <Form.Label>Amount I'm looking for (◈)</Form.Label>
+            {
+              !minimumAmount && 
+              <p style={{color: "red", marginTop:"-0.5em"}}>
+              Make sure you enter a value larger than {minimumAmountToBeStaked} ◈!
+            </p>
+            }
             <Form.Control value={amount} onChange={(event) => handleAmountChange(event)} inputMode="numeric" placeholder="e.g. 100" />
           </Form.Group>
 
