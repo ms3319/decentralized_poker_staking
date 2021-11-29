@@ -6,7 +6,7 @@ import { GameType } from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const StakingRequestDetails = ({ request, contract, accounts, onHide, show, tokenContract }) => {
+const StakingRequestDetails = ({ request, contract, accounts, onHide, show, tokenContract, reloadContractState}) => {
   const [player, setPlayer] = useState(null);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, toke
             const amountString = "0x" + parseInt(request.amount).toString(16);
             await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
             await contract.methods.stakeHorse(request.id).send({ from: accounts[0] })
-              .then(() => onHide())
+              .then(() => {reloadContractState(); onHide();})
           }}
           style={{
             marginRight: "10px",

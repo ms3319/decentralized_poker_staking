@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
-import PlayerCardModalForm from "./PlayerCardModalForm.js";
 import styles from "./Stable.module.css"
 import Button from "./Button";
 import { Link } from "react-router-dom";
@@ -78,7 +77,7 @@ const Statistics = ({ pendingInvestments, currentInvestments, pastInvestments })
   )
 }
 
-export default function Stable({ requests, accounts, contract, tokenContract }) {
+export default function Stable({ reloadContractState, requests, accounts, contract, tokenContract }) {
   const [investmentInFocus, setInvestmentInFocus] = useState(null);
   const [timeUntilFocusedCanClaimEscrow, setTimeUntilFocusedCanClaimEscrow] = useState(null);
   const [showInvestmentDetails, setShowInvestmentDetails] = useState(false);
@@ -141,7 +140,7 @@ export default function Stable({ requests, accounts, contract, tokenContract }) 
       {/*  style={{ position: "absolute", left: "170px" }}*/}
       {/*  handleClose={handleClose}*/}
       {/*/>*/}
-      <InvestmentDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={claimEscrow} />
+      <InvestmentDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={id => claimEscrow(id).then(reloadContractState())} />
     </div>
   );
 }
