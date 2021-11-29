@@ -1,6 +1,5 @@
 import React, {useState} from "react";
 import {Col, Container, Row} from "react-bootstrap";
-import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import NewPlayerForm from "./NewPlayerForm";
 import HomepageHeader from "./HomepageHeader";
@@ -78,6 +77,13 @@ export default function Home(props) {
     }
   };
 
+  const fillStake = async (request) => {
+    const amountString = "0x" + parseInt(request.amount).toString(16);
+    await props.tokenContract.methods.approve(props.contract.options.address, amountString).send({from: props.accounts[0]});
+    await props.contract.methods.stakeHorse(request.id).send({ from: props.accounts[0] })
+      .then(() => {props.reloadContractState()})
+  }
+
   return (
     <div className={styles.home}>
       <HomepageHeader />
@@ -112,7 +118,7 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}}/>
+          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}} fillStake={fillStake}/>
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
           </div>

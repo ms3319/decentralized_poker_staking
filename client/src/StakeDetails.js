@@ -90,8 +90,11 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
           )}
           {investment.status === StakeStatus.Requested && (
             <div className={styles.section}>
-              <span className={styles.normal}>An investment into {player.name} would yield a potential return of {units(investment.amount)} + ({investment.profitShare / 100} * (player's net profit)) dai. If {player.name} does not return your share of the winnings, you will be set the full amount of escrow, {units(investment.escrow)}◈, to help cover your losses.</span>
-              <Button style={{marginTop: "20px"}} onClick={() => claimEscrow(investment.id)}>Invest</Button>
+              <span className={styles.normal}>An investment into {player.name} would yield a potential return
+                of {units(investment.amount)} + ({investment.profitShare / 100} * (player's net profit)) dai.
+                If {player.name} does not return your share of the winnings, you will be set the full amount of
+                escrow, {units(investment.escrow)}◈, to help cover your losses.</span>
+              <Button style={{marginTop: "20px"}} onClick={() => fillStake(investment).then(() => onHide())}>Invest</Button>
             </div>
           )}
           {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow === null && (
