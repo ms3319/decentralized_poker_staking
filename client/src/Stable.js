@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Container } from "react-bootstrap";
 import styles from "./Stable.module.css"
 import Button from "./Button";
 import { Link } from "react-router-dom";
 import { numberWithCommas, StakeStatus, units } from "./utils"
 import { CurrentInvestments, PastInvestments, PendingInvestments } from "./InvestmentLists";
-import InvestmentDetails from "./InvestmentDetails";
+import StakeDetails from "./StakeDetails";
 
 const Separator = () => <div className={styles.separator} />
 
@@ -131,16 +131,7 @@ export default function Stable({ reloadContractState, requests, accounts, contra
           </>
         }
       </Container>
-      {/* TODO: give this a better name */}
-      {/*<PlayerCardModalForm*/}
-      {/*  contract={contract}*/}
-      {/*  accounts={accounts}*/}
-      {/*  stake={investmentInFocus}*/}
-      {/*  show={showInvestmentDetails}*/}
-      {/*  style={{ position: "absolute", left: "170px" }}*/}
-      {/*  handleClose={handleClose}*/}
-      {/*/>*/}
-      <InvestmentDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={id => claimEscrow(id).then(reloadContractState())} />
+      <StakeDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={id => claimEscrow(id).then(reloadContractState())} />
     </div>
   );
 }
