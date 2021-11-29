@@ -52,8 +52,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, toke
           Invest
         </Button>
         <Link to={`players/${request.horse}`}>
-        {/* <Link to="players/test"> */}
-          <Button 
+          <Button
             style={{
               marginLeft: "10px",
               marginRight: "10px"

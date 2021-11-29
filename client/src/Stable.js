@@ -3,9 +3,10 @@ import { Container } from "react-bootstrap";
 import PlayerCardModalForm from "./PlayerCardModalForm.js";
 import styles from "./Stable.module.css"
 import Button from "./Button";
-import {Link} from "react-router-dom";
-import {numberWithCommas, StakeStatus, units} from "./utils"
+import { Link } from "react-router-dom";
+import { numberWithCommas, StakeStatus, units } from "./utils"
 import { CurrentInvestments, PastInvestments, PendingInvestments } from "./InvestmentLists";
+import InvestmentDetails from "./InvestmentDetails";
 
 const Separator = () => <div className={styles.separator} />
 
@@ -78,16 +79,22 @@ const Statistics = ({ pendingInvestments, currentInvestments, pastInvestments })
 }
 
 export default function Stable({ requests, accounts, contract, tokenContract }) {
-  const [stakeInFocus, setStakeInFocus] = useState(null);
-  const [show, setShow] = useState(false);
+  const [investmentInFocus, setInvestmentInFocus] = useState(null);
+  const [timeUntilFocusedCanClaimEscrow, setTimeUntilFocusedCanClaimEscrow] = useState(null);
+  const [showInvestmentDetails, setShowInvestmentDetails] = useState(false);
 
   const handleClose = () => {
-    setShow(false);
-    setStakeInFocus(null);
+    setShowInvestmentDetails(false);
+    setInvestmentInFocus(null);
   }
-  const handleShow = (stake) => {
-    setStakeInFocus(stake);
-    setShow(true);
+  const handleShow = (namedInvestment, canClaimEscrow) => {
+    setTimeUntilFocusedCanClaimEscrow(canClaimEscrow)
+    setInvestmentInFocus(namedInvestment);
+    setShowInvestmentDetails(true);
+  }
+
+  const claimEscrow = async (stakeId) => {
+    await contract.methods.backerClaimEscrow(stakeId).send({from: accounts[0]});
   }
 
   if (
@@ -119,21 +126,22 @@ export default function Stable({ requests, accounts, contract, tokenContract }) 
         :
           <>
             <Statistics pendingInvestments={pendingInvestments} currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
-            {pendingInvestments.length > 0 && <PendingInvestments pendingInvestments={pendingInvestments} contract={contract} />}
-            {currentInvestments.length > 0 && <CurrentInvestments currentInvestments={currentInvestments} contract={contract}/>}
-            {pastInvestments.length > 0 && <PastInvestments pastInvestments={pastInvestments} contract={contract} />}
+            {pendingInvestments.length > 0 && <PendingInvestments showDetails={handleShow} pendingInvestments={pendingInvestments} contract={contract} />}
+            {currentInvestments.length > 0 && <CurrentInvestments showDetails={handleShow} currentInvestments={currentInvestments} contract={contract}/>}
+            {pastInvestments.length > 0 && <PastInvestments showDetails={handleShow} pastInvestments={pastInvestments} contract={contract} />}
           </>
         }
       </Container>
       {/* TODO: give this a better name */}
-      <PlayerCardModalForm
-        contract={contract}
-        accounts={accounts}
-        stake={stakeInFocus}
-        show={show}
-        style={{ position: "absolute", left: "170px" }}
-        handleClose={handleClose}
-      />
+      {/*<PlayerCardModalForm*/}
+      {/*  contract={contract}*/}
+      {/*  accounts={accounts}*/}
+      {/*  stake={investmentInFocus}*/}
+      {/*  show={showInvestmentDetails}*/}
+      {/*  style={{ position: "absolute", left: "170px" }}*/}
+      {/*  handleClose={handleClose}*/}
+      {/*/>*/}
+      <InvestmentDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={claimEscrow} />
     </div>
   );
 }

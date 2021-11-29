@@ -28,7 +28,7 @@ const groupAndNameInvestments = async (investments, contract) => {
   }))
 }
 
-export const PendingInvestments = ({ pendingInvestments, contract }) => {
+export const PendingInvestments = ({ showDetails, pendingInvestments, contract }) => {
   const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
 
   useEffect(() => {
@@ -46,11 +46,11 @@ export const PendingInvestments = ({ pendingInvestments, contract }) => {
             <Link style={{color: "var(--safestake-gold)"}} to={`/players/${player.playerAddress}`}><span className={styles.investmentPlayerName}>{player.name}</span></Link>
             {investments.map(namedInvestment => {
               const [name, investment] = namedInvestment
-              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 10);
+              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 2);
               const timeUntilEscrowCanBeClaimed = escrowCanBeClaimedOn > new Date() ?
                 timeUntilDate(escrowCanBeClaimedOn) : null
               return (
-                <HorizontalTile key={investment.id}>
+                <HorizontalTile onClick={() => showDetails([player, name, investment], timeUntilEscrowCanBeClaimed)} key={investment.id}>
                   <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
                     <span className={tileStyles.value}>{name}</span>
                     <span className={tileStyles.underValue}>{dateFromTimeStamp(investment.stakeTimeStamp.gamePlayedTimestamp).toLocaleDateString()}</span>
@@ -84,7 +84,7 @@ export const PendingInvestments = ({ pendingInvestments, contract }) => {
   )
 }
 
-export const CurrentInvestments = ({ currentInvestments, contract }) => {
+export const CurrentInvestments = ({ showDetails, currentInvestments, contract }) => {
   const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export const CurrentInvestments = ({ currentInvestments, contract }) => {
               const scheduledFor = dateFromTimeStamp(parseInt(investment.stakeTimeStamp.scheduledForTimestamp))
               const timeLeft = timeUntilDate(scheduledFor)
               return (
-                <HorizontalTile key={investment.id}>
+                <HorizontalTile onClick={() => showDetails([player, name, investment], null)} key={investment.id}>
                   <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
                     <span className={tileStyles.value}>{name}</span>
                   </div>
@@ -131,7 +131,7 @@ export const CurrentInvestments = ({ currentInvestments, contract }) => {
   )
 }
 
-export const PastInvestments = ({ pastInvestments, contract }) => {
+export const PastInvestments = ({ showDetails, pastInvestments, contract }) => {
   const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
 
   useEffect(() => {
@@ -150,7 +150,7 @@ export const PastInvestments = ({ pastInvestments, contract }) => {
             {investments.map(namedInvestment => {
               const [name, investment] = namedInvestment
               return (
-                <HorizontalTile key={investment.id}>
+                <HorizontalTile onClick={() => showDetails([player, name, investment], null)} key={investment.id}>
                   <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
                     <span className={tileStyles.value}>{name}</span>
                     <span className={tileStyles.underValue}>{dateFromTimeStamp(investment.stakeTimeStamp.gamePlayedTimestamp).toLocaleDateString()}</span>

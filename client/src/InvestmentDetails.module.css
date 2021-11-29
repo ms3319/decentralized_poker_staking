@@ -1,0 +1,52 @@
+.detailsBody span {
+    display: block;
+    font-weight: 700;
+}
+
+.header {
+    font-weight: 700;
+}
+
+.header h1 {
+    font-size: 2.2em;
+    margin: 0;
+}
+
+.header span {
+    display: block;
+    line-height: 1.3em;
+}
+
+.grey {
+    color: #656565;
+}
+
+.gold {
+    color: var(--safestake-gold)
+}
+
+.section {
+    margin: 20px 0;
+}
+
+.label {
+    color: var(--safestake-gold)
+}
+
+.value {
+    font-size: 2em;
+    line-height: 0.8em;
+}
+
+.tripleContainer {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.tripleContainer > div {
+    flex: 0 0 33%;
+}
+
+.detailsBody .normal {
+    font-weight: 500;
+}
