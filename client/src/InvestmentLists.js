@@ -46,7 +46,7 @@ export const PendingInvestments = ({ showDetails, pendingInvestments, contract }
             <Link style={{color: "var(--safestake-gold)"}} to={`/players/${player.playerAddress}`}><span className={styles.investmentPlayerName}>{player.name}</span></Link>
             {investments.map(namedInvestment => {
               const [name, investment] = namedInvestment
-              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 0);
+              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 10);
               const timeUntilEscrowCanBeClaimed = escrowCanBeClaimedOn > new Date() ?
                 timeUntilDate(escrowCanBeClaimedOn) : null
               return (
