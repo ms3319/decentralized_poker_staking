@@ -1,6 +1,7 @@
 import falcon, json
 import pyrebase
 import os
+import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -81,7 +82,7 @@ class Game:
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
 
         max_key = None
-        max_val = 0
+        max_val = -1000000000
         # Update each players total winnings and tournaments played
         for (key, val) in takeHomeMoney.items():
             if max_val < val:
@@ -124,8 +125,9 @@ class Tournaments:
     def on_post(self, req, resp):
         buyIn = float(req.get_param("buyIn", required=True))
         name = req.get_param("name", required=True)
+        scheduledFor = (datetime.datetime.strptime(req.get_param("scheduledFor", required=True), '%Y-%m-%d %H:%M:%S') - datetime.datetime(1970, 1, 1)).total_seconds()
         players = json.loads(req.get_param("players"))
-        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name}
+        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name, "scheduledFor": scheduledFor}
         resp_data = db.child("tournaments").push(data)
         resp.text = json.dumps(resp_data)
 
@@ -144,7 +146,7 @@ class Tournament:
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
 
         max_key = None
-        max_val = 0
+        max_val = -1000000
         # Update each players total winnings and tournaments played
         for (key, val) in takeHomeMoney.items():
             if max_val < val:

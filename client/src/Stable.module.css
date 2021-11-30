@@ -1,0 +1,140 @@
+.page {
+    text-align: center;
+}
+
+.header {
+    padding: 75px;
+}
+
+.header h1 {
+    font-weight: 700;
+    font-size: 5em;
+    margin-bottom: 20px;
+}
+
+.pageDescription {
+    font-weight: 600;
+    font-size: 2em;
+    line-height: 1.2em;
+}
+
+.separator {
+    width: 75px;
+    height: 10px;
+    background: var(--safestake-gold);
+    margin: 0 auto;
+    position: relative;
+    z-index: 100;
+}
+
+/* MarketplaceRedirect styles */
+
+.marketPlaceRedirect {
+    padding: 75px;
+}
+.marketPlaceRedirect h1 {
+    font-weight: 900;
+}
+
+.marketPlaceRedirect p {
+    font-size: 2em;
+}
+
+/* End marketplace redirect styles */
+
+/* Stats styles */
+
+.statsTile {
+    color: white;
+    position: relative;
+    top: -5px;
+    padding: 30px;
+}
+
+.statsTile h2 {
+    /*padding-top: 30px;*/
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: content-box;
+    height: 100%;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    z-index: -1;
+    background: var(--safestake-off-black);
+}
+
+.stats {
+    width: 100%;
+}
+
+.stats > div {
+    display: inline-block;
+    width: 50%;
+    margin: 40px 0;
+    position: relative;
+}
+
+.label {
+    font-weight: 700;
+    line-height: 10px;
+    color: var(--safestake-gold-darker);
+}
+
+.stats .value {
+    font-size: 5em;
+    font-weight: 700;
+    line-height: 90px;
+}
+
+.underValue {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -20px;
+}
+
+.red {
+    color: #cf463e !important;
+}
+
+.green {
+    color: #44aa58;
+}
+
+@media only screen and (max-width: 950px) {
+    .stats > div {
+        width: 100%;
+    }
+}
+
+/* End stats styles */
+
+/* Current Investments Styles */
+
+.investmentSection {
+    margin: 75px 0;
+}
+
+.investmentSection h1 {
+    font-weight: 700;
+    margin: 0;
+}
+
+.currentInvestment {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.investmentPlayerName {
+    display: block;
+    text-align: left;
+    font-weight: 700;
+    color: var(--safestake-gold);
+    padding: 10px;
+}
+
+/* End Current Investments Styles */

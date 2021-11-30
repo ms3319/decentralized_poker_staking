@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+// Dai or StakeCoin (production or development)
+interface Token {
+    function transfer(address dst, uint amount) external returns (bool);
+    function transferFrom(address src, address dst, uint amount) external returns (bool);
+    function balanceOf(address guy) external view returns (uint);
+    function approve(address spender, uint amount) external returns (bool);
+}
+
 contract Staking {
+    Token public token;
     uint public requestCount = 0;
     mapping(uint => Stake) public stakes;
     address payable public owner;
@@ -24,13 +33,18 @@ contract Staking {
         Tournament
     }
 
+    struct InvestmentDetails {
+        address payable[] backers;
+        uint[] investments;
+        uint filledAmount;
+        uint playThreshold;
+    }
+
     struct Stake {
         uint id;
         address payable horse;
-        address payable[] backers;
-        uint[] investments;
+        InvestmentDetails investmentDetails;
         uint amount;
-        uint filled_amount;
         uint escrow;
         uint profitShare;
         int pnl;
@@ -45,6 +59,7 @@ contract Staking {
         uint256 createdTimestamp;
         uint256 lastFilledTimestamp;
         uint256 gamePlayedTimestamp;
+        uint256 scheduledForTimestamp;
     }
 
     struct Player {
@@ -55,10 +70,12 @@ contract Staking {
         string profilePicPath;
         uint[] stakeIds; // stakes where the player is the horse.
         uint256 createdTimestamp;
+        bool canCreateStake; // False when they have a stake that is awaiting repayment
     }
 
-    constructor() {
+    constructor(address tokenAddress) {
         owner = payable(msg.sender);
+        token = Token(tokenAddress);
     }
 
     event PlayerCreated(address playerAddress, string apiId, string name, string sharkscopeLink, string profilePicPath);
@@ -76,6 +93,7 @@ contract Staking {
         players[msg.sender].sharkscopeLink = sharkscopeLink;
         players[msg.sender].profilePicPath = profilePicPath;
         players[msg.sender].createdTimestamp = block.timestamp;
+        players[msg.sender].canCreateStake = true;
 
         emit PlayerCreated(msg.sender, apiId, name, sharkscopeLink, profilePicPath);
     }
@@ -132,19 +150,34 @@ contract Staking {
     error InvalidProfitShare(uint profitShare);
     /// Escrow does not match msg.value
     error EscrowValueNotMatching(uint escrow, uint value);
+    /// Player has not registered
+    error PlayerDoesNotExist(address sender);
+    /// Player is locked from creating new stakes. Return awaiting payments first.
+    error PlayerNotAllowedToCreateStake(address player);
 
-    function createRequest(uint amount, uint profitShare, uint escrow, GameType gameType, string memory apiId) external payable {
+    function createRequest(uint amount, uint profitShare, uint escrow, uint playThreshold, GameType gameType, string memory apiId, uint256 scheduledFor) external payable {
+        if (players[msg.sender].playerAddress == address(0)) {
+            revert PlayerDoesNotExist(msg.sender);
+        }
+        if (!players[msg.sender].canCreateStake) {
+            revert PlayerNotAllowedToCreateStake(msg.sender);
+        }
         if (profitShare > 100) {
             revert InvalidProfitShare(profitShare);
         }
-        if (escrow > 0 && escrow != msg.value) {
-            revert EscrowValueNotMatching(escrow, msg.value);
+        if (escrow > 0) {
+            token.transferFrom(msg.sender, address(this), escrow);
         }
-        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0);
+
+        StakeTimeStamp memory stakeTimeStamp = StakeTimeStamp(block.timestamp, 0, 0, scheduledFor);
+        InvestmentDetails memory investmentDetails;
+        investmentDetails.playThreshold = playThreshold;
+
         stakes[requestCount].id = requestCount;
         stakes[requestCount].horse = payable(msg.sender);
         stakes[requestCount].amount = amount;
-        stakes[requestCount].filled_amount = 0;
+        stakes[requestCount].investmentDetails.filledAmount = 0;
+        stakes[requestCount].investmentDetails = investmentDetails;
         stakes[requestCount].escrow = escrow;
         stakes[requestCount].profitShare = profitShare;
         stakes[requestCount].status = StakeStatus.Requested;
@@ -187,24 +220,34 @@ contract Staking {
             revert StakingSelf(id, horse, backer);
         }
         
-        if (msg.value != amount) {
-            revert ValueAndAmountDoNotMatch(amount, msg.value);
-        }
+//        if (msg.value != amount) {
+//            revert ValueAndAmountDoNotMatch(amount, msg.value);
+//        }
 
-        if (amount + stake.filled_amount > stake.amount) {
-            revert StakedMoreThanRemaining(id, amount, stake.amount - stake.filled_amount);
+        if (amount + stake.investmentDetails.filledAmount > stake.amount) {
+            revert StakedMoreThanRemaining(id, amount, stake.amount - stake.investmentDetails.filledAmount);
         }
-
+        
+        bool passedThresholdBefore = stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold;
+        stake.status = StakeStatus.PartiallyFilled;
         // Update stake status and transfer funds
-        stake.filled_amount += amount;
-        if (stake.filled_amount == stake.amount) {
+        stake.investmentDetails.filledAmount += amount;
+        if (stake.investmentDetails.filledAmount == stake.amount) {
             stake.status = StakeStatus.Filled;
-            horse.transfer(stake.amount); // Only send the investment once completely filled
-        } else {
-            stake.status = StakeStatus.PartiallyFilled;
         }
-        stake.backers.push(payable(backer));
-        stake.investments.push(amount);
+        if (!passedThresholdBefore && stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold) {
+            // Just passed the threshold - send money pool to horse
+            token.transferFrom(msg.sender, address(this), amount);
+            token.transfer(stake.horse, stake.investmentDetails.filledAmount);
+        } else if (stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold) {
+            // We have already passed the threshold - send money directly to horse
+            token.transferFrom(msg.sender, stake.horse, amount);
+        } else {
+            // We are still below the threshold - add to money pool
+            token.transferFrom(msg.sender, address(this), amount);
+        }
+        stake.investmentDetails.backers.push(payable(backer));
+        stake.investmentDetails.investments.push(amount);
         stake.stakeTimeStamp.lastFilledTimestamp = block.timestamp;
 
         stakes[id] = stake;
@@ -234,7 +277,8 @@ contract Staking {
         }
 
         if (stake.escrow > 0) {
-            stake.horse.transfer(stake.escrow);
+            token.transfer(stake.horse, stake.escrow);
+            // stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Cancelled;
 
@@ -271,13 +315,15 @@ contract Staking {
         // if (msg.value != backerReturns) {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
-        for (uint i = 0; i < stake.backers.length; i++) {
-            stake.backers[i].transfer((stake.backerReturns * stake.amount) / stake.investments[i]);
+        for (uint i = 0; i < stake.investmentDetails.backers.length; i++) {
+            token.transfer(stake.investmentDetails.backers[i], (stake.backerReturns * stake.amount) / stake.investmentDetails.investments[i]);
         }
         if (stake.escrow > 0) {
-            stake.horse.transfer(stake.escrow);
+            token.transfer(stake.horse, stake.escrow);
+            // stake.horse.transfer(stake.escrow);
         }
         stake.status = StakeStatus.Completed;
+        players[stake.horse].canCreateStake = true;
 
         stakes[id] = stake;
         emit ProfitsReturned(id, stake.backerReturns);
@@ -319,6 +365,7 @@ contract Staking {
         stakes[id].pnl = pnl;
         stakes[id].backerReturns = backerReturns;
         stakes[id].stakeTimeStamp.gamePlayedTimestamp = block.timestamp;
+        players[stakes[id].horse].canCreateStake = false;
         emit GamePlayed(id, pnl, backerReturns);
     }
 
@@ -347,10 +394,10 @@ contract Staking {
         }
 
         bool isBacker = false;
-        for (uint i = 0; i < stakes[id].backers.length; i++) {
-            if (msg.sender == stakes[id].backers[i]) {
+        for (uint i = 0; i < stakes[id].investmentDetails.backers.length; i++) {
+            if (msg.sender == stakes[id].investmentDetails.backers[i]) {
                 isBacker = true;
-                stakes[id].backers[i].transfer((stakes[id].escrow * stakes[id].amount) / stakes[id].investments[i]);
+                token.transfer(stakes[id].investmentDetails.backers[i], (stakes[id].escrow * stakes[id].amount) / stakes[id].investmentDetails.investments[i]);
             }
         }
         if (!isBacker) {

@@ -1,21 +1,12 @@
 import { useParams, useHistory } from "react-router-dom";
 import styles from "./Player.module.css"
-import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
-import { CoinGeckoClient, weiToUsd, StakeStatus, numberWithCommas } from "./utils";
+import {StakeStatus, numberWithCommas, units, isNullAddress} from "./utils";
 import EditPlayerForm from "./EditPlayerForm";
-import default_profile_pic from './images/default-profile-pic.png'
-
-const ethereumUnits = (amountInWei) => {
-  if (amountInWei < 1e7) {
-    return { units: "wei", amount: amountInWei};
-  } else if (1e7 <= amountInWei && amountInWei < 1e16) {
-    return { units: "Gwei", amount: +(amountInWei / 1e9).toFixed(2)};
-  } else {
-    return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
-  }
-}
+import defaultProfilePic from './images/default-profile-pic.png'
+import {GameList} from "./GameLists";
+import StakeDetails from "./StakeDetails";
 
 function PlayerInfo({ player, accounts, contract }) { 
 
@@ -31,13 +22,13 @@ function PlayerInfo({ player, accounts, contract }) {
 
   // a flag to only display the Edit Profile button if the current profile is mine
   const isMyProfile = accounts[0] === player.playerAddress;
-  
+
   return (
     <div className={styles.playerInfoTile}>
       <div className={styles.imageContainer}>
         <img className={styles.profilePic} alt="Profile" src={player.profilePicPath} 
           onError={event => {
-            event.target.src = default_profile_pic
+            event.target.src = defaultProfilePic
             event.onerror = null
           }}/>
       </div>
@@ -64,18 +55,13 @@ function PlayerInfo({ player, accounts, contract }) {
   )
 }
 
-function PlayerStats({ ethPriceUsd, games }) {
-  const totalStakes = games.length
-  const totalWins = games.filter(game => game.horseWon).length
-  const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
-  const stakesRequested = ethereumUnits(stakesRequestedRaw)
-  const stakesRequestedUsd = weiToUsd(stakesRequestedRaw, ethPriceUsd)
-  const totalPnlRaw = games.reduce((prev, curr) => prev + curr.pnl, 0)
-  const totalPnl = ethereumUnits(totalPnlRaw)
-  const totalPnlUsd = weiToUsd(totalPnlRaw, ethPriceUsd)
-  const profitPercent = stakesRequestedRaw > 0 ? +((totalPnlRaw / stakesRequestedRaw) * 100).toFixed(2) : 0;
-
-
+function PlayerStats({ awaitingRepayment, requested, filled, completedGames, escrowClaimed }) {
+  const totalStakes = awaitingRepayment.length + requested.length + filled.length + completedGames.length + escrowClaimed.length;
+  const currentlyStakedFor = filled.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const totalPnl = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
+  const totalReturns = completedGames.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0) + escrowClaimed.reduce((prev, curr) => prev + parseInt(curr.escrow), 0)
+  const totalPastStakedFor = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const avgInvestorProfit = (100 * (totalReturns - totalPastStakedFor) / totalPastStakedFor).toFixed(2)
   return (
     <div className={styles.statsTile}>
       <h2 className={styles.sectionTitle}>Statistics</h2>
@@ -91,19 +77,19 @@ function PlayerStats({ ethPriceUsd, games }) {
 
         <div>
           <div className={styles.label}>
-            Total Wins
+            Currently Staked for
           </div>
           <div className={styles.value}>
-            {totalWins}
+            {numberWithCommas(units(currentlyStakedFor))}◈
           </div>
         </div>
 
         <div>
           <div className={styles.label}>
-            Total Stakes Requested
+            Total Winnings Returned
           </div>
           <div className={styles.value}>
-            {numberWithCommas(stakesRequested.amount) + " " + stakesRequested.units + " ($" + stakesRequestedUsd + ")"}
+            {numberWithCommas(units(totalReturns))}◈
           </div>
         </div>
 
@@ -112,16 +98,16 @@ function PlayerStats({ ethPriceUsd, games }) {
             Net Pnl
           </div>
           <div className={styles.value}>
-            {numberWithCommas(totalPnl.amount) + " " + totalPnl.units + " ($" + totalPnlUsd + ")"}
+            {numberWithCommas(units(totalPnl))}◈
           </div>
         </div>
 
         <div>
           <div className={styles.label}>
-            Profit %
+            Average profit for investor
           </div>
           <div className={styles.value}>
-            {numberWithCommas(profitPercent)}%
+            {numberWithCommas(avgInvestorProfit)}%
           </div>
         </div>
       </div>
@@ -129,110 +115,12 @@ function PlayerStats({ ethPriceUsd, games }) {
   )
 }
 
-
-function PastStakes({ ethPriceUsd, returnProfits, stakes, isViewersAccount }) {
-
-  const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)
-  const inProgress = stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.Filled)
-  const pastStakes = stakes.filter((stake) => stake.status === StakeStatus.Completed || stake.status === StakeStatus.EscrowReturned)
-
-  return (
-    <div className={styles.pastStakesTile}>
-      { isViewersAccount && awaitingRepayment.length > 0 && (<>
-        <h2 className={styles.sectionTitle}>Awaiting Repayment</h2>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Investor Address</th>
-              <th>Amount Requested</th>
-              <th>Profit Share</th>
-              <th>Pnl</th>
-              <th>Amount owed</th>
-              <th>Pay Back</th>
-            </tr>
-          </thead>
-          <tbody>
-            {awaitingRepayment.map((stake, index) => <tr key={stake.id}>
-              <td>{index + 1}</td>
-              <td>{stake.backer}</td>
-              <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-              <td>{stake.profitShare}%</td>
-              <td>${weiToUsd(parseInt(stake.pnl), ethPriceUsd)}</td>
-              <td>${weiToUsd(parseInt(stake.backerReturns), ethPriceUsd)}</td>
-              <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.backerReturns))}>Pay Back</Button></td>
-            </tr>)}
-          </tbody>
-        </Table>
-        </>
-      )}
-      { isViewersAccount && inProgress.length > 0 && (<>
-          <h2 className={styles.sectionTitle}>Active Staking Requests</h2>
-          <Table striped bordered hover>
-            <thead>
-            <tr>
-              <th>#</th>
-              <th>Investor Address</th>
-              <th>Amount Requested</th>
-              <th>Profit Share</th>
-              <th>Status</th>
-            </tr>
-            </thead>
-            <tbody>
-            {inProgress.map((stake, index) => <tr key={stake.id}>
-              <td>{index + 1}</td>
-              <td>{stake.backer}</td>
-              <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-              <td>{stake.profitShare}%</td>
-              <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
-            </tr>)}
-            </tbody>
-          </Table>
-        </>
-      )}
-      <h2 className={styles.sectionTitle}>Past Stakes</h2>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Investor Address</th>
-            <th>Amount Requested</th>
-            <th>Profit Share</th>
-            <th>Pnl</th>
-            <th>Won?</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isViewersAccount ? pastStakes.map((stake, index) => <tr key={index}>
-            <td>{index + 1}</td>
-            <td>{stake.backer}</td>
-            <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-            <td>{stake.profitShare}%</td>
-            <td>${weiToUsd(stake.pnl, ethPriceUsd)}</td>
-            <td>{stake.horseWon ? "Yes" : "No"}</td>
-            <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
-          </tr>) :
-          stakes.map((stake, index) => <tr key={index}>
-            <td>{index + 1}</td>
-            <td>{stake.backer}</td>
-            <td>${weiToUsd(stake.amount, ethPriceUsd)}</td>
-            <td>{stake.profitShare}%</td>
-            <td>${weiToUsd(stake.pnl, ethPriceUsd)}</td>
-            <td>{stake.horseWon ? "Yes" : "No"}</td>
-            <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
-          </tr>)}
-        </tbody>
-      </Table>
-    </div>
-  );
-}
-
-export default function Player({ contract, accounts }) {
+export default function Player({ contract, accounts, tokenContract, reloadContractState }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)
-  const [ethPriceUsd, setEthPriceUsd] = useState(0);
+  const [focusedRequest, setFocusedRequest] = useState(null);
+  const [showRequestDetails, setShowRequestDetails] = useState(false);
   const history = useHistory();
   
   useEffect(() => {
@@ -245,33 +133,86 @@ export default function Player({ contract, accounts }) {
     if (player != null) {
       const updateStakes = async () => {
         let stakes = []
-        for (const stakeId in player.stakeIds) {
+        for (const stakeId of player.stakeIds) {
           stakes.push(await contract.methods.getStake(stakeId).call())
         }
         setStakes(stakes)
       }
       updateStakes().catch()
     }
-    CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']}).then(resp => setEthPriceUsd(resp.data.ethereum.usd));
   }, [player, contract])
 
-  if (contract == null) return null
-
-  const returnProfits = async (id, profits) => {
-    await contract.methods.returnProfits(id).send({ from: accounts[0], value: profits + 10 });
+  const handleClose = () => {
+    setShowRequestDetails(false);
+    setFocusedRequest(null);
+  }
+  const handleShow = (namedInvestment) => {
+    setFocusedRequest([player, ...namedInvestment]);
+    setShowRequestDetails(true);
   }
 
+  if (contract === null || accounts === null) return null
+
   // Unknown Player
-  if (player != null && player.playerAddress === "0x0000000000000000000000000000000000000000") {
+  if (player != null && isNullAddress(player.playerAddress)) {
     history.push("/")
     return null
   }
 
-  return (
+  const returnProfits = async (id, profits) => {
+    // Add 1 cent transaction fee... and to protect from rounding errors :)
+    const amountString = "0x" + (profits + 1e16).toString(16);
+    await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
+    await contract.methods.returnProfits(id).send({ from: accounts[0] });
+    reloadContractState();
+  }
+
+  const cancelStake = async (id) => {
+    await contract.methods.cancelStakeAsHorse(id).send({from: accounts[0] });
+    reloadContractState();
+  }
+
+  const viewerIsPlayer = accounts[0] === playerAddress
+
+  const awaitingRepayment = stakes ? stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment) : []
+  const requested = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Requested) : []
+  const filled = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Filled) : []
+  const completedGames = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Completed) : []
+  const escrowClaimed = stakes ? stakes.filter((stake) => stake.status === StakeStatus.EscrowClaimed) : []
+
+  return (<>
     <div className={styles.playerPage}>
+      {player && !player.canCreateStake && viewerIsPlayer && escrowClaimed.length > 0 &&
+        <div className={styles.lockedOut}>An investor has claimed escrow on a stake where you made money and did not
+          send back the investor's share of the winnings in time. You have been locked out until further notice.</div>
+      }
+      {player && !player.canCreateStake && viewerIsPlayer && awaitingRepayment.length > 0 &&
+        <div className={styles.lockedOut}>You have completed games where you made money and have not paid back the investor's
+          share of the winnings. You will not be able to create new staking requests until you do so.</div>
+      }
       {player && <PlayerInfo player={player} accounts={accounts} contract={contract}/>}
-      {stakes && <PlayerStats ethPriceUsd={ethPriceUsd} games={stakes} />}
-      {stakes && accounts && <PastStakes ethPriceUsd={ethPriceUsd} returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
+      {stakes && <PlayerStats awaitingRepayment={awaitingRepayment} requested={requested} filled={filled} completedGames={completedGames} escrowClaimed={escrowClaimed} />}
+      {/*{stakes && accounts && <PastStakes cancelStake={cancelStake} returnProfits={returnProfits} stakes={stakes} viewerIsPlayer={accounts[0] === playerAddress} />}*/}
+      {awaitingRepayment.length > 0 && <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Awaiting Repayment</h2>
+        <GameList showDetails={handleShow} activeRequests={awaitingRepayment} contract={contract} options={["amount", "winnings", "returns"]} />
+      </div>}
+      {(requested.length > 0 || filled.length > 0) && <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Active Requests</h2>
+        {requested.length > 0 && <div>
+          <h3 className={styles.sectionSubtitle}>Open Requests (can be invested in)</h3>
+          <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} />
+        </div>}
+        {filled.length > 0 && <div>
+          <h3 className={styles.sectionSubtitle}>Filled Requests (can no longer be invested in)</h3>
+          <GameList showDetails={handleShow} activeRequests={filled} contract={contract} options={["amount", "escrow", "profitShare"]} />
+        </div>}
+      </div>}
+      {completedGames.length > 0 && <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Past Requests</h2>
+        <GameList showDetails={handleShow} activeRequests={completedGames.concat(escrowClaimed)} contract={contract} options={["amount", "winnings", "returns"]} />
+      </div>}
     </div>
-  )
+    {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} timeUntilCanClaimEscrow={null} cancelStake={cancelStake} returnProfits={returnProfits} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest.backer === accounts[0]} />}
+  </>)
 }

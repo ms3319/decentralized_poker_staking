@@ -1,19 +1,13 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import CoinGecko from 'coingecko-api';
 dotenv.config()
-
-const CoinGeckoClient = new CoinGecko();
-
-const usdToWei = (usd, ethPriceUsd) => {
-  if (ethPriceUsd === 0) return 0;
-  return (usd / ethPriceUsd) * 1e18;
-}
 
 const GameType = {
   SingleGame: '0',
   Tournament: '1'
 };
+
+const convertToTokenAmount = amount => amount * 1e18
 
 const apiUrl = process.env.API_URL
 
@@ -47,13 +41,10 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
       console.log("Game update detected, affecting the following stakes:")
       console.log(matchingStakes)
       for (const matchingStake of matchingStakes) {
-        CoinGeckoClient.simple.price({ids: ['ethereum'], vs_currencies: ['usd']})
-          .then(resp => {
-            contract.methods.getPlayer(matchingStake.horse).call()
-              .then(player => {
-                const amountWon = player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0
-                sendGamePlayedTransaction(matchingStake.id, usdToWei(amountWon, resp.data.ethereum.usd).toString())
-              })
+        contract.methods.getPlayer(matchingStake.horse).call()
+          .then(player => {
+            const amountWon = player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0
+            sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toString())
           })
         // Remove from the watched stakes
         watchedStakes.splice(watchedStakes.findIndex(stake => stake.id === matchingStake.id), 1);

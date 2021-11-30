@@ -1,56 +1,42 @@
-import styles from './StakeRequestTile.module.css'
-import rightArrow from './images/arrow-right.svg'
+import tileStyles from './HorizontalTile.module.css'
 import React, {useEffect, useState} from "react";
-import { numberWithCommas } from './utils';
+import {dateFromTimeStamp, numberWithCommas, timeUntilDate, units} from './utils';
+import HorizontalTile from "./HorizontalTile";
 
-// const ethereumUnits = (amountInWei) => {
-//   if (amountInWei < 1e9) {
-//     return { units: "wei", amount: amountInWei};
-//   } else if (1e9 <= amountInWei && amountInWei < 1e18) {
-//     return { units: "Gwei", amount: +(amountInWei / 1e9).toFixed(2)};
-//   } else {
-//     return { units: "Eth", amount: +(amountInWei / 1e18).toFixed(2)};
-//   }
-// }
-
-export default function StakeRequestTile({ contract, request, onClick, ethPriceUsd}) {
+export default function StakeRequestTile({ contract, request, handleShowRequestDetails }) {
   const [player, setPlayer] = useState(null);
-  const [escrow, setEscrow] = useState(NaN);
-  const [stake, setStake] = useState(NaN);
 
   useEffect(() => {
     if (contract != null) {
       contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
     }
-    // Wait until we get given the price
-    if (ethPriceUsd === 0) return;
-    if (!escrow) {
-      setEscrow((ethPriceUsd * (request.escrow / 1e18)).toFixed(2));
-    }
-    if (!stake) {
-      setStake((ethPriceUsd * (request.amount / 1e18)).toFixed(2));
-    }
-  }, [contract, request, ethPriceUsd, escrow, stake])
+  }, [contract, request])
+
+  const scheduledFor = dateFromTimeStamp(parseInt(request.stakeTimeStamp.scheduledForTimestamp))
+  const timeLeft = timeUntilDate(scheduledFor)
 
   return (
-    <div className={styles.stakeRequestTile} onClick={onClick}>
-      <div className={styles.user}>
-        <span className={styles.label}>User</span>
-        <span className={styles.value}>{player == null ? "null player" : player.name}</span>
+    <HorizontalTile onClick={() => handleShowRequestDetails(request, player)}>
+      <div>
+        <span className={tileStyles.label}>User</span>
+        <span className={tileStyles.value}>{player == null ? "null player" : player.name}</span>
       </div>
       <div>
-        <span className={styles.label}>Stake</span>
-        <span className={styles.value}>${numberWithCommas(stake)}</span>
+        <span className={tileStyles.label}>Stake</span>
+        <span className={tileStyles.value}>{numberWithCommas(units(request.amount))}◈</span>
       </div>
       <div>
-        <span className={styles.label}>Escrow</span>
-        <span className={styles.value}>${numberWithCommas(escrow)}</span>
+        <span className={tileStyles.label}>Escrow</span>
+        <span className={tileStyles.value}>{numberWithCommas(units(request.escrow))}◈</span>
       </div>
       <div>
-        <span className={styles.label}>Profit Share</span>
-        <span className={styles.value}>{request.profitShare}%</span>
+        <span className={tileStyles.label}>Profit Share</span>
+        <span className={tileStyles.value}>{request.profitShare}%</span>
       </div>
-      <img alt="Right arrow" className={styles.details} src={rightArrow} />
-    </div>
+      <div>
+        <span className={tileStyles.label}>Time left</span>
+        <span className={tileStyles.value}>{timeLeft.days}d {timeLeft.hours}h</span>
+      </div>
+    </HorizontalTile>
   )
 }

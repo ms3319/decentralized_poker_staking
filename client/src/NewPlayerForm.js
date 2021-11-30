@@ -19,16 +19,17 @@ class NewPlayerForm extends Component {
         this.setState({ sanitaryId: apiIdExists, sanitaryName: nameCheck, sanitarySharkscope: sharkscopeCheck })
         if (apiIdExists && nameCheck && sharkscopeCheck) {
             await contract.methods.createPlayer(this.state.apiId, this.state.name, this.state.sharkscopeLink, this.state.profilePicPath).send({ from: accounts[0] });
+            this.props.reloadContractState();
             onHide()
         }
     };
 
     async checkPlayerIdExists() {
         if (this.state.apiId === "") return false;
-        fetch(`https://safe-stake-mock-api.herokuapp.com/players/${this.state.apiId}`,
+        return await fetch(`https://safe-stake-mock-api.herokuapp.com/players/${this.state.apiId}`,
         { method: "GET", mode: 'cors', headers: {'Content-Type': 'application/json'}})
-        .then(response => response.json())
-        .then(data => Object.keys(data).length !== 0)
+            .then(response => response.json())
+            .then(data => Object.keys(data).length !== 0)
     }
 
     checkName() {
@@ -36,7 +37,7 @@ class NewPlayerForm extends Component {
     }
 
     checkSharkscope() {
-        return validator.isURL(this.state.name);
+        return validator.isURL(this.state.sharkscopeLink);
     }
 
     handleApiIdChange(event) {
@@ -58,7 +59,8 @@ class NewPlayerForm extends Component {
     render() {
         return (
             <Modal
-                {...this.props}
+                show={this.props.show}
+                onHide={this.props.onHide}
                 size="lg"
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
