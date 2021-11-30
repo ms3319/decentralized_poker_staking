@@ -20,7 +20,7 @@ const MarketPlaceRedirect = () => (
 const Statistics = ({ pendingInvestments, currentInvestments, pastInvestments }) => {
   const currentlyInvested = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
   const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
-  const totalWinnings = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
+  const totalWinnings = units(pastInvestments.reduce((prev, curr) => prev + (curr.status === StakeStatus.EscrowClaimed ? parseInt(curr.escrow) : parseInt(curr.backerReturns)), 0))
   const pendingWinnngs = units(pendingInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
   const profit = (totalWinnings - pastInvestmentsAmount).toFixed(2)
 
@@ -131,7 +131,7 @@ export default function Stable({ reloadContractState, requests, accounts, contra
           </>
         }
       </Container>
-      <StakeDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={id => claimEscrow(id).then(reloadContractState())} />
+      <StakeDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={id => claimEscrow(id).then(reloadContractState())} viewerIsPlayer={false} viewerIsBacker={true} />
     </div>
   );
 }
