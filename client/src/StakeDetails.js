@@ -112,7 +112,7 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               <Button style={{marginTop: "20px"}} onClick={() => claimEscrow(investment.id)}>Claim Escrow</Button>
             </div>
           )}
-          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== null && (
+          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== null && viewerIsBacker (
             <div className={styles.section}>
               <span className={styles.label}>Time until escrow can be claimed</span>
               <span className={styles.value}>{timeUntilCanClaimEscrow.days} day{timeUntilCanClaimEscrow.days === 1 ? "" : "s"}, {timeUntilCanClaimEscrow.hours} hour{timeUntilCanClaimEscrow.hours === 1 ? "" : "s"}</span>
