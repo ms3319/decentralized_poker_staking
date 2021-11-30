@@ -3,7 +3,7 @@ const numberWithCommas = (x) => {
 }
 
 const units = (amount) => {
-  return Math.round(amount / 1e18);
+  return Math.round((amount / 1e18 + Number.EPSILON) * 100) / 100;
 }
 
 const dateFromTimeStamp = timeStamp => new Date(timeStamp * 1000);
@@ -36,7 +36,6 @@ const timeUntilDate = date => {
 }
 
 const addDaysToDate = (date, days) => {
-  console.log(date)
   let result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
@@ -57,6 +56,43 @@ const GameType = {
   Tournament: 1
 }
 
+const parseOptions = (options, request) => {
+  return options.map(option => {
+    switch (option) {
+      case "amount":
+        return ({label: "Stake Requested", value: `${numberWithCommas(units(request.amount))}◈`})
+      case "escrow":
+        return ({label: "Escrow Offered", value: `${numberWithCommas(units(request.escrow))}◈`})
+      case "profitShare":
+        return ({label: "Profit Share (%)", value: `${request.profitShare}%`})
+      case "timeLeft":
+        const scheduledFor = dateFromTimeStamp(parseInt(request.stakeTimeStamp.scheduledForTimestamp))
+        const timeLeft = timeUntilDate(scheduledFor)
+        return ({label: "Time left", value: `${timeLeft.days}d${timeLeft.hours}h`})
+      case "winnings":
+        return ({label: "Player Profit", value: `${numberWithCommas(units(request.pnl))}◈`})
+      case "returns":
+        const escrowClaimed = request.status === StakeStatus.EscrowClaimed
+        return ({
+          label: request.status === StakeStatus.EscrowClaimed ? "Escrow Claimed" : request.status === StakeStatus.Completed ? "Winnings Returned" : "Amount Owed",
+          value: `${numberWithCommas(units(escrowClaimed ? request.escrow : request.backerReturns))}◈`,
+          labelStyles: escrowClaimed ? {color: "#cf463e"} : {}
+        })
+      case "backerPnl":
+        const returns = units(request.status === StakeStatus.EscrowClaimed ? request.escrow : request.backerReturns)
+        return ({
+          label: "Pnl",
+          value: `${((100 * (returns - units(request.amount))) / units(request.amount)).toFixed(2)}%`,
+          valueStyles: {color: returns > units(request.amount) ? "#44aa58" : "#cf463e"}
+        })
+      default:
+        return ({label: "n/a", value: "n/a"})
+    }
+  })
+}
+
+const isNullAddress = address => address === "0x0000000000000000000000000000000000000000";
+
 exports.numberWithCommas = numberWithCommas;
 exports.StakeStatus = StakeStatus;
 exports.GameType = GameType;
@@ -64,3 +100,5 @@ exports.units = units;
 exports.dateFromTimeStamp = dateFromTimeStamp;
 exports.timeUntilDate = timeUntilDate;
 exports.addDaysToDate = addDaysToDate;
+exports.parseOptions = parseOptions;
+exports.isNullAddress = isNullAddress;

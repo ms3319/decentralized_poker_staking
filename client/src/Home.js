@@ -1,6 +1,5 @@
 import React, {useState} from "react";
 import {Col, Container, Row} from "react-bootstrap";
-import StakingRequestDetails from "./StakingRequestDetails";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import NewPlayerForm from "./NewPlayerForm";
 import HomepageHeader from "./HomepageHeader";
@@ -13,10 +12,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import StakeRequestList from "./StakeRequestList";
 import Button from "./Button";
 import { useWeb3React } from "@web3-react/core";
+import StakeDetails from "./StakeDetails";
+import {GameType} from "./utils";
 
 export default function Home(props) {
   
   const [focusedRequest, setFocusedRequest] = useState(null)
+  const [focusedPlayer, setFocusedPlayer] = useState(null)
+  const [focusedRequestName, setFocusedRequestName] = useState("")
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false)
@@ -27,8 +30,22 @@ export default function Home(props) {
     setShowRequestDetails(false);
   }
 
-  const openRequestDetails = (request) => {
+  const openRequestDetails = (request, player) => {
     setFocusedRequest(request)
+    setFocusedPlayer(player)
+    if (player !== null) {
+      if (parseInt(request.gameType) === GameType.SingleGame) {
+        fetch(`https://safe-stake-mock-api.herokuapp.com/games/${request.apiId}`)
+          .then(response => response.json())
+          .then(game => setFocusedRequestName(game.name))
+          .catch(() => (setFocusedRequestName("Unknown game")))
+      } else {
+        fetch(`https://safe-stake-mock-api.herokuapp.com/tournaments/${request.apiId}`)
+          .then(response => response.json())
+          .then(tournament => setFocusedRequestName(tournament.name))
+          .catch(() => (setFocusedRequestName("Unknown tournament")))
+      }
+    }
     setShowRequestDetails(true)
   }
 
@@ -59,6 +76,13 @@ export default function Home(props) {
       console.error(error);
     }
   };
+
+  const fillStake = async (request) => {
+    const amountString = "0x" + parseInt(request.amount).toString(16);
+    await props.tokenContract.methods.approve(props.contract.options.address, amountString).send({from: props.accounts[0]});
+    await props.contract.methods.stakeHorse(request.id).send({ from: props.accounts[0] })
+      .then(() => {props.reloadContractState()})
+  }
 
   return (
     <div className={styles.home}>
@@ -94,7 +118,7 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakingRequestDetails reloadContractState={props.reloadContractState} contract={props.contract} tokenContract={props.tokenContract} accounts={props.accounts} request={focusedRequest} show={showRequestDetails} onHide={closeRequestDetails} />
+          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}} fillStake={fillStake} viewerIsPlayer={focusedPlayer && focusedPlayer.playerAddress === props.accounts[0]} viewerIsBacker={focusedRequest && focusedRequest.backer === props.accounts[0]} />
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
           </div>
