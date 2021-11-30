@@ -204,6 +204,47 @@ contract Staking {
         stakes[id] = stake;
         emit StakeFilled(stake);
     }
+    
+    event MultipleStakesFilled(uint count);
+    error NoStakesSelected(address backer);
+
+    function stakeMultipleGamesOnHorse(uint[] calldata ids) external payable {
+        if (ids.length < 1) {
+            revert NoStakesSelected(msg.sender);
+        }
+        
+        address payable backer = payable(msg.sender);
+        address payable horse = stakes[0].horse;
+        uint total_amount = 0;
+        
+        for (uint i = 0; i < ids.length; i++) {
+            uint id = ids[i];
+            if (id >= requestCount) {
+                revert InvalidStakeId(id);
+            }
+        
+            Stake memory stake = stakes[id];
+            if (stake.status != StakeStatus.Requested) {
+                revert StakeNotFillable(id);
+            }
+
+            if (horse == backer) {
+                revert StakingSelf(id, horse, backer);
+            }
+            
+            // Update stake status and transfer funds
+            stake.status = StakeStatus.Filled;
+            stake.backer = backer;
+            stake.stakeTimeStamp.filledTimestamp = block.timestamp;
+            total_amount += stake.amount;
+
+            stakes[id] = stake;
+            emit StakeFilled(stake);
+        }
+
+        token.transferFrom(msg.sender, horse, total_amount);
+        emit MultipleStakesFilled(ids.length);
+    }
 
     // Cancelling a reqested stake
     event StakeCancelled(uint id);

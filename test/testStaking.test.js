@@ -24,7 +24,8 @@ contract("Staking", (accounts) => {
     let horseAccount2 = accounts[3];
 
     beforeEach(async () => {
-        staking = await Staking.new({from: ownerAccount});
+        // passing into local StakeCoin address into constructor.
+        staking = await Staking.new("0xB27ba30EC1FC339e7b8F9151806b241b722B81c4", {from: ownerAccount});
     });
 
     afterEach(async () => {
@@ -190,6 +191,16 @@ contract("Staking", (accounts) => {
         it("Cannot stake a request that has been cancelled", async () => {
             await staking.cancelStakeAsHorse(0, {from: horseAccount1});
             await truffleAssert.reverts(staking.stakeHorse(0, {from: backerAccount1, value: 1200}));
+        });
+
+        it("Can stake multiple games/tournaments on a single horse", async () => {
+            await staking.createRequest(500, 45, 0, GameType.SingleGame, "secret_id2", 1640014225, {from: horseAccount1});
+            await staking.stakeMultipleGamesOnHorse([0, 1], {from: backerAccount1, value: 1000});
+            let stake1 = await staking.getStake(0);
+            let stake2 = await staking.getStake(1);
+
+            assert.equal(stake1.status, StakeStatus.Filled, "Stake status not updated to filled");
+            assert.equal(stake2.status, StakeStatus.Filled, "Stake status not updated to filled");
         });
     });
 
