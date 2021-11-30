@@ -3,11 +3,11 @@ import { Modal } from "react-bootstrap";
 import Button from "./Button"
 import { Link } from "react-router-dom";
 import styles from "./InvestmentDetails.module.css"
-import {dateFromTimeStamp, GameType, StakeStatus, units} from "./utils";
+import {dateFromTimeStamp, GameType, isNullAddress, numberWithCommas, StakeStatus, units} from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, claimEscrow, fillStake }) => {
+const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, claimEscrow, fillStake, cancelStake, returnProfits, viewerIsPlayer, viewerIsBacker }) => {
   if (namedInvestment === null) return null;
   const [player, gameName, investment] = namedInvestment;
   if (player === null || investment === null) return null;
@@ -32,6 +32,10 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
             <span className={styles.grey}>{investment.apiId}</span>
             <span className={styles.gold}>{dateFromTimeStamp(investment.stakeTimeStamp.scheduledForTimestamp).toLocaleDateString()}</span>
           </div>
+          {!isNullAddress(investment.backer) && <div className={styles.section}>
+            <span className={styles.label}>Investor Address</span>
+            <span>{investment.backer}</span>
+          </div>}
           <div className={styles.section}>
             <span className={styles.label}>Status</span>
             <span className={styles.value}>{Object.keys(StakeStatus)[parseInt(investment.status)]}</span>
@@ -42,15 +46,13 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
                 <span className={styles.label}>Request Created</span>
                 <span className={styles.value}>{dateFromTimeStamp(investment.stakeTimeStamp.createdTimestamp).toLocaleDateString()}</span>
               </div>
-              {(investment.status === StakeStatus.Filled || investment === StakeStatus.AwaitingReturnPayment
-                || investment.status === StakeStatus.Completed || investment.status === StakeStatus.EscrowClaimed) &&
+              {parseInt(investment.stakeTimeStamp.filledTimestamp) !== 0 &&
                 <div>
                   <span className={styles.label}>Filled On</span>
                   <span className={styles.value}>{dateFromTimeStamp(investment.stakeTimeStamp.filledTimestamp).toLocaleDateString()}</span>
                 </div>
               }
-              {(investment.status === StakeStatus.AwaitingReturnPayment || investment.status === StakeStatus.Completed
-                || investment.status === StakeStatus.EscrowClaimed) && (
+              {parseInt(investment.stakeTimeStamp.gamePlayedTimestamp) !== 0 && (
                 <div>
                   <span className={styles.label}>Game Played On</span>
                   <span className={styles.value}>{dateFromTimeStamp(investment.stakeTimeStamp.gamePlayedTimestamp).toLocaleDateString()}</span>
@@ -62,11 +64,11 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
             <div className={styles.tripleContainer}>
               <div>
                 <span className={styles.label}>Stake (Dai)</span>
-                <span className={styles.value}>{units(investment.amount)}◈</span>
+                <span className={styles.value}>{numberWithCommas(units(investment.amount))}◈</span>
               </div>
               <div>
                 <span className={styles.label}>Escrow (Dai)</span>
-                <span className={styles.value}>{units(investment.escrow)}◈</span>
+                <span className={styles.value}>{numberWithCommas(units(investment.escrow))}◈</span>
               </div>
               <div>
                 <span className={styles.label}>Profit Share</span>
@@ -74,7 +76,7 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               </div>
             </div>
           </div>
-          {(investment.status === StakeStatus.AwaitingReturnPayment || investment.status === StakeStatus.Completed) && (
+          {(investment.status === StakeStatus.AwaitingReturnPayment || investment.status === StakeStatus.Completed || investment.status === StakeStatus.EscrowClaimed) && (
             <div className={styles.section}>
               <div className={styles.tripleContainer}>
                 <div>
@@ -82,13 +84,13 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
                   <span className={styles.value}>{units(investment.pnl)}◈</span>
                 </div>
                 <div>
-                  <span className={styles.label}>Your Returns</span>
-                  <span className={styles.value}>{units(investment.backerReturns)}◈</span>
+                  <span className={styles.label}>Investor Returns</span>
+                  <span className={styles.value}>{numberWithCommas(units(investment.backerReturns))}◈</span>
                 </div>
               </div>
             </div>
           )}
-          {investment.status === StakeStatus.Requested && (
+          {(investment.status === StakeStatus.Requested && !viewerIsPlayer) && (
             <div className={styles.section}>
               <span className={styles.normal}>An investment into {player.name} would yield a potential return
                 of {units(investment.amount)} + ({investment.profitShare / 100} * (player's net profit)) dai.
@@ -97,7 +99,12 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               <Button style={{marginTop: "20px"}} onClick={() => fillStake(investment).then(() => onHide())}>Invest</Button>
             </div>
           )}
-          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow === null && (
+          {(investment.status === StakeStatus.Requested && viewerIsPlayer) && (
+            <div className={styles.section}>
+              <Button style={{marginTop: "20px"}} onClick={() => cancelStake(investment.id).then(() => onHide())}>Cancel Stake</Button>
+            </div>
+          )}
+          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow === null && viewerIsBacker && (
             <div className={styles.section}>
               <span className={styles.normal}>The time threshold for <strong>{player.name}</strong> to return your share of the winnings has been passed,
               and you are now able to claim back the {units(investment.escrow)}◈ of escrow. Note that you may continue to wait
@@ -105,10 +112,17 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               <Button style={{marginTop: "20px"}} onClick={() => claimEscrow(investment.id)}>Claim Escrow</Button>
             </div>
           )}
-          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== null && (
+          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== null && viewerIsBacker (
             <div className={styles.section}>
               <span className={styles.label}>Time until escrow can be claimed</span>
               <span className={styles.value}>{timeUntilCanClaimEscrow.days} day{timeUntilCanClaimEscrow.days === 1 ? "" : "s"}, {timeUntilCanClaimEscrow.hours} hour{timeUntilCanClaimEscrow.hours === 1 ? "" : "s"}</span>
+            </div>
+          )}
+          {investment.status === StakeStatus.AwaitingReturnPayment && viewerIsPlayer && (
+            <div className={styles.section}>
+                <span className={styles.normal}>The game has completed, and you made a profit of {units(investment.pnl)}◈,
+                meaning you must now return {units(investment.backerReturns)}◈ to your backer.</span>
+              <Button style={{marginTop: "20px"}} onClick={() => returnProfits(investment.id, parseInt(investment.backerReturns))}>Return Winnings</Button>
             </div>
           )}
         </div>
