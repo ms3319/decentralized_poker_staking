@@ -48,7 +48,7 @@ class SelectButton extends React.Component {
   }
 }
 
-export const GameList = ({ showDetails, activeRequests, contract, options, canInvest, playerName }) => {
+export const GameList = ({ showDetails, activeRequests, contract, options, canInvest, playerName, tokenContract, backerAccount, reloadContractState }) => {
   const [namedRequests, setNamedRequests] = React.useState([])
   const [stakesSelected, setStakesSelected] = React.useState(new Map())
   const [numberOfStakesSelected, setNumberOfStakesSelected] = React.useState(0);
@@ -65,10 +65,6 @@ export const GameList = ({ showDetails, activeRequests, contract, options, canIn
   useEffect(() => {
     nameRequests(activeRequests)
       .then(namedRequests => setNamedRequests(namedRequests));
-    console.log("hello");
-    console.log(stakesSelected);
-    console.log(numberOfStakesSelected);
-    console.log([ ...stakesSelected.keys() ].map(id => stakesSelected.get(id)));
   }, [contract, activeRequests, numberOfStakesSelected])
 
   const considerStake = (name, request) => {
@@ -108,7 +104,9 @@ export const GameList = ({ showDetails, activeRequests, contract, options, canIn
         )
       })}
       
-      {canInvest && <MultiStakeSummary requests={[ ...stakesSelected.keys() ].map(id => stakesSelected.get(id))} onHide={closeMultiStakeSummary} show={showMultiStakeSummary} playerName={playerName}/>}
+      {canInvest && <MultiStakeSummary requests={[ ...stakesSelected.keys() ].map(id => stakesSelected.get(id))} onHide={closeMultiStakeSummary} 
+                      show={showMultiStakeSummary} playerName={playerName} contract={contract} tokenContract={tokenContract} backerAccount={backerAccount}
+                      reloadContractState={reloadContractState}/>}
 
       {canInvest && numberOfStakesSelected > 0 &&
         <center>

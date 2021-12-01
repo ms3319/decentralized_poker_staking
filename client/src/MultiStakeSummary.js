@@ -10,10 +10,30 @@ const getTotalAmount = (requests) => {
         amount += units(request[1].amount);
     }
     return amount;
-  }
+}
 
-const MutiStakeSummary = ({ requests, onHide, show, playerName}) => {
+const MutiStakeSummary = ({ requests, onHide, show, playerName, tokenContract, contract, backerAccount, reloadContractState}) => {
     // requests is an array of [requestName, request obj] pairs
+    const totalAmount = getTotalAmount(requests)
+
+    const fillMultiStakes = async () => {
+        let amount = 0;
+        for (const request of requests) {
+            amount += request[1].amount;
+        }
+
+        const amountString = "0x" + parseInt(amount).toString(16);
+        console.log(amountString);
+        console.log(units(amount));
+        console.log("backerAccount: " + backerAccount);
+        
+        const requestIDs = requests.map(r => r[1].id);
+        console.log(requestIDs);
+
+        await tokenContract.methods.approve(contract.options.address, amountString).send({from: backerAccount});
+        await contract.methods.stakeMultipleGamesOnHorse(requestIDs).send({ from: backerAccount })
+            .then(() => {reloadContractState()})
+    }
 
     return (
         <Modal show={show} onHide={onHide} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
@@ -48,10 +68,10 @@ const MutiStakeSummary = ({ requests, onHide, show, playerName}) => {
                     </tbody>
                 </Table>
                 
-                <h5>You'll be investing a total of {getTotalAmount(requests)}◈ in {playerName} across {requests.length} event(s).</h5>
+                <h5>You'll be investing a total of {totalAmount}◈ in {playerName} across {requests.length} event(s).</h5>
                 <br></br>
                 <center>
-                    <Button>Confirm</Button>
+                    <Button onClick={fillMultiStakes}>Confirm</Button>
                 </center>      
             </Modal.Body>
         </Modal>
