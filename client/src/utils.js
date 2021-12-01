@@ -48,7 +48,8 @@ const StakeStatus = {
   Cancelled: "3",
   AwaitingReturnPayment: "4",
   Completed: "5",
-  EscrowClaimed: "6"
+  EscrowClaimed: "6",
+  PartiallyFilled: "7"
 };
 
 const GameType = {

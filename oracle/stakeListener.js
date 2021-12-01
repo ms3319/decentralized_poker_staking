@@ -1,13 +1,33 @@
+export const StakeStatus = {
+  Requested: "0",
+  Filled: "1",
+  Expired: "2",
+  Cancelled: "3",
+  AwaitingReturnPayment: "4",
+  Completed: "5",
+  EscrowClaimed: "6",
+  PartiallyFilled: "7"
+};
+
 export default function start(watchedStakes, contract) {
   console.log(`Starting stake listener`)
   // Listen for emitted events from the smart contract - when a staking request is staked, add it to a list of stakes to "watch"
   contract.events.StakeFilled()
-    .on('data', event => { handleStakeFilled(event) })
+    .on('data', event => {
+      console.log("Stake filled event - adding to list of watched stakes")
+      handleStakeFilledOrRequested(event)
+    })
+    .on('error', err => { throw err })
+
+  contract.events.StakeRequested()
+    .on('data', event => {
+      console.log("Stake requested event - adding to list of watched stakes")
+      handleStakeFilledOrRequested(event)
+    })
     .on('error', err => { throw err })
 
   // Ok, a stake has been filled, so we should add it to the global list of games we're "watching"
-  const handleStakeFilled = (event) => {
-    console.log("Stake filled event - adding to list of watched stakes")
+  const handleStakeFilledOrRequested = (event) => {
     watchedStakes.push(event.returnValues.stake)
   }
 

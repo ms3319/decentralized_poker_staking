@@ -42,6 +42,17 @@
     display: inline-block;
 }
 
+.smallUnderValue {
+    width: 100%;
+    position: absolute;
+    font-size: 0.8em;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #9a9a9a;
+    display: inline-block;
+}
+
 .tile .label {
     color: var(--safestake-gold);
     font-size: 0.8em;

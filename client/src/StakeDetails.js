@@ -46,10 +46,10 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
                 <span className={styles.label}>Request Created</span>
                 <span className={styles.value}>{dateFromTimeStamp(investment.stakeTimeStamp.createdTimestamp).toLocaleDateString()}</span>
               </div>
-              {parseInt(investment.stakeTimeStamp.filledTimestamp) !== 0 &&
+              {parseInt(investment.stakeTimeStamp.lastFilledTimestamp) !== 0 &&
                 <div>
-                  <span className={styles.label}>Filled On</span>
-                  <span className={styles.value}>{dateFromTimeStamp(investment.stakeTimeStamp.filledTimestamp).toLocaleDateString()}</span>
+                  <span className={styles.label}>Last Filled On</span>
+                  <span className={styles.value}>{dateFromTimeStamp(investment.stakeTimeStamp.lastFilledTimestamp).toLocaleDateString()}</span>
                 </div>
               }
               {parseInt(investment.stakeTimeStamp.gamePlayedTimestamp) !== 0 && (

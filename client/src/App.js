@@ -43,12 +43,13 @@ export default function App() {
       // Get the contract instance.
       const networkId = await library.eth.net.getId();
       const deployedNetwork = StakingContract.networks[networkId];
-      const tokenContract = new library.eth.Contract(Token.abi, deployedNetwork && "0x1B286d86Cb9bd691f013D867d1682A97130d4557");
+      const tokenContract = new library.eth.Contract(Token.abi, deployedNetwork && "0xd79028FBc08F7b92527222494423C0E725f77005");
       const contract = new library.eth.Contract(
         StakingContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
       const requestCount = await contract.methods.requestCount().call();
+      console.log(requestCount)
       const requests = [];
       for (let i = requestCount - 1; i >= 0; i--) {
         requests.push(await contract.methods.getStake(i).call());

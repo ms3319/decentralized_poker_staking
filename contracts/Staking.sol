@@ -144,7 +144,7 @@ contract Staking {
     }
 
     // Creating a new stake request
-    event StakeRequested(address horse, uint amount, uint escrow);
+    event StakeRequested(Stake stake);
 
     /// Profit share must be between 0 and 100
     error InvalidProfitShare(uint profitShare);
@@ -188,7 +188,7 @@ contract Staking {
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
-        emit StakeRequested(msg.sender, amount, escrow);
+        emit StakeRequested(stakes[requestCount]);
     }
 
     // Staking a request
@@ -204,13 +204,13 @@ contract Staking {
     error ValueAndAmountDoNotMatch(uint amount, uint value);
    
     function stakeHorse(uint id, uint amount) external payable {
-        // require(validId(id), "This is not a valid ID for a stake!");
+//         require(validId(id), "This is not a valid ID for a stake!");
         if (id >= requestCount) {
             revert InvalidStakeId(id);
         }
     
         Stake storage stake = stakes[id];
-        if (stake.status != StakeStatus.Requested || stake.status != StakeStatus.PartiallyFilled) {
+        if (stake.status != StakeStatus.Requested && stake.status != StakeStatus.PartiallyFilled) {
             revert StakeNotFillable(id);
         }
 
@@ -219,7 +219,6 @@ contract Staking {
         if (horse == backer) {
             revert StakingSelf(id, horse, backer);
         }
-        
 //        if (msg.value != amount) {
 //            revert ValueAndAmountDoNotMatch(amount, msg.value);
 //        }
@@ -227,7 +226,7 @@ contract Staking {
         if (amount + stake.investmentDetails.filledAmount > stake.amount) {
             revert StakedMoreThanRemaining(id, amount, stake.amount - stake.investmentDetails.filledAmount);
         }
-        
+
         bool passedThresholdBefore = stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold;
         stake.status = StakeStatus.PartiallyFilled;
         // Update stake status and transfer funds
@@ -252,6 +251,41 @@ contract Staking {
 
         stakes[id] = stake;
         emit StakeFilled(stake);
+    }
+
+    // Expiring a stake for a game that has been played
+    event StakeExpired(uint id);
+
+    // A stake can only be expired if it is status Requested or PartiallyFilled
+    error StakeIsNotExpirable(uint id, StakeStatus status);
+
+    // Only the oracle can expire stakes
+    //TODO: this!!
+    // error OnlyOracleCanExpireStake(uint id, address sender);
+
+    function expireStake(uint id) external {
+        if (!validId(id)) {
+            revert InvalidStakeId(id);
+        }
+        Stake memory stake = stakes[id];
+
+        // TODO: This!!
+        // if (msg.sender != /*<oracle_address>*/) {
+        //     revert OnlyOracleCanExpireStake(id, msg.sender)
+        // }
+
+        if (stake.status != StakeStatus.Requested && stake.status != StakeStatus.PartiallyFilled) {
+            revert StakeIsNotExpirable(id, stake.status);
+        }
+
+        if (stake.status == StakeStatus.PartiallyFilled) {
+            for (uint i = 0; i < stake.investmentDetails.backers.length; i++) {
+                token.transfer(stake.investmentDetails.backers[i], stake.investmentDetails.investments[i]);
+            }
+        }
+        stake.status = StakeStatus.Expired;
+        stakes[id] = stake;
+        emit StakeExpired(id);
     }
 
     // Cancelling a reqested stake
@@ -316,7 +350,7 @@ contract Staking {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
         for (uint i = 0; i < stake.investmentDetails.backers.length; i++) {
-            token.transfer(stake.investmentDetails.backers[i], (stake.backerReturns * stake.amount) / stake.investmentDetails.investments[i]);
+            token.transfer(stake.investmentDetails.backers[i], (stake.backerReturns * stake.investmentDetails.investments[i]) / stake.investmentDetails.filledAmount);
         }
         if (stake.escrow > 0) {
             token.transfer(stake.horse, stake.escrow);
@@ -397,7 +431,7 @@ contract Staking {
         for (uint i = 0; i < stakes[id].investmentDetails.backers.length; i++) {
             if (msg.sender == stakes[id].investmentDetails.backers[i]) {
                 isBacker = true;
-                token.transfer(stakes[id].investmentDetails.backers[i], (stakes[id].escrow * stakes[id].amount) / stakes[id].investmentDetails.investments[i]);
+                token.transfer(stakes[id].investmentDetails.backers[i], (stakes[id].escrow * stakes[id].investmentDetails.investments[i] / stakes[id].investmentDetails.filledAmount));
             }
         }
         if (!isBacker) {

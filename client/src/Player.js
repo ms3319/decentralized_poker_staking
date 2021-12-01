@@ -61,7 +61,7 @@ function PlayerStats({ awaitingRepayment, requested, filled, completedGames, esc
   const totalPnl = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
   const totalReturns = completedGames.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0) + escrowClaimed.reduce((prev, curr) => prev + parseInt(curr.escrow), 0)
   const totalPastStakedFor = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.amount), 0)
-  const avgInvestorProfit = (100 * (totalReturns - totalPastStakedFor) / totalPastStakedFor).toFixed(2)
+  const avgInvestorProfit = totalPastStakedFor !== 0 ? (100 * (totalReturns - totalPastStakedFor) / totalPastStakedFor).toFixed(2) : 0
   return (
     <div className={styles.statsTile}>
       <h2 className={styles.sectionTitle}>Statistics</h2>

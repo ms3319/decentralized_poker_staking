@@ -80,7 +80,7 @@ export default function Home(props) {
   const fillStake = async (request) => {
     const amountString = "0x" + parseInt(request.amount).toString(16);
     await props.tokenContract.methods.approve(props.contract.options.address, amountString).send({from: props.accounts[0]});
-    await props.contract.methods.stakeHorse(request.id).send({ from: props.accounts[0] })
+    await props.contract.methods.stakeHorse(request.id, amountString).send({ from: props.accounts[0] })
       .then(() => {props.reloadContractState()})
   }
 
