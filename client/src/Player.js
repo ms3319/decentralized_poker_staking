@@ -202,7 +202,7 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
         {requested.length > 0 && <div>
           <h3 className={styles.sectionSubtitle}>Open Requests (can be invested in)</h3>
           {!viewerIsPlayer && <h6>You can select multiple stakes to invest in.</h6>} 
-          <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={true && !viewerIsPlayer} />
+          <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={true && !viewerIsPlayer} playerName={player.name} />
         </div>}
         <br></br>
         {filled.length > 0 && <div>

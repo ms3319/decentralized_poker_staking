@@ -5,6 +5,8 @@ import tileStyles from "./HorizontalTile.module.css";
 import buttonStyles from './Button.module.css'
 import Button from "./Button";
 
+import MultiStakeSummary from "./MultiStakeSummary";
+
 const nameRequests = async (games) => {
   return await Promise.all(games.map(async game => {
     const gameOrTournamentFromApi = (parseInt(game.gameType) === GameType.SingleGame) ?
@@ -46,10 +48,19 @@ class SelectButton extends React.Component {
   }
 }
 
-export const GameList = ({ showDetails, activeRequests, contract, options, canInvest }) => {
+export const GameList = ({ showDetails, activeRequests, contract, options, canInvest, playerName }) => {
   const [namedRequests, setNamedRequests] = React.useState([])
   const [stakesSelected, setStakesSelected] = React.useState(new Map())
   const [numberOfStakesSelected, setNumberOfStakesSelected] = React.useState(0);
+  const [showMultiStakeSummary, setShowMultiStakeSummary] = React.useState(false);
+
+  const openMultiStakeSummary = () => {
+    setShowMultiStakeSummary(true)
+  }
+
+  const closeMultiStakeSummary = () => {
+    setShowMultiStakeSummary(false)
+  }
 
   useEffect(() => {
     nameRequests(activeRequests)
@@ -57,11 +68,12 @@ export const GameList = ({ showDetails, activeRequests, contract, options, canIn
     console.log("hello");
     console.log(stakesSelected);
     console.log(numberOfStakesSelected);
+    console.log([ ...stakesSelected.keys() ].map(id => stakesSelected.get(id)));
   }, [contract, activeRequests, numberOfStakesSelected])
 
-  const considerStake = (request) => {
+  const considerStake = (name, request) => {
     if (!(stakesSelected.has(request.id))) {
-      setStakesSelected(new Map(stakesSelected.set(request.id, request)));
+      setStakesSelected(new Map(stakesSelected.set(request.id, [name, request])));
       setNumberOfStakesSelected(numberOfStakesSelected + 1);
     } else {
       setStakesSelected((prev) => {
@@ -90,15 +102,17 @@ export const GameList = ({ showDetails, activeRequests, contract, options, canIn
                   <span style={option.valueStyles ?? {}} className={tileStyles.value}>{option.value}</span>
                 </div>
               ))}
-              {canInvest && <SelectButton onClick={() => {considerStake(request);}}></SelectButton>}
+              {canInvest && <SelectButton onClick={() => {considerStake(name, request);}}></SelectButton>}
             </HorizontalTile>
           </div>  
         )
       })}
+      
+      {canInvest && <MultiStakeSummary requests={[ ...stakesSelected.keys() ].map(id => stakesSelected.get(id))} onHide={closeMultiStakeSummary} show={showMultiStakeSummary} playerName={playerName}/>}
 
       {canInvest && numberOfStakesSelected > 0 &&
         <center>
-          <Button style={{margin: "10px 0px 0px 0px"}}>
+          <Button style={{margin: "10px 0px 0px 0px"}} onClick={openMultiStakeSummary}>
               Invest
           </Button>
         </center> 
