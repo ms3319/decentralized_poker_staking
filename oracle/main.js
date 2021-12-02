@@ -2,7 +2,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const StakingContract = require('./contracts/Staking.json');
 
-import startStakeListener from './stakeListener.js'
+import startStakeListener, { StakeStatus } from './stakeListener.js'
 import startApiListener from './apiListener.js'
 import Web3 from 'web3'
 import dotenv from 'dotenv';
@@ -14,16 +14,6 @@ const account = process.env.ACCOUNT_ADDRESS;
 const accountPrivateKey = process.env.PRIVATE_KEY;
 const contract = new web3.eth.Contract(StakingContract.abi, contractAddress)
 const interval = process.env.INTERVAL
-
-const StakeStatus = {
-  Requested: '0',
-  Filled: '1',
-  Expired: '2',
-  Cancelled: '3',
-  AwaitingReturnPayment: '4',
-  Completed: '5',
-  EscrowReturned: '6'
-};
 
 const sendGamePlayedTransaction = async (id, profit) => {
   const transaction = contract.methods.gamePlayed(id, profit)
@@ -41,21 +31,40 @@ const sendGamePlayedTransaction = async (id, profit) => {
   console.log(receipt)
 }
 
-async function getFilledStakes() {
-  let filledStakes = []
+const sendRequestExpiredTransaction = async (id) => {
+  const transaction = contract.methods.expireStake(id);
+  const options = {
+    to: contractAddress,
+    data: transaction.encodeABI(),
+    gas: await transaction.estimateGas({from: account}),
+    gasPrice: await web3.eth.getGasPrice(),
+  }
+
+  const signed = await web3.eth.accounts.signTransaction(options, accountPrivateKey);
+  const receipt = await web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+  console.log("Signed and issued StakeExpired transaction:")
+  console.log(receipt)
+}
+
+async function getStakesWithStatus(statuses) {
+  let stakes = []
   const requestCount = await contract.methods.requestCount().call();
   for (let i = 0; i < requestCount; i++) {
     const stake = await contract.methods.getStake(i).call()
-    if (stake.status === StakeStatus.Filled) {
-      filledStakes.push(stake);
+    if (statuses.includes(stake.status)) {
+      stakes.push(stake);
     }
   }
-  return filledStakes
+  return stakes
 }
 
-function startListeners(watchedStakes) {
-  startStakeListener(watchedStakes, contract)
-  startApiListener(watchedStakes, contract, interval, sendGamePlayedTransaction)
+
+
+function startListeners(stakes) {
+  startStakeListener(stakes, contract)
+  startApiListener(stakes, contract, interval, sendGamePlayedTransaction, sendRequestExpiredTransaction)
 }
 
-getFilledStakes().then(stakes => startListeners(stakes))
+getStakesWithStatus([StakeStatus.Filled, StakeStatus.Requested, StakeStatus.PartiallyFilled])
+  .then(stakes => startListeners(stakes))

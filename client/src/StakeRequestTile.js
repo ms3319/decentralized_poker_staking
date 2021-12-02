@@ -22,8 +22,9 @@ export default function StakeRequestTile({ contract, request, handleShowRequestD
         <span className={tileStyles.value}>{player == null ? "null player" : player.name}</span>
       </div>
       <div>
-        <span className={tileStyles.label}>Stake</span>
-        <span className={tileStyles.value}>{numberWithCommas(units(request.amount))} ◈</span>
+        <span className={tileStyles.label}>Stake Remaining</span>
+        <span className={tileStyles.value}>{numberWithCommas(units(request.amount - request.investmentDetails.filledAmount))}◈</span>
+        <span className={tileStyles.smallUnderValue}>Filled: {(100 * request.investmentDetails.filledAmount / request.amount).toFixed(2)}%</span>
       </div>
       <div>
         <span className={tileStyles.label}>Escrow</span>

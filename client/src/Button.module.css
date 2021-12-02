@@ -24,3 +24,17 @@
     height: 25px;
     padding: 0 20px 0 0;
 }
+
+.disabledSafestakeButton {
+    height: 60px;
+    padding: 0 20px;
+    color: white;
+    background:lightgray;
+    border: none;
+    -webkit-box-shadow: 7px 7px 0 0 var(--safestake-gold);
+    box-shadow: 7px 7px 0 0 var(--safestake-gold);
+    display: inline-block;
+    font-weight: 700;
+    font-size: 1.2em;
+    pointer-events: none;
+}

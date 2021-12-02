@@ -17,11 +17,24 @@ const MarketPlaceRedirect = () => (
   </div>
 )
 
-const Statistics = ({ pendingInvestments, currentInvestments, pastInvestments }) => {
-  const currentlyInvested = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
-  const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
-  const totalWinnings = units(pastInvestments.reduce((prev, curr) => prev + (curr.status === StakeStatus.EscrowClaimed ? parseInt(curr.escrow) : parseInt(curr.backerReturns)), 0))
-  const pendingWinnngs = units(pendingInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
+const Statistics = ({ investor, pendingInvestments, currentInvestments, pastInvestments }) => {
+  const currentlyInvested = units(currentInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    return prev + parseInt(curr.investmentDetails.investments[investorIdx]);
+  }, 0))
+  const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    return prev + parseInt(curr.investmentDetails.investments[investorIdx]);
+  }, 0))
+  const totalWinnings = units(pastInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    const investorProportion = curr.investmentDetails.investments[investorIdx] / curr.investmentDetails.filledAmount;
+    return prev + (curr.status === StakeStatus.EscrowClaimed ? investorProportion * parseInt(curr.escrow) : parseInt(curr.investmentDetails.backerReturns[investorIdx]))
+  }, 0))
+  const pendingWinnngs = units(pendingInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    return prev + parseInt(curr.investmentDetails.backerReturns[investorIdx]);
+  }, 0))
   const profit = (totalWinnings - pastInvestmentsAmount).toFixed(2)
 
   return (
@@ -105,11 +118,11 @@ export default function Stable({ reloadContractState, requests, accounts, contra
 
   let investor = accounts[0];
   let investments = requests.filter(
-    (request) => request.backer === investor
+    (request) => request.investmentDetails.backers.includes(investor)
   );
 
   const pendingInvestments = investments.filter(investment => investment.status === StakeStatus.AwaitingReturnPayment)
-  const currentInvestments = investments.filter(investment => investment.status === StakeStatus.Filled)
+  const currentInvestments = investments.filter(investment => investment.status === StakeStatus.Filled || investment.status === StakeStatus.PartiallyFilled)
   const pastInvestments = investments.filter(investment => investment.status === StakeStatus.Completed || investment.status === StakeStatus.EscrowClaimed)
 
   return (
@@ -124,10 +137,10 @@ export default function Stable({ reloadContractState, requests, accounts, contra
           <MarketPlaceRedirect />
         :
           <>
-            <Statistics pendingInvestments={pendingInvestments} currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
-            {pendingInvestments.length > 0 && <PendingInvestments showDetails={handleShow} pendingInvestments={pendingInvestments} contract={contract} />}
-            {currentInvestments.length > 0 && <CurrentInvestments showDetails={handleShow} currentInvestments={currentInvestments} contract={contract}/>}
-            {pastInvestments.length > 0 && <PastInvestments showDetails={handleShow} pastInvestments={pastInvestments} contract={contract} />}
+            <Statistics investor={investor} pendingInvestments={pendingInvestments} currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
+            {pendingInvestments.length > 0 && <PendingInvestments investor={investor} showDetails={handleShow} pendingInvestments={pendingInvestments} contract={contract} />}
+            {currentInvestments.length > 0 && <CurrentInvestments investor={investor} showDetails={handleShow} currentInvestments={currentInvestments} contract={contract}/>}
+            {pastInvestments.length > 0 && <PastInvestments investor={investor} showDetails={handleShow} pastInvestments={pastInvestments} contract={contract} />}
           </>
         }
       </Container>

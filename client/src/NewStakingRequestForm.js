@@ -22,27 +22,32 @@ const NewStakingRequestForm = (props) => {
   const [futureGames, setFutureGames] = useState({});
   const [gameSuggestions, setGameSuggestions] = useState([]);
   const [gameSearchValue, setGameSearchValue] = useState("");
-  const [amount, setAmount] = useState(0);
-  const [profitShare, setProfitShare] = useState(0);
-  const [escrow, setEscrow] = useState(0);
+  const [amount, setAmount] = useState("");
+  const [threshold, setThreshold] = useState("");
+  const [profitShare, setProfitShare] = useState("");
+  const [escrow, setEscrow] = useState("");
   const [gameType, setGameType] = useState(0);
   const [apiId, setApiId] = useState("");
   const [sanitaryId, setSanitaryId] = useState(true);
   const [sanitaryPercent, setSanitaryPercent] = useState(true);
+  const [sanitaryThreshold, setSanitaryThreshold] = useState(true);
 
   const createStakingRequest = async () => {
     const { accounts, contract, onHide, tokenContract } = props;
     const gameOrTournamentFromApi = await fetchGameOrTournamentFromApi()
     const apiIdExists = Object.keys(gameOrTournamentFromApi).length !== 0
     const percentCorrect = checkPercentCorrect()
+    const thresholdCorrect = checkThresholdIsEqualOrLower()
     setSanitaryId(apiIdExists);
     setSanitaryPercent(percentCorrect);
-    if (apiIdExists && percentCorrect) {
+    setSanitaryThreshold(thresholdCorrect);
+    if (apiIdExists && percentCorrect && thresholdCorrect) {
       try {
         const amountString = "0x" + (amount * 1e18).toString(16);
         const escrowString = "0x" + (escrow * 1e18).toString(16);
+        const playThresholdString = "0x" + (threshold * 1e18).toString(16);
         await tokenContract.methods.approve(contract.options.address, escrowString).send({from: accounts[0]});
-        await contract.methods.createRequest(amountString, profitShare, escrowString, gameType, apiId, gameOrTournamentFromApi.scheduledFor)
+        await contract.methods.createRequest(amountString, profitShare, escrowString, playThresholdString, gameType, apiId, gameOrTournamentFromApi.scheduledFor)
           .send({ from: accounts[0] });
         props.reloadContractState();
         onHide();
@@ -51,6 +56,10 @@ const NewStakingRequestForm = (props) => {
       }
     }
   };
+
+  const checkThresholdIsEqualOrLower = () => {
+    return (0 <= parseFloat(threshold) && parseFloat(threshold) <= parseFloat(amount))
+  }
 
   const checkPercentCorrect = () => {
     return (0 <= parseFloat(profitShare) && parseFloat(profitShare) <= 100)
@@ -97,6 +106,10 @@ const NewStakingRequestForm = (props) => {
 
   const handleAmountChange = (event) => {
     setAmount(event.target.value);
+  }
+
+  const handleThresholdChange = (event) => {
+   setThreshold(event.target.value);
   }
 
   const handleProfitShareChange = (event) => {
@@ -166,6 +179,22 @@ const NewStakingRequestForm = (props) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
+            <Form.Label>Minimum threshold (◈)</Form.Label>
+            { !sanitaryThreshold &&
+            <p style={{color: "red", marginTop:"-0.5em"}}>
+              Make sure you enter a valid Threshold! (Less than amount requested and greater than 0)
+            </p>
+            }
+            <Form.Control value={threshold} onChange={(event) => handleThresholdChange(event)} inputMode="numeric" placeholder="e.g. 100" />
+            <Form.Text className="text-muted">
+              This is the minimum amount of money you are willing to be staked in order to play the game or
+              tournament. For example, if the minimum amount I'm looking for in order to enter the tournament/game
+              is 50◈ then when my staking request reaches 50◈, I will receive the funds immediately. If I do not
+              manage to collect 50◈, SafeStake will give the money back to the respective investors automatically.
+            </Form.Text>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
             <Form.Label>Profit Sharing Percentage (%) </Form.Label>
             { !sanitaryPercent &&
                 <p style={{color: "red", marginTop:"-0.5em"}}>
@@ -175,8 +204,8 @@ const NewStakingRequestForm = (props) => {
             <Form.Control value={profitShare} onChange={(event) => handleProfitShareChange(event)} inputMode="numeric" placeholder="e.g. 50" />
             <Form.Text className="text-muted">
               If the amount I'm looking for is 50 ◈, and profit sharing
-              percentage is 50% and I make 50 ◈ in profit. I must return to the 
-              investor 75 ◈ (50 ◈ original investment + 50 ◈ profit * 0.5) 
+              percentage is 50% and I make 50 ◈ in profit. I must return to the
+              investor 75 ◈ (50 ◈ original investment + 50 ◈ profit * 0.5)
             </Form.Text>
           </Form.Group>
 
