@@ -6,6 +6,8 @@ import HomepageHeader from "./HomepageHeader";
 import { injected } from "./components/Connectors"
 import metamaskIcon from './images/metamask-icon.png'
 import addIcon from './images/add.svg'
+import filterIcon from './images/filter.svg'
+import deleteIcon from './images/delete.svg'
 
 import styles from './Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -145,23 +147,39 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <Form>
-            <Form.Group>
-              <Form.Label>Minimum Stake Request</Form.Label>
-              <Form.Control value={minAmountToSearch} onChange={(event) => onMinAmountSearchChanged(event)} inputMode="numeric" placeholder="e.g. 50" />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Maximum Stake Request</Form.Label>
-              <Form.Control value={maxAmountToSearch} onChange={(event) => onMaxAmountSearchChanged(event)} inputMode="numeric" placeholder="e.g. 250000" />
-            </Form.Group>
-            <Button style={{margin: "50px 0 20px 0"}} icon={addIcon} onClick={(event) => {event.preventDefault(); filterRequests();}}>
-              Filter 
-            </Button>
-            <Button style={{margin: "100px 0 20px 0"}} icon={addIcon} onClick={(event) => {event.preventDefault(); clearFilter();}}>
-              Clear filter 
-            </Button>
-          </Form>
+          
+          <div className={styles.filterForm}>
+            <Form>
+              <Row>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Minimum Stake Request</Form.Label>
+                    <Form.Control value={minAmountToSearch} onChange={(event) => onMinAmountSearchChanged(event)} inputMode="numeric" placeholder="e.g. 50" />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Maximum Stake Request</Form.Label>
+                    <Form.Control value={maxAmountToSearch} onChange={(event) => onMaxAmountSearchChanged(event)} inputMode="numeric" placeholder="e.g. 250000" />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className={styles.filterButtonRow}>
+                <Col>
+                  <Button icon={filterIcon} onClick={(event) => {event.preventDefault(); filterRequests();}}>
+                    Filter 
+                  </Button>
+                </Col>
+                <Col>
+                  <Button icon={deleteIcon} onClick={(event) => {event.preventDefault(); clearFilter();}}>
+                    Clear Filter 
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+          </div>
           <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}}/>
+          <h2>Staking Requests</h2>
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={stakesToShow} handleShowRequestDetails={openRequestDetails} />
           </div>
