@@ -77,10 +77,10 @@ export default function Home(props) {
     }
   };
 
-  const fillStake = async (request) => {
-    const amountString = "0x" + parseInt(request.amount).toString(16);
+  const fillStake = async (id, amount) => {
+    const amountString = "0x" + parseInt(amount).toString(16);
     await props.tokenContract.methods.approve(props.contract.options.address, amountString).send({from: props.accounts[0]});
-    await props.contract.methods.stakeHorse(request.id, amountString).send({ from: props.accounts[0] })
+    await props.contract.methods.stakeHorse(id, amountString).send({ from: props.accounts[0] })
       .then(() => {props.reloadContractState()})
   }
 
@@ -118,7 +118,7 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}} fillStake={fillStake} viewerIsPlayer={focusedPlayer && focusedPlayer.playerAddress === props.accounts[0]} viewerIsBacker={focusedRequest && focusedRequest.backer === props.accounts[0]} />
+          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}} fillStake={fillStake} viewerIsPlayer={focusedPlayer && focusedPlayer.playerAddress === props.accounts[0]} viewerIsBacker={focusedRequest && focusedRequest.investmentDetails.backers.includes(props.accounts[0])} />
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
           </div>

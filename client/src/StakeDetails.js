@@ -1,15 +1,37 @@
-import React from "react";
+import React, {useState} from "react";
 import { Modal } from "react-bootstrap";
 import Button from "./Button"
 import { Link } from "react-router-dom";
 import styles from "./InvestmentDetails.module.css"
-import {dateFromTimeStamp, GameType, isNullAddress, numberWithCommas, StakeStatus, units} from "./utils";
+import {dateFromTimeStamp, GameType, numberWithCommas, StakeStatus, units} from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, claimEscrow, fillStake, cancelStake, returnProfits, viewerIsPlayer, viewerIsBacker }) => {
+  const [stakeAmount, setStakeAmount] = useState(0);
+  const [sanitaryAmount, setSanitaryAmount] = useState(true);
+
+  const handleAmountChanged = (event) => {
+    setSanitaryAmount(true)
+    setStakeAmount(event.target.value);
+  }
+
   if (namedInvestment === null) return null;
   const [player, gameName, investment] = namedInvestment;
+
+  const validInvestmentAmount = amount => {
+    return amount > 0 && amount <= units(investment.amount - investment.investmentDetails.filledAmount);
+  }
+
+  const checkAndFillStake = (id, amount) => {
+    const daiAmount = amount * 1e18
+    if (validInvestmentAmount(amount)) {
+      fillStake(id, daiAmount).then(() => onHide())
+    } else {
+      setSanitaryAmount(false);
+    }
+  }
+
   if (player === null || investment === null) return null;
   return (
     <Modal
@@ -32,9 +54,9 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
             <span className={styles.grey}>{investment.apiId}</span>
             <span className={styles.gold}>{dateFromTimeStamp(investment.stakeTimeStamp.scheduledForTimestamp).toLocaleDateString()}</span>
           </div>
-          {!isNullAddress(investment.backer) && <div className={styles.section}>
-            <span className={styles.label}>Investor Address</span>
-            <span>{investment.backer}</span>
+          {investment.investmentDetails.backers.length > 0 && <div className={styles.section}>
+            <span className={styles.label}>Investors</span>
+            {investment.investmentDetails.backers.map((backer, i) => <span key={backer}>{backer}: {numberWithCommas(units(investment.investmentDetails.investments[i]))}◈</span>)}
           </div>}
           <div className={styles.section}>
             <span className={styles.label}>Status</span>
@@ -63,8 +85,17 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
           <div className={styles.section}>
             <div className={styles.tripleContainer}>
               <div>
-                <span className={styles.label}>Stake (Dai)</span>
+                <span className={styles.label}>Stake Requested (Dai)</span>
                 <span className={styles.value}>{numberWithCommas(units(investment.amount))}◈</span>
+              </div>
+              <div>
+                <span className={styles.label}>Currently Filled for</span>
+                <span className={styles.value}>{numberWithCommas(units(investment.investmentDetails.filledAmount))}◈</span>
+                <span>({(100 * investment.investmentDetails.filledAmount / investment.amount).toFixed(2)}%)</span>
+              </div>
+              <div>
+                <span className={styles.label}>Play Threshold</span>
+                <span className={styles.value}>{numberWithCommas(units(investment.investmentDetails.playThreshold))}◈</span>
               </div>
               <div>
                 <span className={styles.label}>Escrow (Dai)</span>
@@ -90,13 +121,23 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               </div>
             </div>
           )}
-          {(investment.status === StakeStatus.Requested && !viewerIsPlayer) && (
+          {((investment.status === StakeStatus.Requested || investment.status === StakeStatus.PartiallyFilled) && !viewerIsPlayer) && (
             <div className={styles.section}>
               <span className={styles.normal}>An investment into {player.name} would yield a potential return
-                of {units(investment.amount)} + ({investment.profitShare / 100} * (player's net profit)) dai.
-                If {player.name} does not return your share of the winnings, you will be set the full amount of
+                of proportion invested * ({units(investment.amount)} + ({investment.profitShare / 100} * (player's net profit))) dai.
+                If {player.name} does not return your share of the winnings, you will be sent your proportion of the
                 escrow, {units(investment.escrow)}◈, to help cover your losses.</span>
-              <Button style={{marginTop: "20px"}} onClick={() => fillStake(investment).then(() => onHide())}>Invest</Button>
+              <div style={{marginTop: "10px"}}>
+                <span className={styles.label}>Investment Amount (Dai)</span>
+                <input type="number" style={{margin: "5px 0"}} value={stakeAmount} onChange={handleAmountChanged} />
+                {stakeAmount !== 0 && (
+                  <span style={{fontSize: "1.5em", color: validInvestmentAmount(stakeAmount) ? "black" : "red"}}>
+                    {(100 * stakeAmount / units(investment.amount)).toFixed(2)}%
+                  </span>
+                )}
+              </div>
+              <Button style={{marginTop: "20px"}} onClick={() => checkAndFillStake(investment.id, stakeAmount)}>Invest</Button>
+              {!sanitaryAmount && <span style={{color: "red", marginTop: "20px"}}>Invalid investment amount</span>}
             </div>
           )}
           {(investment.status === StakeStatus.Requested && viewerIsPlayer) && (
@@ -120,8 +161,9 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
           )}
           {investment.status === StakeStatus.AwaitingReturnPayment && viewerIsPlayer && (
             <div className={styles.section}>
-                <span className={styles.normal}>The game has completed, and you made a profit of {units(investment.pnl)}◈,
-                meaning you must now return {units(investment.backerReturns)}◈ to your backer.</span>
+              <span className={styles.normal}>The game has completed, and you made a profit of {units(investment.pnl)}◈,
+              meaning you must now return {units(investment.backerReturns)}◈ to your backers.</span>
+              {investment.investmentDetails.backers.map((backer, i) => <span key={backer}>{backer}: {numberWithCommas(units(investment.investmentDetails.backerReturns[i]))}◈</span>)}
               <Button style={{marginTop: "20px"}} onClick={() => returnProfits(investment.id, parseInt(investment.backerReturns))}>Return Winnings</Button>
             </div>
           )}

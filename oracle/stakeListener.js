@@ -28,7 +28,12 @@ export default function start(watchedStakes, contract) {
 
   // Ok, a stake has been filled, so we should add it to the global list of games we're "watching"
   const handleStakeFilledOrRequested = (event) => {
-    watchedStakes.push(event.returnValues.stake)
+    const stakeIdx = watchedStakes.findIndex(stake => stake.id === event.returnValues.stake.id)
+    if (stakeIdx !== -1) {
+      watchedStakes[stakeIdx] = (event.returnValues.stake)
+    } else {
+      watchedStakes.push(event.returnValues.stake)
+    }
   }
 
   contract.events.StakeCancelled()
@@ -37,6 +42,6 @@ export default function start(watchedStakes, contract) {
 
   const handleStakeCancelled = (event) => {
     console.log("Stake cancelled event - removing from list of watched stakes")
-    watchedStakes.splice(watchedStakes.findIndex(stake => stake.id === event.returnValues.stake.id), 1);
+    watchedStakes.splice(watchedStakes.findIndex(stake => stake.id === event.returnValues.id), 1);
   }
 }

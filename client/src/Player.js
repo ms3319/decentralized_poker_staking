@@ -172,10 +172,17 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
     reloadContractState();
   }
 
+  const fillStake = async (id, amount) => {
+    const amountString = "0x" + parseInt(amount).toString(16);
+    await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
+    await contract.methods.stakeHorse(id, amountString).send({ from: accounts[0] })
+      .then(() => {reloadContractState()})
+  }
+
   const viewerIsPlayer = accounts[0] === playerAddress
 
   const awaitingRepayment = stakes ? stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment) : []
-  const requested = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Requested) : []
+  const requested = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.PartiallyFilled) : []
   const filled = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Filled) : []
   const completedGames = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Completed) : []
   const escrowClaimed = stakes ? stakes.filter((stake) => stake.status === StakeStatus.EscrowClaimed) : []
@@ -213,6 +220,6 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
         <GameList showDetails={handleShow} activeRequests={completedGames.concat(escrowClaimed)} contract={contract} options={["amount", "winnings", "returns"]} />
       </div>}
     </div>
-    {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} timeUntilCanClaimEscrow={null} cancelStake={cancelStake} returnProfits={returnProfits} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest.backer === accounts[0]} />}
+    {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} timeUntilCanClaimEscrow={null} cancelStake={cancelStake} returnProfits={returnProfits} fillStake={fillStake} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest[2].investmentDetails.backers.includes(accounts[0])} />}
   </>)
 }

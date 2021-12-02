@@ -49,7 +49,6 @@ export default function App() {
         deployedNetwork && deployedNetwork.address,
       );
       const requestCount = await contract.methods.requestCount().call();
-      console.log(requestCount)
       const requests = [];
       for (let i = requestCount - 1; i >= 0; i--) {
         requests.push(await contract.methods.getStake(i).call());

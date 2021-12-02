@@ -36,6 +36,7 @@ contract Staking {
     struct InvestmentDetails {
         address payable[] backers;
         uint[] investments;
+        uint[] backerReturns;
         uint filledAmount;
         uint playThreshold;
     }
@@ -188,7 +189,7 @@ contract Staking {
         players[msg.sender].stakeIds.push(requestCount);
         requestCount++;
 
-        emit StakeRequested(stakes[requestCount]);
+        emit StakeRequested(stakes[requestCount - 1]);
     }
 
     // Staking a request
@@ -247,6 +248,7 @@ contract Staking {
         }
         stake.investmentDetails.backers.push(payable(backer));
         stake.investmentDetails.investments.push(amount);
+        stake.investmentDetails.backerReturns.push(0);
         stake.stakeTimeStamp.lastFilledTimestamp = block.timestamp;
 
         stakes[id] = stake;
@@ -283,6 +285,11 @@ contract Staking {
                 token.transfer(stake.investmentDetails.backers[i], stake.investmentDetails.investments[i]);
             }
         }
+
+        if (stake.escrow > 0) {
+            token.transfer(stake.horse, stake.escrow);
+        }
+
         stake.status = StakeStatus.Expired;
         stakes[id] = stake;
         emit StakeExpired(id);
@@ -350,7 +357,7 @@ contract Staking {
         //     revert MessageValueNotEqualToBackerReturns(msg.value, backerReturns);
         // }
         for (uint i = 0; i < stake.investmentDetails.backers.length; i++) {
-            token.transfer(stake.investmentDetails.backers[i], (stake.backerReturns * stake.investmentDetails.investments[i]) / stake.investmentDetails.filledAmount);
+            token.transferFrom(msg.sender, stake.investmentDetails.backers[i], stake.investmentDetails.backerReturns[i]);
         }
         if (stake.escrow > 0) {
             token.transfer(stake.horse, stake.escrow);
@@ -376,14 +383,14 @@ contract Staking {
             revert InvalidStakeId(id);
         }
 
-        if (stakes[id].status != StakeStatus.Filled) {
+        if (!(stakes[id].status == StakeStatus.Filled || (stakes[id].status == StakeStatus.PartiallyFilled && stakes[id].investmentDetails.filledAmount >= stakes[id].investmentDetails.playThreshold))) {
             revert CanOnlyPlayedFilledStakes(id, stakes[id].status);
         }
 
         // TODO: Check this calculation. Do we do it here or calculate it in the frontend?
         uint backerReturns;
         if (pnl < 0) {
-            int owed = int(stakes[id].amount) + pnl;
+            int owed = int(stakes[id].investmentDetails.filledAmount) + pnl;
             if (owed <= 0) {
                 backerReturns = 0;
                 stakes[id].status = StakeStatus.Completed;
@@ -392,8 +399,12 @@ contract Staking {
                 stakes[id].status = StakeStatus.AwaitingReturnPayment;
             }
         } else {
-            backerReturns = stakes[id].amount + ((uint(pnl) * stakes[id].profitShare) / 100);
+            backerReturns = stakes[id].investmentDetails.filledAmount + ((uint(pnl) * stakes[id].profitShare) / 100);
             stakes[id].status = StakeStatus.AwaitingReturnPayment;
+        }
+
+        for (uint i = 0; i < stakes[id].investmentDetails.backers.length; i++) {
+            stakes[id].investmentDetails.backerReturns[i] = (backerReturns * stakes[id].investmentDetails.investments[i]) / stakes[id].investmentDetails.filledAmount;
         }
 
         stakes[id].pnl = pnl;
