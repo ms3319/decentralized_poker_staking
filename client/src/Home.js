@@ -34,7 +34,7 @@ export default function Home(props) {
   useEffect(() => {
     if (props.requests) {
       const propsRequestCopy = props.requests;
-      setStakesToShow(propsRequestCopy.filter(request => request.status === StakeStatus.Requested));
+      setStakesToShow(propsRequestCopy.filter(request => request.status === StakeStatus.Requested || request.status === StakeStatus.PartiallyFilled));
     }
   }, [props.requests]);
 
@@ -60,7 +60,7 @@ export default function Home(props) {
 
   const clearFilter = () => {
     let propsRequestCopy = props.requests;
-    propsRequestCopy = propsRequestCopy.filter(request => request.status === StakeStatus.Requested);
+    propsRequestCopy = propsRequestCopy.filter(request => request.status === StakeStatus.Requested || request.status === StakeStatus.PartiallyFilled);
     setStakesToShow(propsRequestCopy);
     setMinAmountToSearch("");
     setMaxAmountToSearch("");
@@ -112,13 +112,6 @@ export default function Home(props) {
       console.error(error);
     }
   };
-
-  const fillStake = async (id, amount) => {
-    const amountString = "0x" + parseInt(amount).toString(16);
-    await props.tokenContract.methods.approve(props.contract.options.address, amountString).send({from: props.accounts[0]});
-    await props.contract.methods.stakeHorse(id, amountString).send({ from: props.accounts[0] })
-      .then(() => {props.reloadContractState()})
-  }
 
   return (
     <div className={styles.home}>

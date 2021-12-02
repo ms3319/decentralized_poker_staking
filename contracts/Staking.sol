@@ -258,14 +258,13 @@ contract Staking {
     event MultipleStakesFilled(uint count);
     error NoStakesSelected(address backer);
 
-    function stakeMultipleGamesOnHorse(uint[] calldata ids) external payable {
+    function stakeMultipleGamesOnHorse(uint[] calldata ids, uint[] calldata amounts) external payable {
         if (ids.length < 1) {
             revert NoStakesSelected(msg.sender);
         }
         
         address payable backer = payable(msg.sender);
         address payable horse = stakes[0].horse;
-        uint total_amount = 0;
         
         for (uint i = 0; i < ids.length; i++) {
             uint id = ids[i];
@@ -273,26 +272,47 @@ contract Staking {
                 revert InvalidStakeId(id);
             }
         
-            Stake memory stake = stakes[id];
-            if (stake.status != StakeStatus.Requested) {
+            Stake storage stake = stakes[id];
+            if (stake.status != StakeStatus.Requested && stake.status != StakeStatus.PartiallyFilled) {
                 revert StakeNotFillable(id);
             }
 
             if (horse == backer) {
                 revert StakingSelf(id, horse, backer);
             }
-            
+            uint amount = amounts[i];
+
+            if (amount + stake.investmentDetails.filledAmount > stake.amount) {
+                revert StakedMoreThanRemaining(id, amount, stake.amount - stake.investmentDetails.filledAmount);
+            }
+
+            bool passedThresholdBefore = stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold;
+            stake.status = StakeStatus.PartiallyFilled;
             // Update stake status and transfer funds
-            stake.status = StakeStatus.Filled;
-            stake.backer = backer;
-            stake.stakeTimeStamp.filledTimestamp = block.timestamp;
-            total_amount += stake.amount;
+            stake.investmentDetails.filledAmount += amount;
+            if (stake.investmentDetails.filledAmount == stake.amount) {
+                stake.status = StakeStatus.Filled;
+            }
+            if (!passedThresholdBefore && stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold) {
+                // Just passed the threshold - send money pool to horse
+                token.transferFrom(msg.sender, address(this), amount);
+                token.transfer(stake.horse, stake.investmentDetails.filledAmount);
+            } else if (stake.investmentDetails.filledAmount >= stake.investmentDetails.playThreshold) {
+                // We have already passed the threshold - send money directly to horse
+                token.transferFrom(msg.sender, stake.horse, amount);
+            } else {
+                // We are still below the threshold - add to money pool
+                token.transferFrom(msg.sender, address(this), amount);
+            }
+            stake.investmentDetails.backers.push(payable(backer));
+            stake.investmentDetails.investments.push(amount);
+            stake.investmentDetails.backerReturns.push(0);
+            stake.stakeTimeStamp.lastFilledTimestamp = block.timestamp;
 
             stakes[id] = stake;
             emit StakeFilled(stake);
         }
 
-        token.transferFrom(msg.sender, horse, total_amount);
         emit MultipleStakesFilled(ids.length);
     }
 

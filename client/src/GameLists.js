@@ -86,7 +86,7 @@ export const GameList = ({ showDetails, activeRequests, contract, options, canIn
       {namedRequests.map(namedRequest => {
         const [name, request] = namedRequest
         return (
-          <div>
+          <div key={request.id}>
             <HorizontalTile key={request.id} canInvest={canInvest} onClick={() => showDetails([name, request])}>
               <div className={`${tileStyles.left} ${tileStyles.longer}`} style={{fontSize: "0.8em"}}>
                 <span className={tileStyles.value}>{name}</span>

@@ -1,38 +1,51 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { Table } from "react-bootstrap";
-import Button from "./Button"
+import buttonStyles from './Button.module.css'
 import {dateFromTimeStamp, numberWithCommas, units} from "./utils";
-
-const getTotalAmount = (requests) => {
-    let amount = units(0);
-    for (const request of requests) {
-        amount += units(request[1].amount);
-    }
-    return amount;
-}
 
 const MutiStakeSummary = ({ requests, onHide, show, playerName, tokenContract, contract, backerAccount, reloadContractState}) => {
     // requests is an array of [requestName, request obj] pairs
-    const totalAmount = getTotalAmount(requests)
+    const [amounts, setAmounts] = useState(requests.map(_ => 0));
+    const [confirmEnabled, setConfirmEnabled] = useState(false);
+    const [totalAmount, setTotalAmount] = useState(0);
+
+    useEffect(() => {
+        setAmounts(requests.map(_ => 0));
+    }, [requests]);
+
+    const checkAmounts = () => {
+        let i = 0;
+        while (i < requests.length) {
+            if (amounts[i] <= 0 || amounts[i] * 1e18 > requests[i][1].amount - requests[i][1].investmentDetails.filledAmount) {
+                setConfirmEnabled(false);
+                return;
+            }
+            i++;
+        }
+        setConfirmEnabled(true);
+    }
 
     const fillMultiStakes = async () => {
-        let amount = 0;
-        for (const request of requests) {
-            amount += request[1].amount;
+        const convertToAmountString = (val) => {
+            return "0x" + val.toString(16);
         }
 
-        const amountString = "0x" + parseInt(amount).toString(16);
-        console.log(amountString);
-        console.log(units(amount));
-        console.log("backerAccount: " + backerAccount);
-        
+        const totalAmountString = convertToAmountString(totalAmount * 1e18);
         const requestIDs = requests.map(r => r[1].id);
-        console.log(requestIDs);
+        const amountStrings = amounts.map(amount => convertToAmountString(amount * 1e18));
 
-        await tokenContract.methods.approve(contract.options.address, amountString).send({from: backerAccount});
-        await contract.methods.stakeMultipleGamesOnHorse(requestIDs).send({ from: backerAccount })
-            .then(() => {reloadContractState()})
+        await tokenContract.methods.approve(contract.options.address, totalAmountString).send({from: backerAccount});
+        await contract.methods.stakeMultipleGamesOnHorse(requestIDs, amountStrings).send({ from: backerAccount })
+            .then(() => {reloadContractState(); onHide();})
+    }
+
+    const handleAmountChange = (value, index) => {
+        const amountsCopy = amounts;
+        amountsCopy[index] = value === "" ? 0 : parseInt(value);
+        setAmounts(amountsCopy);
+        checkAmounts();
+        setTotalAmount(amounts.reduce((a, b) => a + b, 0));
     }
 
     return (
@@ -49,29 +62,35 @@ const MutiStakeSummary = ({ requests, onHide, show, playerName, tokenContract, c
                         <th>Event</th>
                         <th>Date</th>
                         <th>Stake</th>
+                        <th>Remaining</th>
                         <th>Escrow</th>
                         <th>Profit Share</th>
+                        <th>Your Investment</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
-                            requests.map(request => (
-                                <tr>
+                            requests.map((request, i) => (
+                                <tr key={i}>
                                 <td>{request[0]}</td>
                                 <td>{dateFromTimeStamp(parseInt(request[1].stakeTimeStamp.scheduledForTimestamp)).toLocaleDateString()}</td>
                                 <td>{`${numberWithCommas(units(request[1].amount))}◈`}</td>
+                                <td>{`${numberWithCommas(units(request[1].amount) - units(request[1].investmentDetails.filledAmount))}◈`}</td>
                                 <td>{`${numberWithCommas(units(request[1].escrow))}◈`}</td>
                                 <td>{`${request[1].profitShare}%`}</td>
+                                <td><input onChange={(event) => handleAmountChange(event.target.value, i)}></input></td>
                                 </tr>
                             ))
                         }                        
                     </tbody>
                 </Table>
+
+                {!confirmEnabled && <div style={{color: "red"}}>Please ensure you have entered an amount for all stakes that is less than the remaining amount requested.</div>}
                 
-                <h5>You'll be investing a total of {totalAmount}◈ in {playerName} across {requests.length} event(s).</h5>
+                <h5>You'll be investing a total of {amounts.reduce((a, b) => a + b, 0)}◈ in {playerName} across {requests.length} event(s).</h5>
                 <br></br>
                 <center>
-                    <Button onClick={fillMultiStakes}>Confirm</Button>
+                    <button className={confirmEnabled ? buttonStyles.safestakeButton : buttonStyles.disabledSafestakeButton} onClick={fillMultiStakes}>Confirm</button>
                 </center>      
             </Modal.Body>
         </Modal>
