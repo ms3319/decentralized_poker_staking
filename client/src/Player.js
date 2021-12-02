@@ -208,16 +208,18 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
         <h2 className={styles.sectionTitle}>Active Requests</h2>
         {requested.length > 0 && <div>
           <h3 className={styles.sectionSubtitle}>Open Requests (can be invested in)</h3>
-          <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} />
+          {!viewerIsPlayer && <h6>You can select multiple stakes to invest in.</h6>} 
+          <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={true && !viewerIsPlayer} playerName={player.name} tokenContract={tokenContract} backerAccount={accounts[0]} reloadContractState={reloadContractState}/>
         </div>}
+        <br></br>
         {filled.length > 0 && <div>
           <h3 className={styles.sectionSubtitle}>Filled Requests (can no longer be invested in)</h3>
-          <GameList showDetails={handleShow} activeRequests={filled} contract={contract} options={["amount", "escrow", "profitShare"]} />
+          <GameList showDetails={handleShow} activeRequests={filled} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={false} tokenContract={tokenContract}/>
         </div>}
       </div>}
       {completedGames.length > 0 && <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Past Requests</h2>
-        <GameList showDetails={handleShow} activeRequests={completedGames.concat(escrowClaimed)} contract={contract} options={["amount", "winnings", "returns"]} />
+        <GameList showDetails={handleShow} activeRequests={completedGames.concat(escrowClaimed)} contract={contract} options={["amount", "winnings", "returns"]} tokenContract={tokenContract}/>
       </div>}
     </div>
     {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} timeUntilCanClaimEscrow={null} cancelStake={cancelStake} returnProfits={returnProfits} fillStake={fillStake} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest[2].investmentDetails.backers.includes(accounts[0])} />}
