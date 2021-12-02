@@ -64,11 +64,11 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
             <div className={styles.tripleContainer}>
               <div>
                 <span className={styles.label}>Stake (Dai)</span>
-                <span className={styles.value}>{numberWithCommas(units(investment.amount))}◈</span>
+                <span className={styles.value}>{units(investment.amount)} ◈</span>
               </div>
               <div>
                 <span className={styles.label}>Escrow (Dai)</span>
-                <span className={styles.value}>{numberWithCommas(units(investment.escrow))}◈</span>
+                <span className={styles.value}>{units(investment.escrow)} ◈</span>
               </div>
               <div>
                 <span className={styles.label}>Profit Share</span>
@@ -107,7 +107,7 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
           {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow === null && viewerIsBacker && (
             <div className={styles.section}>
               <span className={styles.normal}>The time threshold for <strong>{player.name}</strong> to return your share of the winnings has been passed,
-              and you are now able to claim back the {units(investment.escrow)}◈ of escrow. Note that you may continue to wait
+              and you are now able to claim back the {units(investment.escrow)} ◈ of escrow. Note that you may continue to wait
               for the player to pay back the winnings if you wish.</span>
               <Button style={{marginTop: "20px"}} onClick={() => claimEscrow(investment.id)}>Claim Escrow</Button>
             </div>
