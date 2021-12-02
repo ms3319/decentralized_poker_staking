@@ -122,7 +122,6 @@ const NewStakingRequestForm = (props) => {
   }
 
   const onSuggestionsClearRequested = () => {
-    setApiId("");
     setGameSuggestions([]);
   }
 

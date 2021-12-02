@@ -6,14 +6,14 @@ import { GameType } from "./utils";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const StakingRequestDetails = ({ request, contract, accounts, onHide, show, tokenContract, reloadContractState}) => {
-  const [player, setPlayer] = useState(null);
-
-  useEffect(() => {
-    if (contract != null && request != null) {
-      contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
-    }
-  }, [contract, request])
+const StakingRequestDetails = ({ request, player, contract, accounts, onHide, show, tokenContract, reloadContractState}) => {
+  // const [player, setPlayer] = useState(null);
+  //
+  // useEffect(() => {
+  //   if (contract != null && request != null) {
+  //     contract.methods.getPlayer(request.horse).call().then((player) => {setPlayer(player)})
+  //   }
+  // }, [contract, request])
 
   return (
     <Modal
@@ -52,8 +52,7 @@ const StakingRequestDetails = ({ request, contract, accounts, onHide, show, toke
           Invest
         </Button>
         <Link to={`players/${request.horse}`}>
-        {/* <Link to="players/test"> */}
-          <Button 
+          <Button
             style={{
               marginLeft: "10px",
               marginRight: "10px"
