@@ -57,10 +57,10 @@ function PlayerInfo({ player, accounts, contract }) {
 
 function PlayerStats({ awaitingRepayment, requested, filled, completedGames, escrowClaimed }) {
   const totalStakes = awaitingRepayment.length + requested.length + filled.length + completedGames.length + escrowClaimed.length;
-  const currentlyStakedFor = filled.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const currentlyStakedFor = filled.reduce((prev, curr) => prev + parseInt(curr.investmentDetails.filledAmount), 0)
   const totalPnl = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
   const totalReturns = completedGames.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0) + escrowClaimed.reduce((prev, curr) => prev + parseInt(curr.escrow), 0)
-  const totalPastStakedFor = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const totalPastStakedFor = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.investmentDetails.filledAmount), 0)
   const avgInvestorProfit = totalPastStakedFor !== 0 ? (100 * (totalReturns - totalPastStakedFor) / totalPastStakedFor).toFixed(2) : 0
   return (
     <div className={styles.statsTile}>
@@ -211,7 +211,7 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
           {!viewerIsPlayer && <h6>You can select multiple stakes to invest in.</h6>} 
           <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={true && !viewerIsPlayer} playerName={player.name} tokenContract={tokenContract} backerAccount={accounts[0]} reloadContractState={reloadContractState}/>
         </div>}
-        <br></br>
+        <br/>
         {filled.length > 0 && <div>
           <h3 className={styles.sectionSubtitle}>Filled Requests (can no longer be invested in)</h3>
           <GameList showDetails={handleShow} activeRequests={filled} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={false} tokenContract={tokenContract}/>
@@ -222,6 +222,6 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
         <GameList showDetails={handleShow} activeRequests={completedGames.concat(escrowClaimed)} contract={contract} options={["amount", "winnings", "returns"]} tokenContract={tokenContract}/>
       </div>}
     </div>
-    {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} timeUntilCanClaimEscrow={null} cancelStake={cancelStake} returnProfits={returnProfits} fillStake={fillStake} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest[2].investmentDetails.backers.includes(accounts[0])} />}
+    {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} cancelStake={cancelStake} returnProfits={returnProfits} fillStake={fillStake} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest[2].investmentDetails.backers.includes(accounts[0])} />}
   </>)
 }

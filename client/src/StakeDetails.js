@@ -145,7 +145,7 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               <Button style={{marginTop: "20px"}} onClick={() => cancelStake(investment.id).then(() => onHide())}>Cancel Stake</Button>
             </div>
           )}
-          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow === null && viewerIsBacker && (
+          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== undefined && timeUntilCanClaimEscrow === null && claimEscrow !== null && viewerIsBacker && (
             <div className={styles.section}>
               <span className={styles.normal}>The time threshold for <strong>{player.name}</strong> to return your share of the winnings has been passed,
               and you are now able to claim back the {units(investment.escrow)} ◈ of escrow. Note that you may continue to wait
@@ -153,7 +153,7 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
               <Button style={{marginTop: "20px"}} onClick={() => claimEscrow(investment.id)}>Claim Escrow</Button>
             </div>
           )}
-          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== null && viewerIsBacker && (
+          {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow !== undefined && timeUntilCanClaimEscrow !== null && viewerIsBacker && (
             <div className={styles.section}>
               <span className={styles.label}>Time until escrow can be claimed</span>
               <span className={styles.value}>{timeUntilCanClaimEscrow.days} day{timeUntilCanClaimEscrow.days === 1 ? "" : "s"}, {timeUntilCanClaimEscrow.hours} hour{timeUntilCanClaimEscrow.hours === 1 ? "" : "s"}</span>

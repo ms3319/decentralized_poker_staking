@@ -63,8 +63,9 @@ class Games:
     def on_post(self, req, resp):
         buyIn = float(req.get_param("buyIn", required=True))
         name = req.get_param("name", required=True)
+        scheduledFor = (datetime.datetime.strptime(req.get_param("scheduledFor", required=True), '%Y-%m-%d %H:%M:%S') - datetime.datetime(1970, 1, 1)).total_seconds()
         players = json.loads(req.get_param("players"))
-        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name}
+        data = {"buyIn": buyIn, "players": players, "completed": False, "name": name, "scheduledFor": scheduledFor}
         resp_data = db.child("games").push(data)
         resp.text = json.dumps(resp_data)
 
