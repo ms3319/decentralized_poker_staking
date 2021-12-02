@@ -154,7 +154,7 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          
+       
           <div className={styles.filterForm}>
             <Form>
               <Row>

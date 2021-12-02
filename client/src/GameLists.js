@@ -18,13 +18,13 @@ const nameRequests = async (games) => {
   }))
 }
 
-export const GameList = ({ showDetails, activeRequests, contract, options }) => {
+export const GameList = ({ showDetails, activeRequests, options }) => {
   const [namedRequests, setNamedRequests] = React.useState([])
 
   useEffect(() => {
     nameRequests(activeRequests)
       .then(namedRequests => setNamedRequests(namedRequests))
-  }, [contract, activeRequests])
+  }, [activeRequests])
 
   return (
     <div>
