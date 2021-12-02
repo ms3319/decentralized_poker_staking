@@ -148,7 +148,7 @@ const StakeDetails = ({ namedInvestment, onHide, show, timeUntilCanClaimEscrow, 
           {investment.status === StakeStatus.AwaitingReturnPayment && timeUntilCanClaimEscrow === null && viewerIsBacker && (
             <div className={styles.section}>
               <span className={styles.normal}>The time threshold for <strong>{player.name}</strong> to return your share of the winnings has been passed,
-              and you are now able to claim back the {units(investment.escrow)}◈ of escrow. Note that you may continue to wait
+              and you are now able to claim back the {units(investment.escrow)} ◈ of escrow. Note that you may continue to wait
               for the player to pay back the winnings if you wish.</span>
               <Button style={{marginTop: "20px"}} onClick={() => claimEscrow(investment.id)}>Claim Escrow</Button>
             </div>

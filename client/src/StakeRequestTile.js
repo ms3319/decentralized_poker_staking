@@ -28,7 +28,7 @@ export default function StakeRequestTile({ contract, request, handleShowRequestD
       </div>
       <div>
         <span className={tileStyles.label}>Escrow</span>
-        <span className={tileStyles.value}>{numberWithCommas(units(request.escrow))}◈</span>
+        <span className={tileStyles.value}>{numberWithCommas(units(request.escrow))} ◈</span>
       </div>
       <div>
         <span className={tileStyles.label}>Profit Share</span>

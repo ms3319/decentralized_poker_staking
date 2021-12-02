@@ -1,11 +1,13 @@
-import React, {useState} from "react";
-import {Col, Container, Row} from "react-bootstrap";
+import React, {useState, useEffect} from "react";
+import {Col, Container, Row, Form} from "react-bootstrap";
 import NewStakingRequestForm from "./NewStakingRequestForm";
 import NewPlayerForm from "./NewPlayerForm";
 import HomepageHeader from "./HomepageHeader";
 import { injected } from "./components/Connectors"
 import metamaskIcon from './images/metamask-icon.png'
 import addIcon from './images/add.svg'
+import filterIcon from './images/filter.svg'
+import deleteIcon from './images/delete.svg'
 
 import styles from './Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -13,7 +15,7 @@ import StakeRequestList from "./StakeRequestList";
 import Button from "./Button";
 import { useWeb3React } from "@web3-react/core";
 import StakeDetails from "./StakeDetails";
-import {GameType} from "./utils";
+import {GameType, StakeStatus} from "./utils";
 
 export default function Home(props) {
   
@@ -23,11 +25,45 @@ export default function Home(props) {
   const [showRequestDetails, setShowRequestDetails] = useState(false)
   const [showStakeRequestForm, setShowStakeRequestForm] = useState(false)
   const [showNewPlayerForm, setShowNewPlayerForm] = useState(false)
+  const [stakesToShow, setStakesToShow] = useState([]);
+  const [minAmountToSearch, setMinAmountToSearch] = useState("");
+  const [maxAmountToSearch, setMaxAmountToSearch] = useState("");
 
   const {active, activate} = useWeb3React();
+  
+  useEffect(() => {
+    if (props.requests) {
+      const propsRequestCopy = props.requests;
+      setStakesToShow(propsRequestCopy.filter(request => request.status === StakeStatus.Requested));
+    }
+  }, [props.requests]);
 
   const closeRequestDetails = () => {
     setShowRequestDetails(false);
+  }
+
+  const onMinAmountSearchChanged = (event) => {
+    setMinAmountToSearch(event.target.value);
+  }
+
+  const onMaxAmountSearchChanged = (event) => {
+    setMaxAmountToSearch(event.target.value);
+  }
+
+  const filterRequests = () => {
+    let propsRequestCopy = props.requests;
+    propsRequestCopy = propsRequestCopy.filter(request => request.status === StakeStatus.Requested || request.status === StakeStatus.PartiallyFilled);
+    setStakesToShow(propsRequestCopy.filter(stake => {
+      return (minAmountToSearch !== "" ? stake.amount / 1e18 >= minAmountToSearch : true) && (maxAmountToSearch !== "" ? stake.amount / 1e18 <= maxAmountToSearch : true);
+    }));
+  }
+
+  const clearFilter = () => {
+    let propsRequestCopy = props.requests;
+    propsRequestCopy = propsRequestCopy.filter(request => request.status === StakeStatus.Requested);
+    setStakesToShow(propsRequestCopy);
+    setMinAmountToSearch("");
+    setMaxAmountToSearch("");
   }
 
   const openRequestDetails = (request, player) => {
@@ -118,9 +154,41 @@ export default function Home(props) {
                                  accounts={props.accounts} contract={props.contract} tokenContract={props.tokenContract} />
           <NewPlayerForm reloadContractState={props.reloadContractState} show={showNewPlayerForm} onHide={closeNewPlayerForm}
                                  accounts={props.accounts} contract={props.contract}/>
-          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}} fillStake={fillStake} viewerIsPlayer={focusedPlayer && focusedPlayer.playerAddress === props.accounts[0]} viewerIsBacker={focusedRequest && focusedRequest.investmentDetails.backers.includes(props.accounts[0])} />
+          
+          <div className={styles.filterForm}>
+            <Form>
+              <Row>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Minimum Stake Request</Form.Label>
+                    <Form.Control value={minAmountToSearch} onChange={(event) => onMinAmountSearchChanged(event)} inputMode="numeric" placeholder="e.g. 50" />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Maximum Stake Request</Form.Label>
+                    <Form.Control value={maxAmountToSearch} onChange={(event) => onMaxAmountSearchChanged(event)} inputMode="numeric" placeholder="e.g. 250000" />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className={styles.filterButtonRow}>
+                <Col>
+                  <Button icon={filterIcon} onClick={(event) => {event.preventDefault(); filterRequests();}}>
+                    Filter 
+                  </Button>
+                </Col>
+                <Col>
+                  <Button icon={deleteIcon} onClick={(event) => {event.preventDefault(); clearFilter();}}>
+                    Clear Filter 
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+          </div>
+          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}}/>
+          <h2>Staking Requests</h2>
           <div className={styles.stakingListContainer}>
-            <StakeRequestList contract={props.contract} requests={props.requests} handleShowRequestDetails={openRequestDetails} />
+            <StakeRequestList contract={props.contract} requests={stakesToShow} handleShowRequestDetails={openRequestDetails} />
           </div>
         </div>
       }
