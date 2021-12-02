@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import styles from "./Stable.module.css";
-import {addDaysToDate, dateFromTimeStamp, GameType, timeUntilDate, units} from "./utils";
+import {addDaysToDate, dateFromTimeStamp, GameType, numberWithCommas, StakeStatus, timeUntilDate, units} from "./utils";
 import HorizontalTile from "./HorizontalTile";
 import tileStyles from "./HorizontalTile.module.css";
 import {Link} from "react-router-dom";
@@ -28,6 +28,62 @@ const groupAndNameInvestments = async (investments, contract) => {
   }))
 }
 
+export const InvestmentList = ({ showDetails, pendingInvestments, contract, options }) => {
+  const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
+
+  useEffect(() => {
+    groupAndNameInvestments(pendingInvestments, contract)
+      .then(groupedAndNamedInvestments => setInvestmentsByPlayer(groupedAndNamedInvestments))
+  }, [contract, pendingInvestments])
+
+  return (
+    <div className={styles.investmentSection}>
+      <h1>Pending Investments</h1>
+      {investmentsByPlayer.map(playerInvestments => {
+        const [player, investments] = playerInvestments
+        return (
+          <div className={styles.currentInvestment} key={player.name}>
+            <Link style={{color: "var(--safestake-gold)"}} to={`/players/${player.playerAddress}`}><span className={styles.investmentPlayerName}>{player.name}</span></Link>
+            {investments.map(namedInvestment => {
+              const [name, investment] = namedInvestment
+              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 10);
+              const timeUntilEscrowCanBeClaimed = escrowCanBeClaimedOn > new Date() ?
+                timeUntilDate(escrowCanBeClaimedOn) : null
+              return (
+                <HorizontalTile onClick={() => showDetails([player, name, investment], timeUntilEscrowCanBeClaimed)} key={investment.id}>
+                  <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
+                    <span className={tileStyles.value}>{name}</span>
+                    <span className={tileStyles.underValue}>{dateFromTimeStamp(investment.stakeTimeStamp.gamePlayedTimestamp).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className={tileStyles.label}>Original Stake</span>
+                    <span className={tileStyles.value}>{numberWithCommas(units(investment.amount))}◈</span>
+                  </div>
+                  <div>
+                    <span className={tileStyles.label}>Amount Owed</span>
+                    <span className={tileStyles.value}>{numberWithCommas(units(investment.backerReturns))}◈</span>
+                  </div>
+                  {timeUntilEscrowCanBeClaimed !== null ? (
+                    <div>
+                      <span className={tileStyles.label}>Escrow can be claimed in</span>
+                      <span className={tileStyles.value}>{`${timeUntilEscrowCanBeClaimed.days}d ${timeUntilEscrowCanBeClaimed.hours}h ${timeUntilEscrowCanBeClaimed.minutes}m`}</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <span className={`${tileStyles.label} ${styles.red}`}>Expired!</span>
+                      <span className={`${tileStyles.value} ${styles.red}`}>Claim Escrow Now</span>
+                    </div>
+                  )}
+                </HorizontalTile>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export const PendingInvestments = ({ showDetails, pendingInvestments, contract }) => {
   const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
 
@@ -46,7 +102,7 @@ export const PendingInvestments = ({ showDetails, pendingInvestments, contract }
             <Link style={{color: "var(--safestake-gold)"}} to={`/players/${player.playerAddress}`}><span className={styles.investmentPlayerName}>{player.name}</span></Link>
             {investments.map(namedInvestment => {
               const [name, investment] = namedInvestment
-              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 2);
+              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 10);
               const timeUntilEscrowCanBeClaimed = escrowCanBeClaimedOn > new Date() ?
                 timeUntilDate(escrowCanBeClaimedOn) : null
               return (
@@ -57,11 +113,11 @@ export const PendingInvestments = ({ showDetails, pendingInvestments, contract }
                   </div>
                   <div>
                     <span className={tileStyles.label}>Original Stake</span>
-                    <span className={tileStyles.value}>{units(investment.amount)}◈</span>
+                    <span className={tileStyles.value}>{numberWithCommas(units(investment.amount))}◈</span>
                   </div>
                   <div>
                     <span className={tileStyles.label}>Amount Owed</span>
-                    <span className={tileStyles.value}>{units(investment.backerReturns)}◈</span>
+                    <span className={tileStyles.value}>{numberWithCommas(units(investment.backerReturns))}◈</span>
                   </div>
                   {timeUntilEscrowCanBeClaimed !== null ? (
                     <div>
@@ -111,7 +167,7 @@ export const CurrentInvestments = ({ showDetails, currentInvestments, contract }
                   </div>
                   <div>
                     <span className={tileStyles.label}>Stake (Dai)</span>
-                    <span className={tileStyles.value}>{units(investment.amount)}◈</span>
+                    <span className={tileStyles.value}>{numberWithCommas(units(investment.amount))}◈</span>
                   </div>
                   <div>
                     <span className={tileStyles.label}>Profit Share (%)</span>
@@ -149,6 +205,7 @@ export const PastInvestments = ({ showDetails, pastInvestments, contract }) => {
             <Link style={{color: "var(--safestake-gold)"}} to={`/players/${player.playerAddress}`}><span className={styles.investmentPlayerName}>{player.name}</span></Link>
             {investments.map(namedInvestment => {
               const [name, investment] = namedInvestment
+              const returns = investment.status === StakeStatus.Completed ? units(investment.backerReturns) : units(investment.escrow)
               return (
                 <HorizontalTile onClick={() => showDetails([player, name, investment], null)} key={investment.id}>
                   <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
@@ -156,19 +213,19 @@ export const PastInvestments = ({ showDetails, pastInvestments, contract }) => {
                     <span className={tileStyles.underValue}>{dateFromTimeStamp(investment.stakeTimeStamp.gamePlayedTimestamp).toLocaleDateString()}</span>
                   </div>
                   <div>
-                    <span className={tileStyles.label}>OriginalStake</span>
-                    <span className={tileStyles.value}>{units(investment.amount)}◈</span>
+                    <span className={tileStyles.label}>Original Stake</span>
+                    <span className={tileStyles.value}>{numberWithCommas(units(investment.amount))}◈</span>
                   </div>
                   <div>
-                    <span className={tileStyles.label}>Winnings Returned</span>
-                    <span className={tileStyles.value}>{units(investment.backerReturns)}◈</span>
+                    <span className={tileStyles.label + (investment.status === StakeStatus.EscrowClaimed ? (" " + styles.red) : "")}>{investment.status === StakeStatus.Completed ? "Winnings Returned" : "Escrow Claimed"}</span>
+                    <span className={tileStyles.value}>{numberWithCommas(returns)}◈</span>
                   </div>
                   <div>
                     <span className={tileStyles.label}>Pnl</span>
                     <span
-                      className={`${tileStyles.value} ${investment.backerReturns >= investment.amount ? styles.green : styles.red}`}
+                      className={`${tileStyles.value} ${returns >= parseInt(units(investment.amount)) ? styles.green : styles.red}`}
                     >
-                      {((100 * (investment.backerReturns - investment.amount)) / investment.amount).toFixed(2)}%
+                      {((100 * (returns - units(investment.amount))) / units(investment.amount)).toFixed(2)}%
                     </span>
                   </div>
                 </HorizontalTile>
