@@ -82,7 +82,7 @@ class Game:
         takeHomeMoney = json.loads(req.get_param("takeHomeMoney"))
 
         max_key = None
-        max_val = 0
+        max_val = -1000000000
         # Update each players total winnings and tournaments played
         for (key, val) in takeHomeMoney.items():
             if max_val < val:

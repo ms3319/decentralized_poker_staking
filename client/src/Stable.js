@@ -1,11 +1,11 @@
-import React, {useEffect} from "react";
+import React, { useState } from "react";
 import { Container } from "react-bootstrap";
 import styles from "./Stable.module.css"
 import Button from "./Button";
-import {Link} from "react-router-dom";
-import {numberWithCommas, StakeStatus, units, dateFromTimeStamp, timeUntilDate, GameType, addDaysToDate} from "./utils"
-import HorizontalTile from "./HorizontalTile";
-import tileStyles from "./HorizontalTile.module.css";
+import { Link } from "react-router-dom";
+import { numberWithCommas, StakeStatus, units } from "./utils"
+import { CurrentInvestments, PastInvestments, PendingInvestments } from "./InvestmentLists";
+import StakeDetails from "./StakeDetails";
 
 const Separator = () => <div className={styles.separator} />
 
@@ -17,10 +17,24 @@ const MarketPlaceRedirect = () => (
   </div>
 )
 
-const Statistics = ({ currentInvestments, pastInvestments }) => {
-  const currentlyInvested = units(currentInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
-  const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.amount), 0))
-  const totalWinnings = units(pastInvestments.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0))
+const Statistics = ({ investor, pendingInvestments, currentInvestments, pastInvestments }) => {
+  const currentlyInvested = units(currentInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    return prev + parseInt(curr.investmentDetails.investments[investorIdx]);
+  }, 0))
+  const pastInvestmentsAmount = units(pastInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    return prev + parseInt(curr.investmentDetails.investments[investorIdx]);
+  }, 0))
+  const totalWinnings = units(pastInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    const investorProportion = curr.investmentDetails.investments[investorIdx] / curr.investmentDetails.filledAmount;
+    return prev + (curr.status === StakeStatus.EscrowClaimed ? investorProportion * parseInt(curr.escrow) : parseInt(curr.investmentDetails.backerReturns[investorIdx]))
+  }, 0))
+  const pendingWinnngs = units(pendingInvestments.reduce((prev, curr) => {
+    const investorIdx = curr.investmentDetails.backers.findIndex(potentialInvestor => potentialInvestor === investor);
+    return prev + parseInt(curr.investmentDetails.backerReturns[investorIdx]);
+  }, 0))
   const profit = (totalWinnings - pastInvestmentsAmount).toFixed(2)
 
   return (
@@ -33,7 +47,7 @@ const Statistics = ({ currentInvestments, pastInvestments }) => {
             Currently Invested
           </div>
           <div className={styles.value}>
-            {numberWithCommas(currentlyInvested)} ◈
+            {numberWithCommas(currentlyInvested)}◈
           </div>
         </div>
 
@@ -42,7 +56,7 @@ const Statistics = ({ currentInvestments, pastInvestments }) => {
             Total Past Investments
           </div>
           <div className={styles.value}>
-            {numberWithCommas(pastInvestmentsAmount)} ◈
+            {numberWithCommas(pastInvestmentsAmount)}◈
           </div>
         </div>
 
@@ -51,8 +65,13 @@ const Statistics = ({ currentInvestments, pastInvestments }) => {
             Total Winnings
           </div>
           <div className={styles.value}>
-            {numberWithCommas(totalWinnings)} ◈
+            {numberWithCommas(totalWinnings)}◈
           </div>
+          {pendingWinnngs !== 0 && (
+            <div className={styles.underValue}>
+              ({pendingWinnngs}◈ pending)
+            </div>
+          )}
         </div>
 
         <div className={profit >= 0 ? styles.green : styles.red}>
@@ -71,130 +90,25 @@ const Statistics = ({ currentInvestments, pastInvestments }) => {
   )
 }
 
-const groupAndNameInvestments = async (investments, contract) => {
-  const investmentsByPlayerRaw = Array.from(investments.reduce(
-    (entryMap, investment) => entryMap.set(investment.horse, [...entryMap.get(investment.horse)||[], investment]),
-    new Map()
-  ).entries());
+export default function Stable({ reloadContractState, requests, accounts, contract, tokenContract }) {
+  const [investmentInFocus, setInvestmentInFocus] = useState(null);
+  const [timeUntilFocusedCanClaimEscrow, setTimeUntilFocusedCanClaimEscrow] = useState(null);
+  const [showInvestmentDetails, setShowInvestmentDetails] = useState(false);
 
-  return await Promise.all(investmentsByPlayerRaw.map(async playerInvestment => {
-    const [player, investments] = playerInvestment
-    const playerName = await contract.methods.getPlayer(player).call()
-    const investmentsWithNames = await Promise.all(investments.map(async investment => {
-      const gameOrTournamentFromApi = (parseInt(investment.gameType) === GameType.SingleGame) ?
-        (await fetch(`https://safe-stake-mock-api.herokuapp.com/games/${investment.apiId}`)
-          .then(response => response.json())
-          .catch(() => ({name: "Couldn't get tournament name"}))) :
-        (await fetch(`https://safe-stake-mock-api.herokuapp.com/tournaments/${investment.apiId}`)
-          .then(response => response.json())
-          .catch(() => ({name: "Couldn't get tournament name"})))
-      return [gameOrTournamentFromApi.name, investment];
-    }))
-    return [playerName, investmentsWithNames]
-  }))
-}
+  const handleClose = () => {
+    setShowInvestmentDetails(false);
+    setInvestmentInFocus(null);
+  }
+  const handleShow = (namedInvestment, canClaimEscrow) => {
+    setTimeUntilFocusedCanClaimEscrow(canClaimEscrow)
+    setInvestmentInFocus(namedInvestment);
+    setShowInvestmentDetails(true);
+  }
 
-const PendingInvestments = ({ pendingInvestments, contract }) => {
-  const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
+  const claimEscrow = async (stakeId) => {
+    await contract.methods.backerClaimEscrow(stakeId).send({from: accounts[0]});
+  }
 
-  useEffect(() => {
-    groupAndNameInvestments(pendingInvestments, contract)
-      .then(groupedAndNamedInvestments => setInvestmentsByPlayer(groupedAndNamedInvestments))
-  }, [pendingInvestments, contract])
-
-  return (
-    <div className={styles.investmentSection}>
-      <h1>Pending Investments</h1>
-      {investmentsByPlayer.map(playerInvestments => {
-        const [player, investments] = playerInvestments
-        return (
-          <div className={styles.currentInvestment} key={player.name}>
-            <span className={styles.investmentPlayerName}>{player.name}</span>
-            {investments.map(namedInvestment => {
-              const [name, investment] = namedInvestment
-              const escrowCanBeClaimedOn = addDaysToDate(dateFromTimeStamp(parseInt(investment.stakeTimeStamp.gamePlayedTimestamp)), 10);
-              const timeUntilEscrowCanBeClaimed = escrowCanBeClaimedOn > new Date() ?
-                timeUntilDate(escrowCanBeClaimedOn) :
-                {days: 0, hours: 0, minutes: 0, seconds: 0}
-              return (
-                <HorizontalTile key={investment.id}>
-                  <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
-                    <span className={tileStyles.value}>{name}</span>
-                  </div>
-                  <div>
-                    <span className={tileStyles.label}>Original Stake</span>
-                    <span className={tileStyles.value}>{units(investment.amount)} ◈</span>
-                  </div>
-                  <div>
-                    <span className={tileStyles.label}>Amount Owed</span>
-                    <span className={tileStyles.value}>{units(investment.backerReturns)} ◈</span>
-                  </div>
-                  <div>
-                    <span className={tileStyles.label}>Escrow can be claimed in</span>
-                    <span className={tileStyles.value}>{`${timeUntilEscrowCanBeClaimed.days}d ${timeUntilEscrowCanBeClaimed.hours}h ${timeUntilEscrowCanBeClaimed.minutes}m`}</span>
-                  </div>
-                </HorizontalTile>
-              )
-            })}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-const CurrentInvestments = ({ currentInvestments, contract }) => {
-  const [investmentsByPlayer, setInvestmentsByPlayer] = React.useState([])
-
-  useEffect(() => {
-    groupAndNameInvestments(currentInvestments, contract)
-      .then(groupedAndNamedInvestments => setInvestmentsByPlayer(groupedAndNamedInvestments))
-  }, [currentInvestments, contract])
-
-  return (
-    <div className={styles.investmentSection}>
-      <h1>Current Investments</h1>
-      {investmentsByPlayer.map(playerInvestments => {
-        const [player, investments] = playerInvestments
-        return (
-          <div className={styles.currentInvestment} key={player}>
-            <span className={styles.investmentPlayerName}>{player.name}</span>
-            {investments.map(namedInvestment => {
-              const [name, investment] = namedInvestment
-              const scheduledFor = dateFromTimeStamp(parseInt(investment.stakeTimeStamp.scheduledForTimestamp))
-              const timeLeft = timeUntilDate(scheduledFor)
-              return (
-                <HorizontalTile key={investment.id}>
-                  <div className={tileStyles.left} style={{fontSize: "0.8em"}}>
-                    <span className={tileStyles.value}>{name}</span>
-                  </div>
-                  <div>
-                    <span className={tileStyles.label}>Stake (Dai)</span>
-                    <span className={tileStyles.value}>{units(investment.amount)} ◈</span>
-                  </div>
-                  <div>
-                    <span className={tileStyles.label}>Profit Share (%)</span>
-                    <span className={tileStyles.value}>{investment.profitShare}</span>
-                  </div>
-                  <div>
-                    <span className={tileStyles.label}>Time left</span>
-                    <span className={tileStyles.value}>{`${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m`}</span>
-                  </div>
-                </HorizontalTile>
-            )
-            })}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-const PastInvestments = ({ pastInvestments }) => {
-  return null
-}
-
-export default function Stable({ requests, accounts, contract, reloadContractState }) {
   if (
     accounts === null ||
     requests === null ||
@@ -204,11 +118,11 @@ export default function Stable({ requests, accounts, contract, reloadContractSta
 
   let investor = accounts[0];
   let investments = requests.filter(
-    (request) => request.backer === investor
+    (request) => request.investmentDetails.backers.includes(investor)
   );
 
   const pendingInvestments = investments.filter(investment => investment.status === StakeStatus.AwaitingReturnPayment)
-  const currentInvestments = investments.filter(investment => investment.status === StakeStatus.Filled)
+  const currentInvestments = investments.filter(investment => investment.status === StakeStatus.Filled || investment.status === StakeStatus.PartiallyFilled)
   const pastInvestments = investments.filter(investment => investment.status === StakeStatus.Completed || investment.status === StakeStatus.EscrowClaimed)
 
   return (
@@ -223,13 +137,14 @@ export default function Stable({ requests, accounts, contract, reloadContractSta
           <MarketPlaceRedirect />
         :
           <>
-            <Statistics currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
-            {pendingInvestments.length > 0 && <PendingInvestments reloadContractState={reloadContractState} pendingInvestments={pendingInvestments} contract={contract} />}
-            {currentInvestments.length > 0 && <CurrentInvestments currentInvestments={currentInvestments} contract={contract}/>}
-            {pastInvestments.length > 0 && <PastInvestments pastInvestments={pastInvestments} />}
+            <Statistics investor={investor} pendingInvestments={pendingInvestments} currentInvestments={currentInvestments} pastInvestments={pastInvestments} />
+            {pendingInvestments.length > 0 && <PendingInvestments investor={investor} showDetails={handleShow} pendingInvestments={pendingInvestments} contract={contract} />}
+            {currentInvestments.length > 0 && <CurrentInvestments investor={investor} showDetails={handleShow} currentInvestments={currentInvestments} contract={contract}/>}
+            {pastInvestments.length > 0 && <PastInvestments investor={investor} showDetails={handleShow} pastInvestments={pastInvestments} contract={contract} />}
           </>
         }
       </Container>
+      <StakeDetails namedInvestment={investmentInFocus} onHide={handleClose} show={showInvestmentDetails} timeUntilCanClaimEscrow={timeUntilFocusedCanClaimEscrow} claimEscrow={id => claimEscrow(id).then(reloadContractState())} viewerIsPlayer={false} viewerIsBacker={true} />
     </div>
   );
 }

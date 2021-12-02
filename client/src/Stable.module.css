@@ -98,7 +98,7 @@
 }
 
 .red {
-    color: #cf463e;
+    color: #cf463e !important;
 }
 
 .green {
@@ -121,7 +121,7 @@
 
 .investmentSection h1 {
     font-weight: 700;
-    margin: 20px 0;
+    margin: 0;
 }
 
 .currentInvestment {

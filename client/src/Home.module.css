@@ -22,3 +22,14 @@
   color: red;
   margin: 1rem 0;
 }
+
+.filterForm {
+  margin-top: 2rem;
+  margin-left: 25%;
+  margin-right: 25%;
+  margin-bottom: 4rem;
+}
+
+.filterButtonRow {
+  margin-top: 1rem;
+}

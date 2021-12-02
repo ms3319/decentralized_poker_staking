@@ -1,0 +1,63 @@
+.detailsBody span {
+    display: block;
+    font-weight: 700;
+}
+
+.header {
+    font-weight: 700;
+}
+
+.header h1 {
+    font-size: 2.2em;
+    margin: 0;
+}
+
+.header span {
+    display: block;
+    line-height: 1.3em;
+}
+
+.grey {
+    color: #656565;
+}
+
+.gold {
+    color: var(--safestake-gold)
+}
+
+.section {
+    margin: 20px 0;
+}
+
+.label {
+    color: var(--safestake-gold)
+}
+
+.value {
+    font-size: 2em;
+    line-height: 0.8em;
+}
+
+.doubleContainer,
+.tripleContainer,
+.quadContainer {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 10px 0;
+}
+
+.doubleContainer > * {
+    flex: 0 0 50%;
+}
+
+.tripleContainer > * {
+    flex: 0 0 33%;
+}
+
+.quadContainer > * {
+    flex: 0 0 25%;
+}
+
+.detailsBody .normal {
+    font-weight: 500;
+}

@@ -1,11 +1,12 @@
 import { useParams, useHistory } from "react-router-dom";
 import styles from "./Player.module.css"
-import {Table} from "react-bootstrap";
 import React, {useEffect, useState} from "react";
 import Button from "./Button";
-import { StakeStatus, numberWithCommas, units } from "./utils";
+import {StakeStatus, numberWithCommas, units, isNullAddress} from "./utils";
 import EditPlayerForm from "./EditPlayerForm";
 import defaultProfilePic from './images/default-profile-pic.png'
+import {GameList} from "./GameLists";
+import StakeDetails from "./StakeDetails";
 
 function PlayerInfo({ player, accounts, contract }) { 
 
@@ -54,18 +55,13 @@ function PlayerInfo({ player, accounts, contract }) {
   )
 }
 
-function PlayerStats({ games }) {
-  const totalStakes = games.length
-  const totalWins = games.filter(game => game.horseWon).length
-  const completedStakes = games.filter(game => game.status === StakeStatus.Completed);
-  const totalCompletedStakes = completedStakes.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
-  const stakesRequestedRaw = games.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
-  const stakesRequested = units(stakesRequestedRaw)
-  const totalPnlRaw = games.reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
-  const totalPnl = units(totalPnlRaw)
-  const profitPercent = totalCompletedStakes > 0 ? +((totalPnlRaw / totalCompletedStakes) * 100).toFixed(2) : 0;
-
-
+function PlayerStats({ awaitingRepayment, requested, filled, completedGames, escrowClaimed }) {
+  const totalStakes = awaitingRepayment.length + requested.length + filled.length + completedGames.length + escrowClaimed.length;
+  const currentlyStakedFor = filled.reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const totalPnl = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.pnl), 0)
+  const totalReturns = completedGames.reduce((prev, curr) => prev + parseInt(curr.backerReturns), 0) + escrowClaimed.reduce((prev, curr) => prev + parseInt(curr.escrow), 0)
+  const totalPastStakedFor = completedGames.concat(escrowClaimed).reduce((prev, curr) => prev + parseInt(curr.amount), 0)
+  const avgInvestorProfit = totalPastStakedFor !== 0 ? (100 * (totalReturns - totalPastStakedFor) / totalPastStakedFor).toFixed(2) : 0
   return (
     <div className={styles.statsTile}>
       <h2 className={styles.sectionTitle}>Statistics</h2>
@@ -81,28 +77,19 @@ function PlayerStats({ games }) {
 
         <div>
           <div className={styles.label}>
-            Total Wins
+            Currently Staked for
           </div>
           <div className={styles.value}>
-            {totalWins}
+            {numberWithCommas(units(currentlyStakedFor))}◈
           </div>
         </div>
 
         <div>
           <div className={styles.label}>
-            Total Stakes Requested
+            Total Winnings Returned
           </div>
           <div className={styles.value}>
-            {numberWithCommas(stakesRequested)} ◈
-          </div>
-        </div>
-
-        <div>
-          <div className={styles.label}>
-            Total Completed Stakes
-          </div>
-          <div className={styles.value}>
-            {numberWithCommas(units(totalCompletedStakes))} ◈
+            {numberWithCommas(units(totalReturns))}◈
           </div>
         </div>
 
@@ -111,16 +98,16 @@ function PlayerStats({ games }) {
             Net Pnl
           </div>
           <div className={styles.value}>
-            {numberWithCommas(totalPnl)} ◈
+            {numberWithCommas(units(totalPnl))}◈
           </div>
         </div>
 
         <div>
           <div className={styles.label}>
-            Profit %
+            Average profit for investor
           </div>
           <div className={styles.value}>
-            {numberWithCommas(profitPercent)}%
+            {numberWithCommas(avgInvestorProfit)}%
           </div>
         </div>
       </div>
@@ -128,115 +115,12 @@ function PlayerStats({ games }) {
   )
 }
 
-
-function PastStakes({ returnProfits, stakes, isViewersAccount, cancelStake }) {
-
-
-  const awaitingRepayment = stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment)
-  const inProgress = stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.Filled)
-  const pastStakes = stakes.filter((stake) => stake.status === StakeStatus.Completed || stake.status === StakeStatus.EscrowReturned)
-
-  return (
-    <div className={styles.pastStakesTile}>
-      { isViewersAccount && awaitingRepayment.length > 0 && (<>
-        <h2 className={styles.sectionTitle}>Awaiting Repayment</h2>
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Investor Address</th>
-              <th>Amount Requested</th>
-              <th>Profit Share</th>
-              <th>Pnl</th>
-              <th>Amount owed</th>
-              <th>Pay Back</th>
-            </tr>
-          </thead>
-          <tbody>
-            {awaitingRepayment.map((stake, index) => <tr key={stake.id}>
-              <td>{index + 1}</td>
-              <td>{stake.backer}</td>
-              <td>{units(stake.amount)} ◈</td>
-              <td>{stake.profitShare}%</td>
-              <td>{units(parseInt(stake.pnl))} ◈</td>
-              <td>{units(parseInt(stake.backerReturns))} ◈</td>
-              <td><Button onClick={() => returnProfits(stake.id, parseInt(stake.backerReturns))}>Pay Back</Button></td>
-            </tr>)}
-          </tbody>
-        </Table>
-        </>
-      )}
-      { isViewersAccount && inProgress.length > 0 && (<>
-          <h2 className={styles.sectionTitle}>Active Staking Requests</h2>
-          <Table striped bordered hover>
-            <thead>
-            <tr>
-              <th>#</th>
-              <th>Investor Address</th>
-              <th>Amount Requested</th>
-              <th>Profit Share</th>
-              <th>Status</th>
-              <th>Cancel Stake</th>
-            </tr>
-            </thead>
-            <tbody>
-            {inProgress.map((stake, index) => <tr key={stake.id}>
-              <td>{index + 1}</td>
-              <td>{stake.backer}</td>
-              <td>{units(stake.amount)} ◈</td>
-              <td>{stake.profitShare}%</td>
-              <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
-              <td>
-                {stake.status === StakeStatus.Requested && <Button onClick={() => cancelStake(stake.id)}>Cancel Stake</Button>}
-                {stake.status !== StakeStatus.Requested && <div>X</div>}
-              </td>
-            </tr>)}
-            </tbody>
-          </Table>
-        </>
-      )}
-      <h2 className={styles.sectionTitle}>Past Stakes</h2>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Investor Address</th>
-            <th>Amount Requested</th>
-            <th>Profit Share</th>
-            <th>Pnl</th>
-            <th>Won?</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isViewersAccount ? pastStakes.map((stake, index) => <tr key={index}>
-            <td>{index + 1}</td>
-            <td>{stake.backer}</td>
-            <td>{units(stake.amount)} ◈</td>
-            <td>{stake.profitShare}%</td>
-            <td>{units(stake.pnl)} ◈</td>
-            <td>{stake.horseWon ? "Yes" : "No"}</td>
-            <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
-          </tr>) :
-          stakes.map((stake, index) => <tr key={index}>
-            <td>{index + 1}</td>
-            <td>{stake.backer}</td>
-            <td>{units(stake.amount)} ◈</td>
-            <td>{stake.profitShare}%</td>
-            <td>{units(stake.pnl)} ◈</td>
-            <td>{stake.horseWon ? "Yes" : "No"}</td>
-            <td>{Object.keys(StakeStatus)[parseInt(stake.status)]}</td>
-          </tr>)}
-        </tbody>
-      </Table>
-    </div>
-  );
-}
-
 export default function Player({ contract, accounts, tokenContract, reloadContractState }) {
   const { playerAddress } = useParams()
   const [player, setPlayer] = useState(null)
   const [stakes, setStakes] = useState(null)
+  const [focusedRequest, setFocusedRequest] = useState(null);
+  const [showRequestDetails, setShowRequestDetails] = useState(false);
   const history = useHistory();
   
   useEffect(() => {
@@ -258,7 +142,22 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
     }
   }, [player, contract])
 
-  if (contract == null) return null
+  const handleClose = () => {
+    setShowRequestDetails(false);
+    setFocusedRequest(null);
+  }
+  const handleShow = (namedInvestment) => {
+    setFocusedRequest([player, ...namedInvestment]);
+    setShowRequestDetails(true);
+  }
+
+  if (contract === null || accounts === null) return null
+
+  // Unknown Player
+  if (player != null && isNullAddress(player.playerAddress)) {
+    history.push("/")
+    return null
+  }
 
   const returnProfits = async (id, profits) => {
     // Add 1 cent transaction fee... and to protect from rounding errors :)
@@ -273,17 +172,56 @@ export default function Player({ contract, accounts, tokenContract, reloadContra
     reloadContractState();
   }
 
-  // Unknown Player
-  if (player != null && player.playerAddress === "0x0000000000000000000000000000000000000000") {
-    history.push("/")
-    return null
+  const fillStake = async (id, amount) => {
+    const amountString = "0x" + parseInt(amount).toString(16);
+    await tokenContract.methods.approve(contract.options.address, amountString).send({from: accounts[0]});
+    await contract.methods.stakeHorse(id, amountString).send({ from: accounts[0] })
+      .then(() => {reloadContractState()})
   }
 
-  return (
+  const viewerIsPlayer = accounts[0] === playerAddress
+
+  const awaitingRepayment = stakes ? stakes.filter((stake) => stake.status === StakeStatus.AwaitingReturnPayment) : []
+  const requested = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Requested || stake.status === StakeStatus.PartiallyFilled) : []
+  const filled = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Filled) : []
+  const completedGames = stakes ? stakes.filter((stake) => stake.status === StakeStatus.Completed) : []
+  const escrowClaimed = stakes ? stakes.filter((stake) => stake.status === StakeStatus.EscrowClaimed) : []
+
+  return (<>
     <div className={styles.playerPage}>
+      {player && !player.canCreateStake && viewerIsPlayer && escrowClaimed.length > 0 &&
+        <div className={styles.lockedOut}>An investor has claimed escrow on a stake where you made money and did not
+          send back the investor's share of the winnings in time. You have been locked out until further notice.</div>
+      }
+      {player && !player.canCreateStake && viewerIsPlayer && awaitingRepayment.length > 0 &&
+        <div className={styles.lockedOut}>You have completed games where you made money and have not paid back the investor's
+          share of the winnings. You will not be able to create new staking requests until you do so.</div>
+      }
       {player && <PlayerInfo player={player} accounts={accounts} contract={contract}/>}
-      {stakes && <PlayerStats games={stakes} />}
-      {stakes && accounts && <PastStakes cancelStake={cancelStake} returnProfits={returnProfits} stakes={stakes} isViewersAccount={accounts[0] === playerAddress} />}
+      {stakes && <PlayerStats awaitingRepayment={awaitingRepayment} requested={requested} filled={filled} completedGames={completedGames} escrowClaimed={escrowClaimed} />}
+      {/*{stakes && accounts && <PastStakes cancelStake={cancelStake} returnProfits={returnProfits} stakes={stakes} viewerIsPlayer={accounts[0] === playerAddress} />}*/}
+      {awaitingRepayment.length > 0 && <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Awaiting Repayment</h2>
+        <GameList showDetails={handleShow} activeRequests={awaitingRepayment} contract={contract} options={["amount", "winnings", "returns"]} />
+      </div>}
+      {(requested.length > 0 || filled.length > 0) && <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Active Requests</h2>
+        {requested.length > 0 && <div>
+          <h3 className={styles.sectionSubtitle}>Open Requests (can be invested in)</h3>
+          {!viewerIsPlayer && <h6>You can select multiple stakes to invest in.</h6>} 
+          <GameList showDetails={handleShow} activeRequests={requested} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={true && !viewerIsPlayer} playerName={player.name} tokenContract={tokenContract} backerAccount={accounts[0]} reloadContractState={reloadContractState}/>
+        </div>}
+        <br></br>
+        {filled.length > 0 && <div>
+          <h3 className={styles.sectionSubtitle}>Filled Requests (can no longer be invested in)</h3>
+          <GameList showDetails={handleShow} activeRequests={filled} contract={contract} options={["amount", "escrow", "profitShare"]} canInvest={false} tokenContract={tokenContract}/>
+        </div>}
+      </div>}
+      {completedGames.length > 0 && <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Past Requests</h2>
+        <GameList showDetails={handleShow} activeRequests={completedGames.concat(escrowClaimed)} contract={contract} options={["amount", "winnings", "returns"]} tokenContract={tokenContract}/>
+      </div>}
     </div>
-  )
+    {accounts && <StakeDetails namedInvestment={focusedRequest} onHide={handleClose} show={showRequestDetails} timeUntilCanClaimEscrow={null} cancelStake={cancelStake} returnProfits={returnProfits} fillStake={fillStake} viewerIsPlayer={viewerIsPlayer} viewerIsBacker={focusedRequest && focusedRequest[2].investmentDetails.backers.includes(accounts[0])} />}
+  </>)
 }

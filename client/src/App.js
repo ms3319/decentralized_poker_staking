@@ -9,6 +9,7 @@ import Stable from "./Stable";
 import NavBar from "./NavBar";
 import Player from "./Player"
 import About from "./About"
+import {isNullAddress} from "./utils";
 require('./globals.css')
 
 // TODO: Get the stake coin instance and pass it down to the other components here
@@ -54,7 +55,7 @@ export default function App() {
         requests.push(await contract.methods.getStake(i).call());
       }
       const player = await contract.methods.getPlayer(accounts[0]).call();
-      if (player.playerAddress !== "0x0000000000000000000000000000000000000000") {
+      if (!isNullAddress(player.playerAddress)) {
         setHasPlayerAccount(true);
         setPlayer(player);
       }

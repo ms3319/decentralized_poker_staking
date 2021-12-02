@@ -24,7 +24,7 @@
     display: inline-block;
     text-align: center;
     position: relative;
-    flex: 1 0 20%;
+    flex: 1 0 auto;
 }
 
 .tile .longer {
@@ -34,6 +34,23 @@
 .value {
     font-size: 1.5em;
     width: 100%;
+}
+
+.underValue {
+    width: 100%;
+    color: var(--safestake-gold);
+    display: inline-block;
+}
+
+.smallUnderValue {
+    width: 100%;
+    position: absolute;
+    font-size: 0.8em;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #9a9a9a;
+    display: inline-block;
 }
 
 .tile .label {
@@ -62,4 +79,41 @@
 
 .tile .left {
     text-align: left;
+}
+
+/* the select button */
+.selectButton {
+    background-color: lightgray;
+    border: none;
+    color: black;
+    padding: 10px 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 0px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.selectButton:hover {
+    background-color: #47d44c;
+}
+
+.selectedButton {
+    background-color:#47d44c;
+    border: none;
+    color: black;
+    padding: 10px 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 0px 2px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.selectedButton:hover {
+    background-color: #4CAF50;
 }
