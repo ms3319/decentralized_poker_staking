@@ -66,6 +66,13 @@ export default function Home(props) {
     setMaxAmountToSearch("");
   }
 
+  const fillStake = async (id, amount) => {
+    const amountString = "0x" + parseInt(amount).toString(16);
+    await props.tokenContract.methods.approve(props.contract.options.address, amountString).send({from: props.accounts[0]});
+    await props.contract.methods.stakeHorse(id, amountString).send({ from: props.accounts[0] })
+      .then(() => {props.reloadContractState()})
+  }
+
   const openRequestDetails = (request, player) => {
     setFocusedRequest(request)
     setFocusedPlayer(player)
@@ -178,7 +185,7 @@ export default function Home(props) {
               </Row>
             </Form>
           </div>
-          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}}/>
+          <StakeDetails namedInvestment={[focusedPlayer, focusedRequestName, focusedRequest]} onHide={closeRequestDetails} show={showRequestDetails} timeUntilCanClaimEscrow={null} claimEscrow={() => {}} fillStake={fillStake} viewerIsPlayer={focusedPlayer && focusedPlayer.playerAddress === props.accounts[0]} viewerIsBacker={focusedRequest && focusedRequest.backer === props.accounts[0]}/>
           <h2>Staking Requests</h2>
           <div className={styles.stakingListContainer}>
             <StakeRequestList contract={props.contract} requests={stakesToShow} handleShowRequestDetails={openRequestDetails} />
