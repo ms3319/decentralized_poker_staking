@@ -1,0 +1,6 @@
+Follow these steps when deploying
+
+1. Change the token contract address in client/src/App.js
+2. Commit and push to production branch
+3. Change the CONTRACT_ADDRESS environment variable in Heroku
+   to the newly deployed staking contract address.
