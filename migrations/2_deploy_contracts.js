@@ -4,7 +4,9 @@ var StakeCoinFaucet = artifacts.require("StakeCoinFaucet");
 
 module.exports = async function(deployer, network, accounts) {
   // TODO: Only deploy if not already deployed
-  await deployer.deploy(StakeCoin, { from: accounts[0], overwrite: false });
+  if (network !== "ropsten") {
+    await deployer.deploy(StakeCoin, { from: accounts[0], overwrite: false });
+  }
   const stakeCoinInstance = await StakeCoin.deployed();
 
   await deployer.deploy(StakeCoinFaucet, stakeCoinInstance.address);
