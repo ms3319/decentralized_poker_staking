@@ -10,9 +10,7 @@ language: node_js
 node_js:
   - 12
 
-cache:
-  directories:
-    - node_modules
+cache: npm
 
 install:
   - npm install -g npm@7.14.0
@@ -31,24 +29,24 @@ jobs:
         - truffle compile
         - cd client
         - npm test
-    - stage: deploy-smart-contracts
+    - stage: deploy
       script:
         - truffle compile
         - truffle migrate --network ropsten
-    - stage: deploy
-      name: "Deploy Front-End"
-      script:
         - cd client
         - npm run build
         - cd ..
         - fleek site:deploy
-    - name: "Deploy Oracle"
+    - stage: deploy-secondary-components
+      name: "Deploy Oracle"
       provider: heroku
       api_key:
         secure: TyrxHJCv+8GYNf4WIglTmUD22iqAdiPeb1J05nCnEyFOAMnZybdsAxLG9pe15uvZZ5y7zVOdIi2W2AcDlVonRa3ixWh1x7RCOqVR95tMa7GjDFWdQd4jDJ8f6NcPmH6iEwlycWuc9+VZSUwe04VBY9GpbaoRAeYrXWDY0JZWuxUctw+2tBYGta7JWCGgnve+sTarfDRopQ39oTg6v3MpT5E92JFqWVGTaXVO9C9u0Yb2VoGIxYZEYiMQEpODq1cigTxHE/9aOur7oM7YbpUl8RKFloPa5iCCXF2x9FFS2DJVChZO4Jp3bDm9MJI9N1bR44JMjse/R4PzNMqNEVI6oBynfb0yCU6cPrgQAjPS3eCiUNV5/NU2SCJK5dZP2xYf2dRj/eKWikmn3+9pchOrKdoR7NjlSelBkfEeZaOcR2MUbxpP9xid1K7BrNS2YUn8xCjcVXoay5CmC34fCsWOPlbKQsJOKdo6nAEvqiTYOP/eqSQKTtGXMJ+N51ACVwfMI3EZda1fGT2h6ohs/di4HOQlj5eOkEn5PpRQGdJTdWaIqcfsTZeEBqFCJ2B6jpPwMhpocboiYI828T344xIWaOxwaZl1+c/u31xxpEhCnjTIKxuAU7wNpldzOpNRgzWE5cK7IepJunGyU4uzuwM62cvk9WP7OSWsD8lC2kwEg5w=
+      strategy: git
       app: safe-stake-oracle
     - name: "Deploy Mock API"
       provider: heroku
       api_key:
         secure: TyrxHJCv+8GYNf4WIglTmUD22iqAdiPeb1J05nCnEyFOAMnZybdsAxLG9pe15uvZZ5y7zVOdIi2W2AcDlVonRa3ixWh1x7RCOqVR95tMa7GjDFWdQd4jDJ8f6NcPmH6iEwlycWuc9+VZSUwe04VBY9GpbaoRAeYrXWDY0JZWuxUctw+2tBYGta7JWCGgnve+sTarfDRopQ39oTg6v3MpT5E92JFqWVGTaXVO9C9u0Yb2VoGIxYZEYiMQEpODq1cigTxHE/9aOur7oM7YbpUl8RKFloPa5iCCXF2x9FFS2DJVChZO4Jp3bDm9MJI9N1bR44JMjse/R4PzNMqNEVI6oBynfb0yCU6cPrgQAjPS3eCiUNV5/NU2SCJK5dZP2xYf2dRj/eKWikmn3+9pchOrKdoR7NjlSelBkfEeZaOcR2MUbxpP9xid1K7BrNS2YUn8xCjcVXoay5CmC34fCsWOPlbKQsJOKdo6nAEvqiTYOP/eqSQKTtGXMJ+N51ACVwfMI3EZda1fGT2h6ohs/di4HOQlj5eOkEn5PpRQGdJTdWaIqcfsTZeEBqFCJ2B6jpPwMhpocboiYI828T344xIWaOxwaZl1+c/u31xxpEhCnjTIKxuAU7wNpldzOpNRgzWE5cK7IepJunGyU4uzuwM62cvk9WP7OSWsD8lC2kwEg5w=
+      strategy: git
       app: safe-stake-mock-api
