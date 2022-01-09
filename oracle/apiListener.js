@@ -45,14 +45,21 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
       console.log("Game update detected, affecting the following stakes:")
       console.log(matchingStakes)
       for (const matchingStake of matchingStakes) {
+        if (matchingStake.trying) { continue }
         switch (matchingStake.status) {
           case StakeStatus.Filled:
             console.log("Stake status was 'Filled' - will send GamePlayed transaction")
             contract.methods.getPlayer(matchingStake.horse).call()
               .then(player => player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0)
-              .then(amountWon => sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false})))
+              .then(amountWon => {
+                matchingStake.trying = true;
+                sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false}));
+              })
               .then(() => removeWatchedStake(matchingStake.id))
-              .catch(err => console.error(err))
+              .catch(err => {
+                matchingStake.trying = false;
+                console.error(err);
+              })
             break;
           case StakeStatus.PartiallyFilled:
             console.log("Stake status was 'PartiallyFilled'")
@@ -62,9 +69,15 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
               // If yes, sendGamePlayedTransaction to send back update the game state and set backerReturns,
               contract.methods.getPlayer(matchingStake.horse).call()
                 .then(player => player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0)
-                .then(amountWon => sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false})))
+                .then(amountWon => {
+                  matchingStake.trying = true;
+                  sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false}))
+                })
                 .then(() => removeWatchedStake(matchingStake.id))
-                .catch(err => console.error(err))
+                .catch(err => {
+                  matchingStake.trying = false;
+                  console.error(err);
+                })
             } else {
               // If not, expire the stake to send the money back to the investors.
               console.log("The filled amount was below the threshold - will send RequestExpired transaction")
