@@ -50,7 +50,7 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
             console.log("Stake status was 'Filled' - will send GamePlayed transaction")
             contract.methods.getPlayer(matchingStake.horse).call()
               .then(player => player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0)
-              .then(amountWon => sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toString()))
+              .then(amountWon => sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false})))
               .then(() => removeWatchedStake(matchingStake.id))
               .catch(err => console.error(err))
             break;
@@ -62,7 +62,7 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
               // If yes, sendGamePlayedTransaction to send back update the game state and set backerReturns,
               contract.methods.getPlayer(matchingStake.horse).call()
                 .then(player => player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0)
-                .then(amountWon => sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toString()))
+                .then(amountWon => sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false})))
                 .then(() => removeWatchedStake(matchingStake.id))
                 .catch(err => console.error(err))
             } else {
