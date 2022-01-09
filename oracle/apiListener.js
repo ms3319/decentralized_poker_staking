@@ -52,11 +52,10 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
             contract.methods.getPlayer(matchingStake.horse).call()
               .then(player => player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0)
               .then(amountWon => {
-                matchingStake.trying = true;
+                removeWatchedStake(matchingStake.id);
                 sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false}))
-                  .catch(() => {matchingStake.trying = false});
+                  .catch(() => watchedStakes.push(matchingStake));
               })
-              .then(() => removeWatchedStake(matchingStake.id))
               .catch(err => console.error(err))
             break;
           case StakeStatus.PartiallyFilled:
@@ -68,11 +67,10 @@ function compareAndUpdate(data, watchedStakes, contract, sendGamePlayedTransacti
               contract.methods.getPlayer(matchingStake.horse).call()
                 .then(player => player.apiId in data[game].takeHomeMoney ? data[game].takeHomeMoney[player.apiId] : 0)
                 .then(amountWon => {
-                  matchingStake.trying = true;
+                  removeWatchedStake(matchingStake.id);
                   sendGamePlayedTransaction(matchingStake.id, convertToTokenAmount(amountWon).toLocaleString('fullwide', {useGrouping:false}))
-                    .catch(() => {matchingStake.trying = false});
+                    .catch(() => watchedStakes.push(matchingStake));
                 })
-                .then(() => removeWatchedStake(matchingStake.id))
                 .catch(err => console.error(err))
             } else {
               // If not, expire the stake to send the money back to the investors.
