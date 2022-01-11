@@ -1,4 +1,3 @@
-// TODO: This is very broken right now
 const Staking = artifacts.require("Staking");
 const Token = artifacts.require("StakeCoin");
 const truffleAssert = require("truffle-assertions")
@@ -58,74 +57,6 @@ contract("Staking", (accounts) => {
 
             await token.approve(staking.address, 300, {from: backerAccount1})
             await staking.stakeHorse(0, 300, {from: backerAccount1});
-        it("Can only cancel a requested stake (not filled/cancelled)", async () => {
-            await staking.cancelStakeAsHorse(0, {from: horseAccount1});
-            await truffleAssert.reverts(staking.cancelStakeAsHorse(0, {from: horseAccount1}));
-        });
-    });
-
-    describe("Cancelling Escrow Stakes", async () => {
-        beforeEach("Create new escrow stake", async () => {
-            await staking.createRequest(1000, 45, 1000, GameType.Tournament, "secret_id", 1640014225, {from: horseAccount1, value: 1000});
-        });
-
-        // TODO: Find out if you can get transfers that happen inside smart contract function calls
-        // it("Cancelling returns escrow deposit", async () => {
-        //     let tx = await staking.cancelStakeAsHorse(0, {from: horseAccount1});
-        //     console.log(tx);
-        // });
-    });
-
-    describe("Filling Stakes", async () => {
-        beforeEach("Create new non-escrow stake", async () => {
-            await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", 1640014225, {from: horseAccount1});
-        });
-
-        it("Stake a horse with valid args", async () => {
-            await staking.stakeHorse(0, {from: backerAccount1, value: 1000});
-            let stake = await staking.getStake(0);
-            assert.equal(stake.status, StakeStatus.Filled, "Stake status not updated to filled");
-        });
-
-        it("Cannot stake a horse with incorrect value", async () => {
-            await truffleAssert.reverts(staking.stakeHorse(0, {from: backerAccount1, value: 1200}));
-            let stake = await staking.getStake(0);
-            assert.equal(stake.status, StakeStatus.Requested, "Stake status updated to filled when it should still be requested");
-        });
-
-        it("Cannot stake a request that doesn't exist", async () => {
-            await truffleAssert.reverts(staking.stakeHorse(123, {from: backerAccount1, value: 1200}));
-        });
-
-        it("Cannot stake a request that has already been staked", async () => {
-            await staking.stakeHorse(0, {from: backerAccount1, value: 1000});
-            await truffleAssert.reverts(staking.stakeHorse(0, {from: backerAccount1, value: 1200}));
-        });
-
-        it("Cannot stake a request that has been cancelled", async () => {
-            await staking.cancelStakeAsHorse(0, {from: horseAccount1});
-            await truffleAssert.reverts(staking.stakeHorse(0, {from: backerAccount1, value: 1200}));
-        });
-
-        it("Can stake multiple games/tournaments on a single horse", async () => {
-            await staking.createRequest(500, 45, 0, GameType.SingleGame, "secret_id2", 1640014225, {from: horseAccount1});
-            await staking.stakeMultipleGamesOnHorse([0, 1], {from: backerAccount1, value: 1000});
-            let stake1 = await staking.getStake(0);
-            let stake2 = await staking.getStake(1);
-
-            assert.equal(stake1.status, StakeStatus.Filled, "Stake status not updated to filled");
-            assert.equal(stake2.status, StakeStatus.Filled, "Stake status not updated to filled");
-        });
-    });
-
-    describe("Returning Profits", async () => {
-        beforeEach("Create new non-escrow stake", async () => {
-            await staking.createRequest(1000, 45, 0, GameType.Tournament, "secret_id", 1640014225, {from: horseAccount1});
-        });
-
-        it("Cannot return profits of a requested stake", async () => {
-            await truffleAssert.reverts(staking.returnProfits(0, {from: backerAccount1, value: 1200}));
-        });
 
             stake = await staking.getStake(0);
             assert.equal(stake.investmentDetails.filledAmount, 300, "Stake filled amount doesn't match");
