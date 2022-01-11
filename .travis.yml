@@ -1,8 +1,8 @@
 stages:
   - test
-  - name: deploy-smart-contracts
-    if: branch = production OR branch = cicd
   - name: deploy
+    if: branch = production OR branch = cicd
+  - name: deploy-secondary-components
     if: branch = production OR branch = cicd
 
 language: node_js
